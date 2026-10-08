@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Contact — Planic</title>
+  <meta name="description" content="Get in touch with the team building Planic in New Delhi." />
+  <meta name="theme-color" content="#111216" />
+  <meta property="og:title" content="Planic — Less deciding. More going." />
+  <meta property="og:description" content="Turn ‘let’s go somewhere’ into a plan everyone actually wants to do." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..600&display=swap" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+  <script>document.documentElement.classList.add('js')</script>
+  <script src="/assets/main.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav" id="top">
+    <div class="wrap nav__inner">
+      <a class="wordmark" href="/" aria-label="Planic home">
+        <svg class="wordmark__mark" viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
+        PLANIC
+      </a>
+      <nav class="nav__links" id="nav-links" aria-label="Primary">
+        <a href="/#how">How it works</a>
+        <a href="/#early-access">Early Access</a>
+      </nav>
+      <a class="btn btn--coral btn--sm nav__cta" href="/#early-access">Join Early Access</a>
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="main" class="page">
+    <div class="wrap">
+      <p class="kicker">Contact</p>
+      <h1>Say hello.</h1>
+      <p>Questions, ideas, or interested in what we’re building? We’re a small team in New Delhi and we read everything.</p>
+
+      <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="contact" />
+        <p class="hp" aria-hidden="true"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+        <label>Name<input name="name" autocomplete="name" required /></label>
+        <label>Email<input type="email" name="email" autocomplete="email" required /></label>
+        <label>Message<textarea name="message" required></textarea></label>
+        <p class="ea__error" role="alert" hidden></p>
+        <button class="btn btn--coral" type="submit">Send message</button>
+      </form>
+      <div class="form-done" role="status" tabindex="-1" hidden>Thanks — your message is in. We’ll get back to you soon.</div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <div>
+        <a class="wordmark wordmark--light" href="/" aria-label="Planic home">
+          <svg class="wordmark__mark" viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
+          PLANIC
+        </a>
+        <p class="footer__tag">Less deciding. More going.</p>
+      </div>
+      <nav class="footer__links" aria-label="Footer">
+        <a href="/#how">How It Works</a>
+        <a href="/#early-access">Early Access</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </div>
+    <div class="wrap footer__base">
+      <span>© <span data-year>2026</span> Planic</span>
+      <span>Made in New Delhi</span>
+    </div>
+  </footer>
+</body>
+</html>
