@@ -14,7 +14,8 @@ Storyboard, art direction and research notes: `/mnt/project-files/planic-redesig
 | `hero.css` | All styles. Animates only `transform` and `opacity`. |
 | `index.src.html` | Page source: hero, options board, chat spiral, how it decides, list, sign-up, footer. `build.mjs` fills in the default plan and board so the page reads without JavaScript. |
 | `test/engine.test.mjs` | Every one of the 564 input states, plus the copy rules (no scores, consensus claims or travel minutes). |
-| `test/browser.mjs` | 64 Playwright checks at desktop and phone sizes: mouse, keyboard, touch drag, interruption, hold and nothing-fits states, reduced motion, no JS, overflow at six widths, console errors. |
+| `test/browser.mjs` | 71 Playwright checks at desktop and phone sizes: mouse, keyboard, touch drag, interruption, hold and nothing-fits states, in-place answers, the phone answer bar at 320 px, reduced motion, no JS, overflow at six widths, console errors. |
+| `test/capture-full-page.mjs` | Full-page screenshots that can be trusted: scrolls the real page a screen at a time and stitches the screens (a one-shot capture leaves off-screen sections blank because of `content-visibility`). |
 
 ## Run it
 

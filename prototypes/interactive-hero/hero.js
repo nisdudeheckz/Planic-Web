@@ -2,7 +2,7 @@
 // One connected event per change: the phrase rewrites itself, a signal runs down that person's
 // line, and where it arrives the plan recomposes (or holds, or says nothing fits).
 import { evaluate, explainChange, sameAsks, DEFAULT_ASKS, OPTIONS, BUDGET, PEOPLE, rupees, priceLabel, timeShort, sayFood, sayNovelty, sayBudget, sayFree } from './engine.js';
-import { whyText, tradeHTML, bendsHTML, boardHTML, NO_PLAN } from './view.js';
+import { whyText, tradeHTML, bendsHTML, boardHTML, NO_PLAN, esc } from './view.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -343,7 +343,7 @@ function syncControls({ morph = [], animate = false } = {}) {
 
 /* ---------- the plan ---------- */
 
-const KIND_LABEL = { hold: 'Plan holds', new: 'New plan', 'none-fits': 'Nothing fits yet', none: 'Planic’s plan' };
+const KIND_LABEL = { hold: 'Plan holds', new: 'New plan', 'none-fits': 'Planic won’t guess', none: 'Planic’s plan' };
 
 function setText(el, text, animate) {
   if (el.textContent === text) return false;
@@ -353,7 +353,9 @@ function setText(el, text, animate) {
 }
 
 function renderBoard(prev, animate) {
+  const hadFocus = !!document.activeElement?.closest('.board .echo');
   $('.board__rows').innerHTML = boardHTML(result);
+  placeBoardEcho(hadFocus);
   if (!prev || !animate || reduced.matches) return;
   for (const o of result.board) {
     const before = prev.board.find((p) => p.id === o.id);
@@ -459,9 +461,10 @@ function peekLabel(kind) { $('.peek__label').textContent = KIND_LABEL[kind] || K
 
 /* ---------- commits ---------- */
 
-function commit(next, { reset = false, undo = false, from = null } = {}) {
+function commit(next, { reset = false, undo = false, from = null, local = false } = {}) {
   finishIntro();
-  if (sameAsks(next, asks) && !from) return;
+  if (sameAsks(next, asks) && !from) return null;
+  if (!local) clearEcho();
   const base = from || asks;
   if (!undo && !sameAsks(base, next)) history.push({ ...base });
   const prev = from ? evaluate(from) : result;
@@ -484,7 +487,8 @@ function commit(next, { reset = false, undo = false, from = null } = {}) {
   // Wait one frame so the routes follow any re-wrapped phrase, then run the signal.
   requestAnimationFrame(() => {
     let arrival = 0;
-    changed.forEach((k, i) => { arrival = Math.max(arrival, pulse(WHO[k], (morph.length ? 140 : 0) + i * 80)); });
+    // From further down the page the hero is out of sight, so skip the signal and answer at once.
+    if (!local) changed.forEach((k, i) => { arrival = Math.max(arrival, pulse(WHO[k], (morph.length ? 140 : 0) + i * 80)); });
     later(() => {
       changed.forEach((k) => arrive(WHO[k]));
       renderPlan(prev, { animate: true, tone, kind: ex.kind, changed });
@@ -493,6 +497,8 @@ function commit(next, { reset = false, undo = false, from = null } = {}) {
       showChange(lastChange, { tone, animate: true });
     }, ms(arrival));
   });
+  syncRuleButtons();
+  return { ...ex, changed };
 }
 
 /* Live update while the budget slider moves; committed on release. Big moments only when an
@@ -565,13 +571,125 @@ function scrollThen(el, block, fn) {
 function tryPatch(btn) {
   const next = { ...asks, ...JSON.parse(btn.dataset.patch) };
   if (!reduced.matches) anim(btn, [{ transform: 'scale(.92)' }, { transform: 'none' }], { duration: 260, easing: E_BACK });
-  if (btn.closest('.board, .how')) {
-    // Take the visitor to where the answer happens, then make the change in front of them.
-    const target = wide.matches ? hero : $('.plan__head');
-    scrollThen(target, 'start', () => commit(next));
+  if (!btn.closest('.board, .how')) { commit(next); return; }
+  // Further down the page, answer right where the visitor is. The plan above changes too,
+  // one tap away, with a way back here.
+  const ex = commit(next, { local: true });
+  if (ex) showEcho({ rule: btn.closest('.rule'), rowId: btn.closest('.opt')?.dataset.id || null, ex });
+}
+
+/* ---------- answers in place: the options board and the rule demos ---------- */
+
+let echo = null; // { rule, rowId, ex, html }
+function echoHTML(ex) {
+  const title = result.plan ? result.plan.title : NO_PLAN.title;
+  return `<p class="echo__head"><span class="echo__kind">${esc(KIND_LABEL[ex.kind] || 'Planic’s plan')}</span> <b class="echo__title">${esc(title)}</b></p>` +
+    `<p class="echo__why">${esc(ex.text)}</p>` +
+    `<p class="echo__acts"><button type="button" class="echo__undo">Put it back</button><button type="button" class="echo__see">See it in the plan</button></p>`;
+}
+function echoEl() {
+  if (!echo) return null;
+  return echo.rule ? $('.echo', echo.rule) : $('.board .echo');
+}
+function placeBoardEcho(focus) {
+  if (!echo || echo.rule) return;
+  $('.opt-echo')?.remove();
+  const row = $(`.opt[data-id="${echo.rowId}"]`);
+  if (!row) return;
+  row.insertAdjacentHTML('afterend', `<tr class="opt-echo"><td colspan="6"><div class="echo" tabindex="-1" role="status" data-kind="${echo.ex.kind}">${echo.html}</div></td></tr>`);
+  if (focus) $('.board .echo').focus({ preventScroll: true });
+}
+function showEcho({ rule, rowId, ex }) {
+  clearEcho();
+  echo = { rule, rowId, ex, html: echoHTML(ex) };
+  if (rule) {
+    const el = $('.echo', rule);
+    el.innerHTML = echo.html;
+    el.dataset.kind = ex.kind;
+    el.hidden = false;
+    // The diagram replays its rule, but only when the outcome is the one it describes.
+    if (ex.kind === rule.dataset.expect) { rule.classList.add('is-applied'); replayRule(rule); }
   } else {
-    commit(next);
+    placeBoardEcho(false);
   }
+  const el = echoEl();
+  if (!el) return;
+  el.focus({ preventScroll: true });
+  // If the answer landed below the fold, bring it up just far enough to read.
+  // (After the board has re-drawn, which can change the row heights.)
+  setTimeout(() => { const now = echoEl(); if (now && !fullyInView(now)) now.scrollIntoView({ block: 'nearest', behavior: reduced.matches ? 'auto' : 'smooth' }); }, ms(320));
+  if (!reduced.matches) anim(el, [{ transform: 'translateY(-8px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 380, easing: E_OUT });
+}
+function clearEcho() {
+  if (!echo) return;
+  if (echo.rule) { const el = $('.echo', echo.rule); el.hidden = true; el.innerHTML = ''; echo.rule.classList.remove('is-applied'); }
+  else $('.opt-echo')?.remove();
+  echo = null;
+}
+function replayRule(rule) {
+  if (reduced.matches) return;
+  $$('.ln, .tm', rule).forEach((path, i) => anim(path, [{ strokeDashoffset: 300 }, { strokeDashoffset: 0 }], { duration: 900, delay: i * 70, easing: E_IO }));
+  $$('.xc, .st', rule).forEach((el) => anim(el, [{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.15)', opacity: 1, offset: .7 }, { transform: 'none', opacity: 1 }], { duration: 520, delay: 700, easing: E_OUT, fill: 'backwards' }));
+}
+function syncRuleButtons() {
+  $$('button.rule__go[data-patch]').forEach((b) => {
+    const patch = JSON.parse(b.dataset.patch);
+    b.disabled = Object.entries(patch).every(([k, v]) => asks[k] === v);
+  });
+}
+function echoUndo() {
+  if (!echo || !history.length) return;
+  const { rule, rowId } = echo;
+  commit(history.pop(), { undo: true, local: true });
+  clearEcho();
+  // Put focus back on the control that made the change.
+  later(() => {
+    const back = rule ? $('button.rule__go', rule) : $(`.opt[data-id="${rowId}"] .try`);
+    (back || $(rule ? '.how' : '.board__head h2'))?.focus?.({ preventScroll: true });
+  }, ms(320));
+}
+
+// "See it in the plan", and a way back to where the visitor was.
+const ret = { el: null, origin: null, io: null };
+function echoSee() {
+  const origin = echoEl();
+  if (!origin) return;
+  const changed = echo.ex.changed || [];
+  scrollThen(wide.matches ? hero : $('.plan__head'), 'start', () => {
+    if (!reduced.matches) rollCall('see', changed);
+    showReturn(origin.closest('.rule, .board'), origin);
+  });
+}
+function showReturn(section, focusEl) {
+  const label = section.classList.contains('board') ? 'Back to the options' : 'Back to the rules';
+  ret.el.querySelector('span').textContent = label;
+  ret.origin = { section, focusEl };
+  ret.el.hidden = false;
+  ret.io?.disconnect();
+  ret.io = new IntersectionObserver(([en]) => { if (en.isIntersecting) hideReturn(); }, { threshold: .4 });
+  // Only start watching once we've left, so it doesn't hide straight away.
+  later(() => ret.io?.observe(section), 400);
+}
+function hideReturn() { if (ret.el) ret.el.hidden = true; ret.io?.disconnect(); ret.io = null; }
+function wireEcho() {
+  ret.el = $('.return');
+  ret.el.addEventListener('click', () => {
+    const o = ret.origin;
+    hideReturn();
+    if (!o) return;
+    const target = o.focusEl && o.focusEl.isConnected ? o.focusEl : o.section;
+    scrollThen(target, 'center', () => {
+      const f = echoEl() || $('button.rule__go, .try', o.section);
+      f?.focus({ preventScroll: true });
+    });
+  });
+  const onClick = (e) => {
+    if (e.target.closest('.echo__undo')) echoUndo();
+    else if (e.target.closest('.echo__see')) echoSee();
+  };
+  $('.board').addEventListener('click', onClick);
+  $('.how').addEventListener('click', onClick);
+  syncRuleButtons();
 }
 
 function wire() {
@@ -673,7 +791,11 @@ function wire() {
   let titleSeen = true;
   let chatSeen = true;
   // Only once the visitor has started changing things; before that it would just cover the chat.
-  const updatePeek = () => { peek.hidden = !(engaged && !wide.matches && chatSeen && !titleSeen); };
+  const updatePeek = () => {
+    peek.hidden = !(engaged && !wide.matches && chatSeen && !titleSeen);
+    // Keyboard focus and in-page scrolling stop above the bar, never under it.
+    document.documentElement.style.setProperty('--peek-pad', peek.hidden ? '0px' : `${peek.offsetHeight + 8}px`);
+  };
   hero.addEventListener('click', (e) => { if (!engaged && e.target.closest('button.live')) { engaged = true; updatePeek(); } });
   new IntersectionObserver(([en]) => { titleSeen = en.intersectionRatio >= .6; updatePeek(); }, { threshold: [0, .6, 1] }).observe(titleEl);
   new IntersectionObserver(([en]) => { chatSeen = en.isIntersecting; updatePeek(); }, { rootMargin: '0px 0px -80px 0px' }).observe($('.chat'));
@@ -713,34 +835,48 @@ function rankedOrder() {
     || Object.values(x.people).filter(Boolean).length - Object.values(y.people).filter(Boolean).length
     || idx(x.id) - idx(y.id)).map((b) => b.id);
 }
-function renderList(animate) {
+function renderList(animate, { toggled = false } = {}) {
   const list = $('.list');
   const box = $('.list__items');
   if (!list) return;
   list.dataset.order = listOrder;
-  for (const li of $$('li', box)) {
+  const motion = animate && !reduced.matches && inView(box);
+  $$('li', box).forEach((li, i) => {
     const o = OPTIONS.find((x) => x.id === li.dataset.id);
     const b = result.board.find((x) => x.id === li.dataset.id);
     const fail = Object.entries(b.people).find(([, f]) => f);
     li.classList.toggle('is-pick', b.picked);
     li.classList.toggle('is-out', !b.fits);
     li.style.setProperty('--strike', fail ? `var(${TONE[fail[0]]})` : '');
-    $('.li__note', li).textContent = listOrder === 'popular'
+    const note = $('.li__note', li);
+    const text = listOrder === 'popular'
       ? `${priceLabel(o)} each`
       : b.picked ? b.why : b.fits ? 'Fits all four, not picked' : fail[1].text;
-  }
+    if (note.textContent !== text) {
+      note.textContent = text;
+      // The reason arrives first, top to bottom, so the re-sort that follows reads as its result.
+      if (motion) anim(note, [{ transform: 'translateY(6px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 300, delay: i * 45, easing: E_OUT, fill: 'backwards' });
+    }
+  });
   const order = listOrder === 'popular' ? POPULAR : rankedOrder();
   const items = order.map((id) => $(`li[data-id="${id}"]`, box));
   const same = items.every((li, i) => box.children[i] === li);
   if (same) return;
   // Only measure for the re-sort animation when someone can see it.
-  if (!animate || reduced.matches || !inView(box)) { items.forEach((li) => box.append(li)); return; }
+  if (!motion) { items.forEach((li) => box.append(li)); return; }
+  const wait = toggled && listOrder === 'ranked' ? 320 : 0;
   const first = new Map(items.map((li) => [li, li.getBoundingClientRect().top]));
   items.forEach((li) => box.append(li));
   items.forEach((li, i) => {
     const dy = first.get(li) - li.getBoundingClientRect().top;
-    if (dy) anim(li, [{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 640, delay: i * 30, easing: E_IO });
+    if (dy) anim(li, [{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 680, delay: wait + i * 35, easing: E_IO, fill: 'backwards' });
   });
+  const pick = $('li.is-pick', box);
+  if (pick && listOrder === 'ranked') {
+    try {
+      anim($('.li__name', pick), [{ transform: 'scale(.4) rotate(-6deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 420, delay: wait + 620, easing: E_BACK, fill: 'backwards', pseudoElement: '::after' });
+    } catch { /* no pseudo-element animation: the tag simply appears */ }
+  }
 }
 function wireList() {
   const tog = $('.list__toggle');
@@ -750,7 +886,7 @@ function wireList() {
     listOrder = b.dataset.order;
     $$('button', tog).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     placeSeg(tog);
-    renderList(true);
+    renderList(true, { toggled: true });
   });
   placeSeg(tog, true);
   new ResizeObserver(() => placeSeg(tog, true)).observe(tog);
@@ -785,6 +921,7 @@ function wirePage() {
     email.removeAttribute('aria-invalid');
     msg.textContent = 'This is a prototype, so nothing was sent. The form on the live site is unchanged.';
     msg.classList.add('is-done');
+    if (!reduced.matches) msg.animate([{ transform: 'translateY(6px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 320, easing: E_OUT });
   });
   email.addEventListener('input', () => { if (email.getAttribute('aria-invalid')) { email.removeAttribute('aria-invalid'); msg.classList.remove('is-error'); msg.textContent = 'No account needed. We’ll only email you about Planic.'; } });
 }
@@ -871,6 +1008,7 @@ renderList(false);
 wire();
 wireList();
 wirePage();
+wireEcho();
 layoutRoutes();
 intro();
 

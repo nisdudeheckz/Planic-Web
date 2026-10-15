@@ -1,7 +1,7 @@
 // HTML string builders shared by the build step (no-JS page) and the live page.
 import { PEOPLE, listOf, cap, sayBudget, sayFree } from './engine.js';
 
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // One row per person, beside what they said. With a plan: what the plan does for them.
 // With no plan: what their ask rules out, so the blocking constraints are visible.

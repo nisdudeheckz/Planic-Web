@@ -20,11 +20,13 @@
       <svg viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
       <span>Planic</span>
     </a>
+    <div class="nav__right">
     <nav class="nav__links" aria-label="Sections">
       <a href="#how">How it decides</a>
       <a href="#list">Why Planic</a>
     </nav>
     <a class="nav__cta" href="#early-access">Join early access</a>
+    </div>
   </header>
 
   <main id="main">
@@ -184,24 +186,28 @@
           <p>Every option is checked against every ask. One “no” and it’s set aside, with the reason.</p>
           <a class="rule__go" href="#board">See every option, checked</a>
         </li>
-        <li class="rule">
+        <li class="rule" data-expect="hold">
           <svg class="rule__map" viewBox="0 0 160 120" aria-hidden="true">
             <path d="M10 60 H50" class="ln ln--plan"/><path d="M50 60 L80 30 H120" class="ln ln--soft"/><path d="M50 60 L80 90 H120" class="ln ln--plan"/>
             <circle cx="126" cy="30" r="9" class="st st--soft"/><circle cx="126" cy="90" r="12" class="st st--pick"/><circle cx="126" cy="90" r="5" class="st st--core"/>
+            <text x="80" y="20" class="lbl">fits too</text><text x="80" y="112" class="lbl">new, so it wins</text>
           </svg>
           <h3><span class="rule__n">2</span> New first, then cheaper.</h3>
           <p>When more than one option works, somewhere new wins, then the cheaper one. If the plan holds, it says why.</p>
           <button type="button" class="rule__go" data-patch='{"novelty":"usual"}'>Let Rohan settle for the usual</button>
+          <div class="echo" tabindex="-1" role="status" hidden></div>
         </li>
-        <li class="rule">
+        <li class="rule" data-expect="none-fits">
           <svg class="rule__map" viewBox="0 0 160 120" aria-hidden="true">
             <path d="M10 22 H64" class="ln" data-who="a"/><path d="M10 48 H64" class="ln" data-who="r"/><path d="M10 74 H44" class="ln" data-who="m"/><path d="M10 100 H64" class="ln" data-who="k"/>
             <path d="M64 14 V30 M64 40 V56 M44 66 V82 M64 92 V108" class="tm"/>
             <rect x="104" y="44" width="24" height="32" rx="12" class="xc xc--empty"/>
+            <text x="116" y="96" class="lbl" text-anchor="middle">no plan</text>
           </svg>
           <h3><span class="rule__n">3</span> If nothing fits, it says so.</h3>
           <p>No forced pick. It shows who would have to give a little, and what that would open up.</p>
           <button type="button" class="rule__go" data-patch='{"budget":400}'>Drop Meera’s budget to ₹400</button>
+          <div class="echo" tabindex="-1" role="status" hidden></div>
         </li>
       </ol>
     </section>
@@ -245,10 +251,12 @@
     <p class="foot__small"><span>© 2026 Planic</span><span>Made in New Delhi</span><span>Prototype on a review branch, not the live site</span></p>
   </footer>
 
+  <button type="button" class="return" hidden><span>Back to the options</span></button>
+
   <div class="peek" hidden>
     <span class="peek__lines" aria-hidden="true"><i data-who="a"></i><i data-who="r"></i><i data-who="m"></i><i data-who="k"></i></span>
     <p class="peek__label">Planic’s plan</p>
-    <p class="peek__title"></p>
+    <p class="peek__title">Board games, then momos</p>
     <button type="button" class="peek__go">See why</button>
   </div>
 </body>

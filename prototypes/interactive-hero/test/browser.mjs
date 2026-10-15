@@ -22,6 +22,16 @@ async function open(opts = {}, label = '', waitUntil = 'networkidle') {
 const title = (p) => p.locator('.plan__title .sr-only').textContent();
 const change = (p) => p.locator('.change__text').textContent();
 const settle = (p) => p.waitForTimeout(1700);
+// The phone answer bar shows the whole outcome: nothing clipped, at most two lines, a full-size button.
+const peekFits = (p) => p.evaluate(() => {
+  const bar = document.querySelector('.peek'), t = document.querySelector('.peek__title'), go = document.querySelector('.peek__go');
+  const cs = getComputedStyle(t), lh = parseFloat(cs.lineHeight);
+  const tr = t.getBoundingClientRect(), br = bar.getBoundingClientRect(), gr = go.getBoundingClientRect();
+  const lines = Math.round(tr.height / lh);
+  const ok = t.scrollWidth <= t.clientWidth + 1 && t.scrollHeight <= t.clientHeight + 1 && cs.textOverflow !== 'ellipsis' && lines <= 2 &&
+    tr.right <= gr.left && gr.height >= 44 && gr.right <= innerWidth && tr.top >= br.top && tr.bottom <= br.bottom;
+  return { ok, lines, barH: Math.round(br.height), goH: Math.round(gr.height) };
+});
 const choice = (key, value) => `#tune-${key} label:has(input[value="${value}"])`;
 // After everything settles, nothing should still be animating and the sweep must be gone.
 // Waits (up to 3 s) for every script animation to end, then reports any still running.
@@ -128,8 +138,22 @@ const titleMatchesEngine = (p) => p.evaluate(() => {
   await settle(p);
   check('desktop: rooftop "Try it" (from the options board) holds the plan and says why', (await title(p)) === 'Board games, then momos' && /The rooftop fits too, but it costs more, so the plan holds\./.test(await change(p)), await change(p));
   check('desktop: a held plan is stamped as still the plan', await p.isVisible('.stamp'));
-  check('desktop: "Try it" on the board brings the plan back into view', await p.evaluate(() => document.querySelector('.plan__title').getBoundingClientRect().top >= 0));
+  check('desktop: "Try it" on the board answers in place, under its row, without leaving the board', await p.locator('.opt[data-id="rooftop"] + .opt-echo .echo__kind').innerText().catch(() => '') === 'Plan holds'
+    && /The rooftop fits too, but it costs more/.test(await p.locator('.opt-echo .echo__why').innerText())
+    && await p.evaluate(() => { const r = document.querySelector('.opt-echo .echo').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }),
+    await p.evaluate(() => { const e = document.querySelector('.opt-echo'); if (!e) return 'no answer row'; const r = e.getBoundingClientRect(); return `${e.innerText.replace(/\n/g, ' / ')} @ ${Math.round(r.top)}–${Math.round(r.bottom)} of ${innerHeight}`; }));
   await p.screenshot({ path: out + 'd7-rooftop-holds.png' });
+  await p.click('.opt-echo .echo__see');
+  await p.waitForTimeout(1400);
+  check('desktop: "See it in the plan" goes up to the plan and offers a way back', await p.evaluate(() => document.querySelector('.plan__title').getBoundingClientRect().top >= 0) && await p.isVisible('.return'));
+  await p.click('.return');
+  await p.waitForTimeout(1400);
+  check('desktop: the way back returns to the answer on the board', await p.evaluate(() => { const r = document.querySelector('.opt-echo .echo').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }) && !(await p.isVisible('.return')));
+  await p.click('.opt-echo .echo__undo');
+  await settle(p);
+  check('desktop: "Put it back" undoes the board change and clears the answer', (await p.evaluate(() => window.__planic.asks.budget)) === 600 && await p.locator('.opt-echo').count() === 0);
+  await p.locator('.opt[data-id="rooftop"] .try').click();
+  await settle(p);
   await p.click('.reset');
   await settle(p);
   check('desktop: going back to ₹600 holds too, and stays stamped', await p.isVisible('.stamp'));
@@ -168,8 +192,13 @@ const titleMatchesEngine = (p) => p.evaluate(() => {
   await p.screenshot({ path: out + 'd8-list-ranked.png' });
   await p.locator('.how').scrollIntoViewIfNeeded();
   await p.click('button.rule__go[data-patch*="400"]');
-  await p.waitForTimeout(2600);
-  check('page: rule 3’s button takes you to the plan and shows nothing fits', (await title(p)) === 'Nothing fits all four yet' && await p.evaluate(() => document.querySelector('.plan__title').getBoundingClientRect().top >= 0));
+  await p.waitForTimeout(1600);
+  const ruleEcho = p.locator('.rule[data-expect="none-fits"] .echo');
+  check('page: rule 3 plays out in place: nothing fits, said beside the rule, and the plan agrees', await ruleEcho.isVisible() && /Nothing fits all four yet/.test(await ruleEcho.innerText()) && (await title(p)) === 'Nothing fits all four yet'
+    && await p.locator('.rule[data-expect="none-fits"].is-applied').count() === 1 && await p.locator('button.rule__go[data-patch*="400"]:disabled').count() === 1);
+  await p.click('.rule[data-expect="none-fits"] .echo__undo');
+  await settle(p);
+  check('page: putting rule 3 back restores the plan and the button', (await title(p)) !== 'Nothing fits all four yet' && !(await ruleEcho.isVisible()) && await p.locator('button.rule__go[data-patch*="400"]:disabled').count() === 0);
   await p.locator('.join').scrollIntoViewIfNeeded();
   await p.fill('#email', 'not an email');
   await p.click('.join__row button');
@@ -229,7 +258,8 @@ const titleMatchesEngine = (p) => p.evaluate(() => {
   }
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await settle(p);
-  check('phone: dragging to ₹250 → nothing fits, said in the bar', (await p.locator('.peek__label').innerText()) === 'Nothing fits yet' && await p.locator('.peek.is-noplan').count() === 1);
+  check('phone: dragging to ₹250 → nothing fits, said in full in the bar', (await p.locator('.peek__title').innerText()) === 'Nothing fits all four yet' && await p.locator('.peek.is-noplan').count() === 1 && (await peekFits(p)).ok, JSON.stringify(await peekFits(p)));
+  check('phone: the bar never covers the open price rail', await p.evaluate(() => { const t = document.querySelector('#tune-budget').getBoundingClientRect(); const b = document.querySelector('.peek'); return b.hidden || t.bottom <= b.getBoundingClientRect().top + 1; }));
   await p.screenshot({ path: out + 'm3b-nothing-fits.png' });
   await p.tap('.peek__go');
   await p.waitForTimeout(1400);
@@ -252,6 +282,36 @@ const titleMatchesEngine = (p) => p.evaluate(() => {
   await settle(p);
   check('phone: Kabir free at 9 → board games till close', (await title(p)) === 'Board games till close', await title(p));
   await p.screenshot({ path: out + 'm6-full.png', fullPage: true });
+  await ctx.close();
+}
+
+/* ---------- the phone answer bar: every outcome in full, at the narrowest width ---------- */
+{
+  const { p, ctx } = await open({ ...devices['iPhone SE'], viewport: { width: 320, height: 568 } }, 'peek-320');
+  await p.waitForTimeout(3600);
+  const states = [
+    ['Board games, then momos', {}],
+    ['Board games till close', { free: 1260 }],
+    ['Kebabs and a live set', { food: 'any' }],
+    ['A street-food crawl', { free: 1020 }],
+    ['The usual café', { novelty: 'usual', budget: 450 }],
+    ['Nothing fits all four yet', { budget: 250 }],
+  ];
+  const heights = new Set();
+  let all = true; const bad = [];
+  for (const [want, patch] of states) {
+    await p.evaluate((patch) => window.__planic.commit({ food: 'veg', novelty: 'new', budget: 600, free: 1140, ...patch }), patch);
+    await settle(p);
+    await p.evaluate(() => { document.querySelector('.peek').hidden = false; });
+    await p.waitForTimeout(350);
+    const f = await peekFits(p);
+    heights.add(f.barH);
+    const got = await p.locator('.peek__title').innerText();
+    if (got !== want || !f.ok) { all = false; bad.push(`${want}: ${got} ${JSON.stringify(f)}`); }
+  }
+  await p.screenshot({ path: out + 'm7-peek-320.png' });
+  check('phone 320: every plan title and "nothing fits" shows in full in the bar (no cut-off, ≤ 2 lines, See why ≥ 44px)', all, bad.join(' | '));
+  check('phone 320: the bar keeps one height whatever the title', heights.size === 1, [...heights].join(','));
   await ctx.close();
 }
 

@@ -12,7 +12,7 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 const r = evaluate(DEFAULT_ASKS);
 const filled = read('index.src.html')
-  .replace('{{TITLE}}', esc(r.plan.title))
+  .replaceAll('{{TITLE}}', esc(r.plan.title))
   .replace('{{META}}', esc(r.plan.meta))
   .replace('{{THEN}}', esc(r.plan.then))
   .replace('{{WHY}}', whyRowsHTML(r))
