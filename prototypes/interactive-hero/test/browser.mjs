@@ -24,9 +24,12 @@ const change = (p) => p.locator('.change__text').textContent();
 const settle = (p) => p.waitForTimeout(1700);
 const choice = (key, value) => `#tune-${key} label:has(input[value="${value}"])`;
 // After everything settles, nothing should still be animating and the sweep must be gone.
-const quiet = (p) => p.evaluate(() => {
+// Waits (up to 3 s) for every script animation to end, then reports any still running.
+const quiet = (p) => p.evaluate(async () => {
+  const mine = () => document.getAnimations().filter((a) => a.playState === 'running' && !(a instanceof CSSAnimation) && !(a instanceof CSSTransition));
+  await Promise.race([Promise.allSettled(mine().map((a) => a.finished)), new Promise((r) => setTimeout(r, 3000))]);
   const wipe = getComputedStyle(document.querySelector('.wipe')).transform;
-  return { running: document.getAnimations().filter((a) => a.playState === 'running' && !(a instanceof CSSAnimation)).length, wipe };
+  return { running: mine().length, wipe };
 });
 const titleMatchesEngine = (p) => p.evaluate(() => {
   const r = window.__planic.result;

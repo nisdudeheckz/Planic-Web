@@ -17,7 +17,6 @@ const KEYS = Object.keys(WHO);
 const SAY = { food: sayFood, novelty: sayNovelty, budget: sayBudget, free: sayFree };
 const TONE = { a: '--coral', r: '--lav', m: '--sun', k: '--mint' };
 const CHIP = { crawl: 'Street-food crawl', kebab: 'Kebab place', cafe: 'Usual café', brunch: 'Brunch spot', board: 'Board-game café', rooftop: 'Rooftop' };
-const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const ms = (n) => (reduced.matches ? 0 : n);
 
 let asks = { ...DEFAULT_ASKS };
@@ -333,7 +332,7 @@ function syncControls({ morph = [], animate = false } = {}) {
     else { const say = $(`button.live[data-ask="${key}"] .say`); if (say) say.textContent = text; }
   }
   $$('.tune input[type="radio"]').forEach((r) => { r.checked = String(asks[r.name]) === r.value; });
-  $$('.tune--seg').forEach((s) => placeSeg(s));
+  $$('.tune--seg:not([hidden])').forEach((s) => placeSeg(s));
   const range = $('#budget');
   range.value = asks.budget;
   range.setAttribute('aria-valuetext', `${rupees(asks.budget)} per person`);
@@ -367,7 +366,7 @@ function renderBoard(prev, animate) {
 }
 
 // Everything the plan shows, recomposed. `tone` is the colour of whoever caused the change.
-function renderPlan(prev, { animate = true, tone = css('--lav'), kind = 'new', changed = [] } = {}) {
+function renderPlan(prev, { animate = true, tone = 'var(--lav)', kind = 'new', changed = [] } = {}) {
   const r = result;
   const noplan = !r.plan;
   const wasNoplan = plan.classList.contains('is-noplan');
@@ -375,7 +374,7 @@ function renderPlan(prev, { animate = true, tone = css('--lav'), kind = 'new', c
   peek.classList.toggle('is-noplan', noplan);
 
   const title = noplan ? NO_PLAN.title : r.plan.title;
-  const rewrote = animate ? recomposeTitle(title, noplan ? css('--night') : tone) : (setTitleNow(title), true);
+  const rewrote = animate ? recomposeTitle(title, noplan ? 'var(--night)' : tone) : (setTitleNow(title), true);
   const delay = rewrote && animate ? 260 : 0;
   later(() => {
     plan.classList.toggle('shows-noplan', noplan);
@@ -427,9 +426,8 @@ function rollCall(kind, changed) {
   $$('.why').forEach((row, i) => {
     const dot = $('.why__dot', row);
     anim(dot, [{ transform: 'scale(1)' }, { transform: 'scale(1.45)' }, { transform: 'scale(1)' }], { duration: 360, delay: 80 + i * 75, easing: E_OUT });
-    if (whoChanged.includes(row.dataset.who)) {
-      row.classList.remove('is-hit'); void row.offsetWidth; row.classList.add('is-hit');
-    }
+    // Animated rather than re-triggering a CSS class, which would force a layout here.
+    if (whoChanged.includes(row.dataset.who)) anim($('.why__text', row), [{ color: 'var(--c)' }, { color: 'var(--on-plan)' }], { duration: 900, easing: E_OUT });
   });
 }
 
@@ -480,7 +478,7 @@ function commit(next, { reset = false, undo = false, from = null } = {}) {
   $('.back').hidden = false;
   engaged = true;
   peekLabel(ex.kind);
-  const tone = reset || !changed.length ? css('--lav') : css(TONE[WHO[changed[0]]]);
+  const tone = reset || !changed.length ? 'var(--lav)' : `var(${TONE[WHO[changed[0]]]})`;
   queueLayout();
 
   // Wait one frame so the routes follow any re-wrapped phrase, then run the signal.
@@ -509,7 +507,7 @@ function live(next) {
   if (pickChanged) {
     seq++;
     stopAll();
-    renderPlan(before, { animate: true, tone: css('--sun'), kind: result.pick ? 'new' : 'none-fits', changed: ['budget'] });
+    renderPlan(before, { animate: true, tone: 'var(--sun)', kind: result.pick ? 'new' : 'none-fits', changed: ['budget'] });
     navigator.vibrate?.(10);
   } else {
     $('.why[data-who="m"] .why__text').textContent = whyText(result, 'm');
@@ -519,7 +517,7 @@ function live(next) {
     queueLayout();
   }
   const ex = explainChange(dragBase, asks);
-  if (ex.text) showChange(ex.text, { tone: css('--sun') });
+  if (ex.text) showChange(ex.text, { tone: 'var(--sun)' });
   peekLabel(ex.kind);
 }
 
@@ -625,8 +623,15 @@ function wire() {
     $$('.pins i.is-hot').forEach((p) => p.classList.remove('is-hot'));
     if (chip) $(`.pins i[data-id="${chip.dataset.id}"]`)?.classList.add('is-hot');
 
-    // Point at a person or their row: both light up and the other lines step back.
-    const who = (e.target.closest('.why') || e.target.closest('.msg'))?.dataset.who;
+  });
+  // Point at a person or their row: both light up and the other lines step back. Listened for on
+  // the whole document, so leaving the hero by any route clears it.
+  let litWho = null;
+  document.addEventListener('pointerover', (e) => {
+    if (!isMouse(e)) return;
+    const who = (e.target.closest?.('.why') || e.target.closest?.('.msg'))?.dataset.who || null;
+    if (who === litWho) return;
+    litWho = who;
     $$('.is-lit').forEach((el) => el.classList.remove('is-lit'));
     for (const w of Object.keys(PEOPLE)) routes[w].path.classList.toggle('is-dim', !!who && w !== who);
     if (who) $$(`.msg[data-who="${who}"], .why[data-who="${who}"]`).forEach((el) => el.classList.add('is-lit'));
@@ -636,10 +641,6 @@ function wire() {
     if (e.target.closest('.tune--seg label, .try') && changeBox.classList.contains('is-preview')) {
       restoreChange();
       $$('.rt.is-armed').forEach((p) => p.classList.remove('is-armed'));
-    }
-    if (e.target.closest('.why, .msg') && !e.relatedTarget?.closest?.('.why, .msg')) {
-      $$('.is-lit').forEach((el) => el.classList.remove('is-lit'));
-      $$('.rt.is-dim').forEach((p) => p.classList.remove('is-dim'));
     }
   });
   hero.addEventListener('focusout', () => { if (changeBox.classList.contains('is-preview')) restoreChange(); });
@@ -723,7 +724,7 @@ function renderList(animate) {
     const fail = Object.entries(b.people).find(([, f]) => f);
     li.classList.toggle('is-pick', b.picked);
     li.classList.toggle('is-out', !b.fits);
-    li.style.setProperty('--strike', fail ? css(TONE[fail[0]]) : '');
+    li.style.setProperty('--strike', fail ? `var(${TONE[fail[0]]})` : '');
     $('.li__note', li).textContent = listOrder === 'popular'
       ? `${priceLabel(o)} each`
       : b.picked ? b.why : b.fits ? 'Fits all four, not picked' : fail[1].text;
@@ -732,9 +733,10 @@ function renderList(animate) {
   const items = order.map((id) => $(`li[data-id="${id}"]`, box));
   const same = items.every((li, i) => box.children[i] === li);
   if (same) return;
+  // Only measure for the re-sort animation when someone can see it.
+  if (!animate || reduced.matches || !inView(box)) { items.forEach((li) => box.append(li)); return; }
   const first = new Map(items.map((li) => [li, li.getBoundingClientRect().top]));
   items.forEach((li) => box.append(li));
-  if (!animate || reduced.matches || !inView(box)) return;
   items.forEach((li, i) => {
     const dy = first.get(li) - li.getBoundingClientRect().top;
     if (dy) anim(li, [{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 640, delay: i * 30, easing: E_IO });
@@ -827,7 +829,7 @@ function intro() {
   }
   setTimeout(() => {
     if (!introRunning) return;
-    recomposeTitle(result.plan.title, css('--lav'));
+    recomposeTitle(result.plan.title, 'var(--lav)');
     const rest = [$('.plan__meta'), $('.plan__then'), $('.plan__for'), ...$$('.why'), $('.plan__foot')];
     rest.forEach((el, i) => push(el.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 300 + i * 70, easing: E_OUT, fill: 'both' })));
     setTimeout(() => {

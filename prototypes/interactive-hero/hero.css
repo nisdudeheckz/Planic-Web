@@ -120,7 +120,7 @@ a { color: inherit; }
 
 /* ---------- the group ---------- */
 
-.kicker { font-size: .8125rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.kicker { font-size: .9375rem; font-weight: 600; color: var(--ink-soft); }
 h1 {
   margin-top: 14px;
   font-family: var(--display);
@@ -270,7 +270,7 @@ button.live:active { transform: scale(.97); }
 .pins i.is-in { background: var(--ink); opacity: 1; }
 .pins i.is-hot { background: var(--plan); opacity: 1; }
 .price__scale { display: flex; justify-content: space-between; font-size: .75rem; font-weight: 600; color: var(--ink-soft); margin-top: -4px; }
-.price__head { margin-top: 12px; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.price__head { margin-top: 12px; font-size: .8125rem; font-weight: 600; color: var(--ink-soft); }
 .price__chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; perspective: 400px; }
 .chip {
   display: inline-flex; gap: 6px; align-items: baseline; padding: 5px 10px; border-radius: 999px;
@@ -343,8 +343,8 @@ button.live:active { transform: scale(.97); }
   @keyframes xchg-hit { 30% { transform: scale(1.18); } }
 }
 
-.plan__by { display: flex; justify-content: space-between; gap: 12px; font-size: .8125rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--on-plan-soft); }
-.plan__demo { padding: 2px 8px; border: 1px solid var(--on-plan-line); border-radius: 999px; letter-spacing: .02em; text-transform: none; }
+.plan__by { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: .9375rem; font-weight: 600; color: var(--on-plan-soft); }
+.plan__demo { padding: 2px 10px; border: 1px solid var(--on-plan-line); border-radius: 999px; font-size: .8125rem; }
 
 .plan__change {
   position: relative; display: flex; align-items: flex-start; gap: 12px; margin-top: 16px; min-height: 48px; padding: 11px 14px;
@@ -395,6 +395,7 @@ button.live:active { transform: scale(.97); }
 .plan__meta { margin-top: 16px; font-family: var(--display); font-weight: 520; font-size: clamp(1.1875rem, 1rem + .6vw, 1.5rem); line-height: 1.22; letter-spacing: -.015em; max-width: 40ch; }
 .plan__then { margin-top: 4px; color: var(--on-plan-soft); }
 @media (min-width: 960px) { .plan__meta { min-height: 2.44em; } .plan__then { min-height: 1.55em; } }
+@media (min-width: 1280px) { .plan__meta { min-height: 1.22em; } }
 
 .plan__for { margin-top: 24px; padding-bottom: 10px; border-bottom: 1px solid var(--on-plan-line); font-size: .9375rem; font-weight: 600; color: var(--on-plan-soft); }
 @media (min-width: 960px) { .plan__for { margin-top: 0; align-self: end; } }
@@ -556,13 +557,13 @@ button.live:active { transform: scale(.97); }
 /* ---------- spiral: the group chat that goes nowhere ---------- */
 
 .spiral { background: var(--paper); color: var(--text); padding: 88px 0 96px; overflow: clip; }
-.spiral__title { padding: 0 var(--gutter-r) 0 var(--gutter); font-size: .8125rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.spiral__title { padding: 0 var(--gutter-r) 0 var(--gutter); font-family: var(--display); font-size: clamp(1.25rem, 1rem + .8vw, 1.75rem); font-weight: 650; letter-spacing: -.015em; color: var(--ink-soft); }
 .spiral__chat { margin-top: 24px; display: grid; gap: .1em; }
 .spiral__chat li {
   --x: 0;
   padding: 0 var(--gutter-r) 0 calc(var(--gutter) + var(--x));
   font-family: var(--display); font-weight: 650; font-variation-settings: "opsz" 96;
-  font-size: clamp(1.75rem, .8rem + 4.6vw, 5.25rem); line-height: 1.02; letter-spacing: -.035em;
+  font-size: clamp(1.75rem, 4.3vw, 5.25rem); line-height: 1.02; letter-spacing: -.035em;
   white-space: nowrap;
 }
 .spiral__chat li:nth-child(2) { --x: 8vw; } .spiral__chat li:nth-child(3) { --x: 2vw; } .spiral__chat li:nth-child(4) { --x: 14vw; }
@@ -579,8 +580,8 @@ button.live:active { transform: scale(.97); }
   @media (prefers-reduced-motion: no-preference) {
     .spiral__chat li { animation: drift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
     .spiral__chat li:nth-child(odd) { animation-name: drift-l; }
-    @keyframes drift { from { transform: translateX(-6vw); } to { transform: translateX(6vw); } }
-    @keyframes drift-l { from { transform: translateX(6vw); } to { transform: translateX(-6vw); } }
+    @keyframes drift { from { transform: none; } to { transform: translateX(8vw); } }
+    @keyframes drift-l { from { transform: translateX(8vw); } to { transform: none; } }
     .spiral__count b { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% cover 35%; }
     @keyframes rise { from { transform: translateY(.45em); } to { transform: none; } }
   }
@@ -690,3 +691,7 @@ html:not(.js) .join__form, html:not(.js) button.rule__go, html:not(.js) .list__t
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }
+
+/* Sections below the hero skip layout and paint while off-screen, so a change in the hero
+   doesn't pay for laying out the whole page. */
+.board, .spiral, .how, .list, .join, .foot { content-visibility: auto; contain-intrinsic-size: auto 900px; }

@@ -10,11 +10,11 @@ Storyboard, art direction and research notes: `/mnt/project-files/planic-redesig
 |---|---|
 | `engine.js` | The demo's whole decision model: four asks, six made-up options, three rules. Pure functions, no DOM. |
 | `view.js` | HTML string builders shared by the build step and the live page. |
-| `hero.js` | Interaction: tuners, live slider, carry and retypeset motion, hover preview, phone peek bar, intro. No dependencies. |
+| `hero.js` | Interaction: routes, tuners, price rail, signal and recompose motion, hover preview, phone peek bar, See why and back, the options board, rule buttons, list re-rank, sign-up validation. No dependencies. |
 | `hero.css` | All styles. Animates only `transform` and `opacity`. |
-| `index.src.html` | Page source. `build.mjs` fills in the default plan so the page reads without JavaScript. |
+| `index.src.html` | Page source: hero, options board, chat spiral, how it decides, list, sign-up, footer. `build.mjs` fills in the default plan and board so the page reads without JavaScript. |
 | `test/engine.test.mjs` | Every one of the 564 input states, plus the copy rules (no scores, consensus claims or travel minutes). |
-| `test/browser.mjs` | Playwright checks at desktop and phone sizes: mouse, keyboard, touch drag, reduced motion, no JS, overflow at six widths, console errors. |
+| `test/browser.mjs` | 64 Playwright checks at desktop and phone sizes: mouse, keyboard, touch drag, interruption, hold and nothing-fits states, reduced motion, no JS, overflow at six widths, console errors. |
 
 ## Run it
 
@@ -27,5 +27,6 @@ node test/browser.mjs http://127.0.0.1:8765/index.html ./shots   # needs `playwr
 
 ## Deliberate departures from the current site
 
-- Background is a neutral near-white (`#FBFBFA`), not the brand's warm `#F7F4EE`, and Planic's side is a deep violet field (`#3A2FC0`). Needs the owner's decision before it goes anywhere near `public/`.
-- Two options (street-food crawl, kebab place) extend `docs/redesign/SCENARIO.md`. The default state is unchanged from the scenario.
+- Palette (decided by mona): `#FBFBFA` only where it sharpens the hero's contrast; the brand's `#F7F4EE` stays for the wider page. Planic's plan is a deep violet field (`#3A2FC0`), with ink and coral sections below.
+- Two options (street-food crawl, kebab place) extend `docs/redesign/SCENARIO.md` inside the labelled illustrative demo (approved by mona). The default state is unchanged from the scenario.
+- The sign-up form is a prototype: it validates but never submits.
