@@ -3,8 +3,8 @@
 //   dist/talk-back.html   one self-contained file (CSS and JS inlined) for sharing
 // The default state is rendered at build time, so the page reads correctly without JavaScript.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { evaluate, DEFAULT_ASKS } from './engine.js';
-import { reasonsHTML, tradeHTML, othersHTML } from './view.js';
+import { evaluate, DEFAULT_ASKS, timeShort } from './engine.js';
+import { whyRowsHTML, tradeHTML, boardHTML } from './view.js';
 
 const here = new URL('.', import.meta.url);
 const read = (f) => readFileSync(new URL(f, here), 'utf8');
@@ -15,9 +15,10 @@ const filled = read('index.src.html')
   .replace('{{TITLE}}', esc(r.plan.title))
   .replace('{{META}}', esc(r.plan.meta))
   .replace('{{THEN}}', esc(r.plan.then))
-  .replace('{{REASONS}}', reasonsHTML(r.plan))
+  .replace('{{WHY}}', whyRowsHTML(r))
   .replace('{{TRADE}}', tradeHTML(r.plan))
-  .replace('{{OTHERS}}', othersHTML(r, { interactive: false }));
+  .replace('{{CLOCK}}', timeShort(r.start))
+  .replace('{{BOARD}}', boardHTML(r, { interactive: false }));
 
 writeFileSync(new URL('index.html', here), filled
   .replace('{{STYLE}}', '<link rel="stylesheet" href="hero.css" />')

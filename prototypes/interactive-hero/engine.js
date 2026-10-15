@@ -46,7 +46,7 @@ export function timeLong(m) {
   const { pm } = clock(m);
   return `${timeShort(m)} ${pm ? 'PM' : 'AM'}`;
 }
-const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+export const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /* ---------- the asks, as the group would say them ---------- */
 
@@ -135,6 +135,20 @@ export function planFor(o, asks) {
   return { id: o.id, title, meta, then, reasons, trade };
 }
 
+// Why the pick beat the other options that also fit (rule 2: new first, then cheaper).
+function pickWhy(o, alsoFit) {
+  if (!alsoFit.length) return 'The only option that works for all four';
+  const parts = [];
+  if (o.isNew && alsoFit.some((x) => !x.isNew)) parts.push('it’s new');
+  if (alsoFit.some((x) => x.isNew === o.isNew)) parts.push(o.isNew ? 'it’s the cheapest new one' : 'it’s the cheapest');
+  return `Works for all four, and ${parts.join(', and ')}`;
+}
+
+export function listOf(items) {
+  if (items.length <= 1) return items.join('');
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
 export function evaluate(asks) {
   const rows = OPTIONS.map((o) => {
     const fails = failsFor(o, asks);
@@ -170,9 +184,29 @@ export function evaluate(asks) {
       .map((r) => ({ id: r.o.id, name: r.o.name, text: `${cap(r.fix.text)}.`, patch: r.fix.patch }));
   }
 
+  // Every option in a fixed order, with who it works for: the "options board".
+  const board = rows.map((r) => {
+    const row = r === pick ? null : others.find((x) => x.id === r.o.id);
+    return {
+      id: r.o.id, name: r.o.name, price: priceLabel(r.o), picked: r === pick,
+      fits: !r.fails.length,
+      people: Object.fromEntries(Object.keys(PEOPLE).map((w) => [w, r.fails.find((f) => f.who === w) || null])),
+      why: row ? row.why : pickWhy(r.o, fits.filter((f) => f !== r).map((f) => f.o)),
+      fix: row ? row.fix : null,
+    };
+  });
+
+  // What each person's ask rules out, for the "nothing fits" view.
+  const limits = Object.fromEntries(Object.keys(PEOPLE).map((w) => {
+    const out = rows.filter((r) => r.fails.some((f) => f.who === w)).map((r) => r.o.short);
+    return [w, out];
+  }));
+
   return {
     asks: { ...asks },
     start: startOf(asks),
+    board,
+    limits,
     pick: pick ? pick.o : null,
     plan: pick ? planFor(pick.o, asks) : null,
     others,
