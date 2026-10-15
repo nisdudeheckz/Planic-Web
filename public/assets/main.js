@@ -35,6 +35,55 @@
     items.forEach((el) => el.classList.add('in'));
   }
 
+  // Hero story: many signals → one plan. The markup is the finished state; with motion
+  // allowed it plays once, when it comes into view. The step buttons switch states directly.
+  const story = document.querySelector('.story');
+  if (story) {
+    const steps = story.querySelectorAll('[data-go]');
+    const replay = document.querySelector('.story__replay');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sequence = [[60, 'heard'], [2100, 'weighed'], [5000, 'planned']];
+    let timers = [];
+    let seen = null;
+
+    const stop = () => { timers.forEach(clearTimeout); timers = []; };
+    const setPhase = (phase) => {
+      story.dataset.phase = phase;
+      steps.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.go === phase)));
+    };
+    const play = () => {
+      stop();
+      story.classList.remove('is-manual');
+      story.classList.add('is-resetting');
+      setPhase('pre');
+      void story.offsetWidth; // commit the reset before transitions come back
+      story.classList.remove('is-resetting');
+      sequence.forEach(([t, phase]) => timers.push(setTimeout(() => setPhase(phase), t)));
+    };
+
+    steps.forEach((b) => b.addEventListener('click', () => {
+      stop();
+      if (seen) seen.disconnect(); // the visitor took over; don't autoplay later
+      story.classList.add('is-manual');
+      setPhase(b.dataset.go);
+    }));
+
+    if (!reduce.matches) {
+      if (replay) { replay.hidden = false; replay.addEventListener('click', play); }
+      setPhase('pre');
+      if ('IntersectionObserver' in window) {
+        seen = new IntersectionObserver((entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          seen.disconnect();
+          play();
+        }, { threshold: 0.35 });
+        seen.observe(story);
+      } else {
+        play();
+      }
+    }
+  }
+
   // Footer year
   document.querySelectorAll('[data-year]').forEach((el) => { el.textContent = new Date().getFullYear(); });
 

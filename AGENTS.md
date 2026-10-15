@@ -9,6 +9,8 @@ The static marketing/landing site for Planic, an early-stage group going-out dec
   - `privacy.html` and `contact.html` copy the nav and footer markup from `index.html`. If you change the nav or footer, update all three.
   - `assets/styles.css` is the single stylesheet. Brand tokens live in `:root`.
   - `assets/main.js` is a single IIFE with no dependencies.
+  - The hero's "many signals → one plan" story (`.story`) is authored in its finished state. `main.js` replays it once by setting `data-phase` to `pre` → `heard` → `weighed` → `planned`; CSS for the earlier phases only adds offsets and hides what hasn't happened yet. Keep the finished markup complete so it reads without JS or motion, and keep the `sr-only` summary in sync with the scenario.
+  - `index.html` loads `styles.css` and `main.js` with a `?v=` query because `/assets/*` is cached for 7 days. Bump it whenever either file changes.
 - Forms use Netlify Forms (`data-netlify="true"` plus a `form-name` hidden input and a honeypot). JS submits them as urlencoded POST to `/`. The Forms feature was enabled through the netlify-forms skill's `enable.cjs` script.
 
 ## Conventions
