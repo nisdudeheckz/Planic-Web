@@ -14,9 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..600&display=swap" />
-  <link rel="stylesheet" href="/assets/styles.css" />
+  <link rel="stylesheet" href="/assets/styles.css?v=2" />
   <script>document.documentElement.classList.add('js')</script>
-  <script src="/assets/main.js" defer></script>
+  <script src="/assets/main.js?v=2" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -40,83 +40,99 @@
 
   <main id="main">
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero" aria-labelledby="hero-title">
       <div class="wrap hero__grid">
         <div class="hero__copy">
           <p class="eyebrow load" style="--d:.05s"><span class="dot"></span>Early access · In development</p>
-          <h1 class="hero__title load" style="--d:.12s">
+          <h1 id="hero-title" class="hero__title load" style="--d:.12s">
             Turn <span class="mark">‘let’s go somewhere’</span> into a plan everyone <em>actually</em> wants to do.
           </h1>
           <p class="hero__lede load" style="--d:.22s">
-            Planic understands what your group is actually looking for, weighs everyone’s preferences and constraints, and helps you find an outing you’re genuinely excited about.
+            Everyone wants something different. Planic is being built to weigh the whole group’s tastes, budgets, timing and travel together, then suggest one plan worth saying yes to.
           </p>
           <div class="hero__ctas load" style="--d:.32s">
             <a class="btn btn--coral" href="#early-access">Join Early Access <span class="arrow" aria-hidden="true">→</span></a>
             <a class="btn btn--ghost" href="#how">See How It Works</a>
           </div>
-          <p class="hero__loc load" style="--d:.42s"><span class="pulse" aria-hidden="true"></span>Currently building in New Delhi.</p>
+          <p class="hero__loc load" style="--d:.42s"><span class="dot" aria-hidden="true"></span>Currently building in New Delhi.</p>
         </div>
 
-        <div class="hero__visual load" style="--d:.2s">
-          <div class="stage" aria-label="Concept preview: a group's preferences turning into a single plan" role="img">
-            <div class="blob blob--lav" aria-hidden="true"></div>
-            <div class="blob blob--coral" aria-hidden="true"></div>
+        <!-- Signature visual: many signals → one plan. The markup is the finished state;
+             main.js replays it as three states (heard → weighed → planned) when motion is allowed. -->
+        <figure class="hero__visual load" style="--d:.2s" aria-labelledby="story-cap">
+          <p class="sr-only">
+            Concept demo. Four friends plan Friday night. Aanya wants veg options, Rohan wants somewhere new,
+            Meera wants to spend ₹600 at most and is coming from Noida, and Kabir is free after 7.
+            Planic checks three options against each person. A rooftop lounge is over Meera’s budget, and the usual café
+            isn’t new for Rohan. It suggests board games, then momos, in Hauz Khas on Friday at 7:30 PM, about ₹550 each.
+            The trade-off: Meera has the longest ride, so it starts at 7:30 rather than 7.
+          </p>
+          <div class="story" data-phase="planned">
+            <div class="story__steps" role="group" aria-label="Concept demo steps">
+              <button class="story__step" type="button" data-go="heard" aria-pressed="false"><span class="story__num">01</span>Heard</button>
+              <button class="story__step" type="button" data-go="weighed" aria-pressed="false"><span class="story__num">02</span>Weighed</button>
+              <button class="story__step" type="button" data-go="planned" aria-pressed="true"><span class="story__num">03</span>Planned</button>
+            </div>
 
-            <div class="say say--1" style="--d:.7s"><i class="av av--a">A</i>Veg options pls</div>
-            <div class="say say--2" style="--d:.95s"><i class="av av--r">R</i>Somewhere new!</div>
-            <div class="say say--3" style="--d:1.2s"><i class="av av--m">M</i>Under ₹800?</div>
-            <div class="say say--4" style="--d:1.45s"><i class="av av--k">K</i>Free after 7</div>
+            <div class="story__sheet" aria-hidden="true">
+              <svg class="sprite" width="0" height="0">
+                <symbol id="i-ok" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+                <symbol id="i-no" viewBox="0 0 16 16"><path d="M4.5 4.5l7 7m0-7l-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+              </svg>
 
-            <div class="phone phone--hero" aria-hidden="true">
-              <div class="phone__notch"></div>
-              <div class="screen">
-                <div class="scr-top">
-                  <div>
-                    <small>Friday night</small>
-                    <strong>The usual four</strong>
-                  </div>
-                  <div class="stack"><i class="av av--a">A</i><i class="av av--r">R</i><i class="av av--m">M</i><i class="av av--k">K</i></div>
+              <div class="story__head">
+                <div><small>Friday night</small><b>The usual four</b></div>
+                <div class="stack"><i class="av av--a">A</i><i class="av av--r">R</i><i class="av av--m">M</i><i class="av av--k">K</i></div>
+              </div>
+
+              <ul class="signals">
+                <li class="sig sig--a" style="--n:0"><i class="av av--a">A</i><span class="sig__text"><span class="sig__said">veg options pls</span><span class="sig__means">Veg-friendly</span></span></li>
+                <li class="sig sig--r" style="--n:1"><i class="av av--r">R</i><span class="sig__text"><span class="sig__said">somewhere new!!</span><span class="sig__means">Somewhere new</span></span></li>
+                <li class="sig sig--m" style="--n:2"><i class="av av--m">M</i><span class="sig__text"><span class="sig__said">₹600 max, I’m in Noida</span><span class="sig__means">Under ₹600</span></span></li>
+                <li class="sig sig--k" style="--n:3"><i class="av av--k">K</i><span class="sig__text"><span class="sig__said">anything, free after 7</span><span class="sig__means">After 7 PM</span></span></li>
+              </ul>
+
+              <div class="checks">
+                <div class="checks__head">
+                  <span>Who it works for</span>
+                  <span class="marks"><i class="av av--a">A</i><i class="av av--r">R</i><i class="av av--m">M</i><i class="av av--k">K</i></span>
                 </div>
-
-                <div class="bubble-me seq" style="--d:1.7s">let’s go somewhere tonight?</div>
-
-                <div class="card-intent seq" style="--d:2.1s">
-                  <div class="tag"><span class="spark"></span>Here’s what I’m hearing</div>
-                  <div class="chips">
-                    <span>Food + something fun</span><span>Veg-friendly</span><span>~₹700 each</span><span>After 7 PM</span>
-                  </div>
+                <div class="option is-out" style="--r:0">
+                  <div class="option__name"><b>Rooftop lounge</b><small>Over Meera’s budget</small></div>
+                  <span class="marks"><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="no"><svg><use href="#i-no"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i></span>
                 </div>
-
-                <div class="weigh seq" style="--d:2.6s">
-                  <div class="weigh__label">Weighing options for all four</div>
-                  <div class="opt opt--top seq" style="--d:2.9s">
-                    <div><b>Board-game café</b><small>Hauz Khas · 22 min avg</small></div>
-                    <span class="fit">94%</span>
-                    <i class="bar" style="--w:.94"></i>
-                  </div>
-                  <div class="opt seq" style="--d:3.15s">
-                    <div><b>Bowling &amp; arcade</b><small>Saket · 28 min avg</small></div>
-                    <span class="fit">81%</span>
-                    <i class="bar" style="--w:.81"></i>
-                  </div>
-                  <div class="opt opt--out seq" style="--d:3.4s">
-                    <div><b>Rooftop lounge</b><small>Too far for 2 of you</small></div>
-                    <span class="fit">—</span>
-                  </div>
+                <div class="option is-out" style="--r:1">
+                  <div class="option__name"><b>Our usual café</b><small>Not new for Rohan</small></div>
+                  <span class="marks"><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="no"><svg><use href="#i-no"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i></span>
                 </div>
-
-                <div class="locked seq" style="--d:3.9s">
-                  <div>
-                    <small>Plan everyone’s in on</small>
-                    <b>Board games + momos · 7:30</b>
-                  </div>
-                  <span class="yes">4/4 in</span>
+                <div class="option is-pick" style="--r:2">
+                  <div class="option__name"><b>Board-game café</b><small>Works for all four</small></div>
+                  <span class="marks"><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i><i class="ok"><svg><use href="#i-ok"/></svg></i></span>
                 </div>
+              </div>
+
+              <p class="pending">No plan yet <i><b></b></i></p>
+
+              <div class="ticket">
+                <p class="ticket__kicker"><span>The plan</span><span>Fri · 7:30 PM</span></p>
+                <p class="ticket__title">Board games, then momos</p>
+                <p class="ticket__meta">Hauz Khas · about ₹550 each</p>
+                <div class="ticket__cut"></div>
+                <ul class="ticket__why">
+                  <li><i class="av av--a">A</i>Veg menu</li>
+                  <li><i class="av av--r">R</i>New to all four</li>
+                  <li><i class="av av--m">M</i>Under ₹600</li>
+                  <li><i class="av av--k">K</i>Starts after 7</li>
+                </ul>
+                <p class="ticket__trade"><b>Trade-off</b> Meera has the longest ride, so it starts at 7:30.</p>
               </div>
             </div>
           </div>
-          <p class="concept-note">Concept preview — Planic is still being built.</p>
-        </div>
+          <figcaption class="story__cap" id="story-cap">
+            <span>Concept demo with an illustrative group, not live recommendations.</span>
+            <button class="story__replay" type="button" hidden><span aria-hidden="true">↻</span> Replay</button>
+          </figcaption>
+        </figure>
       </div>
     </section>
 
