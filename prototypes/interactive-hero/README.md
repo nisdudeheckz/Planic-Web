@@ -31,3 +31,7 @@ node test/browser.mjs http://127.0.0.1:8765/index.html ./shots   # needs `playwr
 - Palette (decided by mona): `#FBFBFA` only where it sharpens the hero's contrast; the brand's `#F7F4EE` stays for the wider page. Planic's plan is a deep violet field (`#3A2FC0`), with ink and coral sections below.
 - Two options (street-food crawl, kebab place) extend `docs/redesign/SCENARIO.md` inside the labelled illustrative demo (approved by mona). The default state is unchanged from the scenario.
 - The sign-up form is a prototype: it validates but never submits.
+
+## Status (release candidate, 2026-10-15)
+
+Awaiting mona's review. Nothing has been opened as a PR or deployed. Test results, performance notes and untested gaps (real phones, real screen readers, Safari/Firefox, the shared Artifact as a viewer sees it) are in `/mnt/project-files/planic-redesign/interactive/TEST_REPORT.md`.

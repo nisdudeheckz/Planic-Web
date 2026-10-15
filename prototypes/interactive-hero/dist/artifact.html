@@ -792,6 +792,55 @@ html:not(.js) .join__form, html:not(.js) button.rule__go, html:not(.js) .list__t
   .how { contain-intrinsic-size: auto 950px; } .list { contain-intrinsic-size: auto 815px; }
   .join { contain-intrinsic-size: auto 640px; } .foot { contain-intrinsic-size: auto 400px; }
 }
+
+/* Large desktops (1600px and up): the same split, scaled up, and spare height shared above the
+   content instead of all collecting below it. Laptop widths are unchanged. */
+@media (min-width: 1600px) {
+  h1 { font-size: clamp(3.5rem, 1.2rem + 2.2vw, 4.25rem); }
+  .lede { font-size: 1.0625rem; }
+  .msg__said { font-size: clamp(1.75rem, .9rem + .8vw, 2.125rem); }
+  .why__text { font-size: clamp(1.3125rem, .9rem + .4vw, 1.5rem); }
+  .plan__titlebox { font-size: clamp(5.75rem, 1rem + 4.4vw, 7.25rem); }
+  .plan__meta { font-size: 1.625rem; }
+  .msg, .why { min-height: 86px; }
+  .group__head { padding-top: clamp(88px, calc(88px + (100svh - 900px) * .4), 240px); }
+  .plan__head { padding-top: clamp(76px, calc(76px + (100svh - 900px) * .4), 228px); }
+}
+
+/* ---------- release pass: reading comfort in the lower sections ---------- */
+/* Board: the reason an option fails is the main line; the fix that would change it is secondary. */
+.opt__why { color: rgba(251, 251, 250, .92); font-size: 1rem; line-height: 1.45; }
+.opt__fix { margin-top: 8px; color: rgba(251, 251, 250, .7); font-size: .9375rem; }
+.opt__fix .try { color: var(--day); }
+
+/* Rules: read in order, on one line of headings, with comfortable copy. */
+@media (min-width: 960px) {
+  .how__rules { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px; }
+  .rule:nth-child(2), .rule:nth-child(3) { margin-top: 0; }
+}
+.rule { gap: 14px; }
+.rule h3 { font-size: clamp(1.5rem, 1.1rem + 1vw, 2rem); text-wrap: balance; }
+.rule p { font-size: 1rem; line-height: 1.55; max-width: 38ch; color: rgba(251, 251, 250, .86); }
+.how__head p { font-size: 1.0625rem; color: rgba(251, 251, 250, .86); }
+
+/* Ranked list: dim what dropped out, never the reason it dropped. */
+.list[data-order="ranked"] li.is-out { opacity: 1; }
+.list__items li::before, .li__name { transition: opacity 320ms ease, text-decoration-color 320ms ease; }
+.list[data-order="ranked"] li.is-out::before, .list[data-order="ranked"] li.is-out .li__name { opacity: .55; }
+.li__note { margin-top: 2px; font-size: 1rem; line-height: 1.45; color: var(--ink-soft); }
+.list__head p { font-size: 1.0625rem; }
+.list__note { font-size: .9375rem; }
+
+/* Chat spiral on phones: the name sits above each message, so lines don't strand single words. */
+@media (max-width: 759px) {
+  .spiral__chat { gap: 14px; }
+  .spiral__chat li { font-size: clamp(1.5rem, 6.4vw, 2rem); line-height: 1.08; text-wrap: balance; }
+  .spiral__chat b { display: block; width: fit-content; margin: 0 0 4px; vertical-align: 0; }
+}
+/* wrapped reasons align with their text, not the dot */
+.list[data-order="ranked"] li.is-out .li__note { padding-left: 16px; text-indent: -16px; text-wrap: pretty; }
+/* the person list above already ends in a rule */
+.bend:first-child { border-top: 0; }
 </style>
   <script>document.documentElement.classList.add('js')</script>
   <script type="module">
@@ -2015,6 +2064,12 @@ function wireList() {
     $$('button', tog).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     placeSeg(tog);
     renderList(true, { toggled: true });
+    // Say what changed in one line, rather than reading the whole list again.
+    const pick = $('.list__items li.is-pick .li__name');
+    const out = $$('.list__items li.is-out').length;
+    $('.list__status').textContent = listOrder === 'popular' ? 'Sorted by what’s popular nearby.'
+      : pick ? `Sorted for the usual four. ${pick.textContent} works for all four; ${out} others are ruled out, each with a reason.`
+      : 'Sorted for the usual four. Nothing works for all four yet; each option says why.';
   });
   placeSeg(tog, true);
   new ResizeObserver(() => placeSeg(tog, true)).observe(tog);
@@ -2236,7 +2291,7 @@ window.__planic = { get asks() { return { ...asks }; }, get result() { return re
 
         <div class="plan__head">
           <p class="plan__by"><span>Planic’s plan</span><span class="plan__demo">Illustrative demo</span></p>
-          <div class="plan__change" aria-live="polite" hidden><p class="change__text"></p><button type="button" class="undo">Undo</button></div>
+          <div class="plan__change" hidden><p class="change__text" aria-live="polite"></p><button type="button" class="undo">Undo</button></div>
           <div class="plan__titlebox">
             <h2 class="plan__title" id="plan-title">Board games, then momos</h2>
             <span class="stamp" aria-hidden="true" hidden>Still the plan</span>
@@ -2350,7 +2405,8 @@ window.__planic = { get asks() { return { ...asks }; }, get result() { return re
           <button type="button" aria-pressed="false" data-order="ranked">For the usual four</button>
         </div>
       </div>
-      <ol class="list__items" aria-live="polite">
+      <p class="sr-only list__status" role="status"></p>
+      <ol class="list__items">
         <li data-id="rooftop"><span class="li__name">Rooftop lounge</span><span class="li__note"></span></li>
         <li data-id="brunch"><span class="li__name">Brunch spot</span><span class="li__note"></span></li>
         <li data-id="kebab"><span class="li__name">Kebab place with live music</span><span class="li__note"></span></li>

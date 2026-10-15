@@ -887,6 +887,12 @@ function wireList() {
     $$('button', tog).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
     placeSeg(tog);
     renderList(true, { toggled: true });
+    // Say what changed in one line, rather than reading the whole list again.
+    const pick = $('.list__items li.is-pick .li__name');
+    const out = $$('.list__items li.is-out').length;
+    $('.list__status').textContent = listOrder === 'popular' ? 'Sorted by what’s popular nearby.'
+      : pick ? `Sorted for the usual four. ${pick.textContent} works for all four; ${out} others are ruled out, each with a reason.`
+      : 'Sorted for the usual four. Nothing works for all four yet; each option says why.';
   });
   placeSeg(tog, true);
   new ResizeObserver(() => placeSeg(tog, true)).observe(tog);

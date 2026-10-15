@@ -107,7 +107,7 @@
 
         <div class="plan__head">
           <p class="plan__by"><span>Planic’s plan</span><span class="plan__demo">Illustrative demo</span></p>
-          <div class="plan__change" aria-live="polite" hidden><p class="change__text"></p><button type="button" class="undo">Undo</button></div>
+          <div class="plan__change" hidden><p class="change__text" aria-live="polite"></p><button type="button" class="undo">Undo</button></div>
           <div class="plan__titlebox">
             <h2 class="plan__title" id="plan-title">Board games, then momos</h2>
             <span class="stamp" aria-hidden="true" hidden>Still the plan</span>
@@ -221,7 +221,8 @@
           <button type="button" aria-pressed="false" data-order="ranked">For the usual four</button>
         </div>
       </div>
-      <ol class="list__items" aria-live="polite">
+      <p class="sr-only list__status" role="status"></p>
+      <ol class="list__items">
         <li data-id="rooftop"><span class="li__name">Rooftop lounge</span><span class="li__note"></span></li>
         <li data-id="brunch"><span class="li__name">Brunch spot</span><span class="li__note"></span></li>
         <li data-id="kebab"><span class="li__name">Kebab place with live music</span><span class="li__note"></span></li>
