@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Planic talk-back hero</title>
+  <meta name="description" content="Prototype: change what one of four friends said and watch Planic's illustrative plan answer back." />
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&display=swap" />
+  <style>
+/* Planic "talk back" hero prototype */
+
+:root {
+  --day: #FBFBFA;          /* the group's side: plain daylight, no cream */
+  --ink: #16151B;
+  --ink-soft: #4F4D58;
+  --line: rgba(22, 21, 27, .14);
+  --plan: #3A2FC0;         /* Planic's voice */
+  --plan-deep: #2C2399;
+  --on-plan: #FBFBFA;
+  --on-plan-soft: rgba(251, 251, 250, .78);
+  --on-plan-line: rgba(251, 251, 250, .22);
+  --peri: #7567F8;
+  --coral: #FF6B61;
+  --lav: #B8AEFF;
+  --sun: #F5C76B;
+  --mint: #9ED9B8;
+
+  --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --text: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --gutter: clamp(16px, 4.5vw, 64px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--day);
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+p, h1, h2, h3, ul, ol, fieldset { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+fieldset { border: 0; min-width: 0; }
+button { font: inherit; color: inherit; }
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 12px; top: -60px; z-index: 50; background: var(--ink); color: var(--day); padding: 10px 14px; }
+.skip:focus { top: 12px; }
+:focus-visible { outline: 3px solid var(--peri); outline-offset: 3px; }
+.plan :focus-visible { outline-color: var(--sun); }
+
+/* People */
+[data-who="a"] { --c: var(--coral); }
+[data-who="r"] { --c: var(--lav); }
+[data-who="m"] { --c: var(--sun); }
+[data-who="k"] { --c: var(--mint); }
+
+/* ---------- layout ---------- */
+
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px var(--gutter);
+}
+.wordmark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-family: var(--display); font-weight: 700; font-size: 1.25rem; letter-spacing: -.01em; }
+.wordmark svg { width: 36px; height: 22px; }
+.top__cta { color: var(--ink); font-weight: 600; text-underline-offset: 4px; text-decoration-thickness: 2px; text-decoration-color: var(--coral); }
+
+.group { padding: 8px var(--gutter) 28px; }
+.plan {
+  background: var(--plan);
+  color: var(--on-plan);
+  padding: 32px var(--gutter) 48px;
+}
+
+@media (min-width: 960px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    grid-template-rows: auto 1fr;
+    min-height: 100svh;
+  }
+  .top { grid-column: 1 / -1; grid-row: 1; position: relative; z-index: 2; padding-top: 22px; }
+  .top__cta { color: var(--on-plan); text-decoration-color: var(--sun); }
+  .group { grid-column: 1; grid-row: 2; padding: 24px clamp(28px, 4vw, 64px) 56px var(--gutter); }
+  .plan {
+    grid-column: 2; grid-row: 1 / span 2;
+    padding: 96px var(--gutter) 56px clamp(32px, 4vw, 72px);
+  }
+}
+
+/* ---------- the group's side ---------- */
+
+h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-variation-settings: "opsz" 96;
+  font-size: clamp(1.875rem, 1.2rem + 2.1vw, 3.125rem);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+  max-width: 15ch;
+  text-wrap: balance;
+}
+.lede { margin-top: 14px; max-width: 44ch; color: var(--ink-soft); }
+@media (max-width: 959px) { .lede { font-size: 1rem; } }
+
+.chat { margin-top: 24px; }
+.chat__head { font-weight: 600; font-size: .9375rem; color: var(--ink-soft); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.msg {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 10px; align-items: start;
+  padding: 10px 0; border-bottom: 1px solid var(--line); transition: background-color 160ms ease;
+}
+.msg > * { grid-column: 2; }
+.msg__who { display: contents; font-size: .8125rem; font-weight: 600; color: var(--ink-soft); }
+.msg__who .av { grid-column: 1; grid-row: 1 / span 2; margin-top: 3px; }
+.msg__name { grid-column: 2; grid-row: 1; line-height: 1.3; }
+.av {
+  display: inline-grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--c); color: var(--ink);
+  font-style: normal; font-size: .8125rem; font-weight: 700;
+}
+.msg__said {
+  grid-row: 2;
+  font-family: var(--display);
+  font-weight: 600;
+  font-variation-settings: "opsz" 48;
+  font-size: clamp(1.3125rem, 1.1rem + .7vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -.015em;
+}
+.live {
+  /* a marker stroke in the speaker's colour */
+  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--c) 75%, transparent) 58%);
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  padding: 0 .08em;
+}
+button.live {
+  font: inherit; letter-spacing: inherit; border: 0; margin: 0; cursor: pointer;
+  border-radius: 2px;
+  transition: background-size 160ms var(--ease-out);
+}
+button.live::after {
+  content: ""; display: inline-block; width: .42em; height: .42em; margin-left: .22em; vertical-align: .14em;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px); opacity: .55;
+  transition: transform 160ms var(--ease-out);
+}
+button.live[aria-expanded="true"]::after { transform: rotate(-135deg) translate(-2px, -2px); }
+button.live:hover, button.live[aria-expanded="true"], .msg.is-lit .live {
+  background: color-mix(in srgb, var(--c) 80%, transparent);
+}
+.msg.is-lit { background: color-mix(in srgb, var(--c) 10%, transparent); }
+
+/* Tuners */
+.tune { grid-row: 3; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.tune[hidden] { display: none; }
+.tune label { position: relative; cursor: pointer; }
+.tune input[type="radio"] { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.tune label span {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px;
+  border: 1.5px solid var(--ink); border-radius: 4px;
+  font-weight: 600; font-size: .9375rem;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.tune label:hover span { background: color-mix(in srgb, var(--c) 30%, transparent); }
+.tune input:checked + span { background: var(--ink); color: var(--day); }
+.tune input:focus-visible + span { outline: 3px solid var(--peri); outline-offset: 2px; }
+
+.tune--range { display: block; padding-top: 6px; }
+.tune--range input[type="range"] {
+  -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer;
+  touch-action: pan-y;
+}
+.tune--range input::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--c) var(--pct, 17%), var(--line) var(--pct, 17%)); }
+.tune--range input::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+.tune--range input::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--c); }
+.tune--range input::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 30px; height: 30px; margin-top: -12px; border-radius: 50%;
+  background: var(--ink); border: 4px solid var(--day); box-shadow: 0 0 0 1.5px var(--ink);
+}
+.tune--range input::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); border: 4px solid var(--day); box-shadow: 0 0 0 1.5px var(--ink); }
+.ticks { position: relative; height: 18px; margin: -6px 15px 0; }
+.ticks i {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-style: normal; font-size: .6875rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
+}
+.ticks i::before { content: ""; display: block; width: 1.5px; height: 6px; margin: 0 auto 1px; background: currentColor; }
+.ticks i.is-in { color: var(--ink); }
+.tune__scale { display: flex; justify-content: space-between; font-size: .75rem; color: var(--ink-soft); }
+
+.hint { color: var(--ink); }
+.hint[hidden] { display: none; }
+.btn--plan { display: none; }
+@media (max-width: 959px) {
+  .actions .btn { display: none; }
+  .actions:has(.reset[hidden]) { display: none; }
+  .btn--plan { display: inline-flex; margin-top: 24px; }
+}
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 18px; }
+.btn {
+  display: inline-flex; align-items: center; min-height: 48px; padding: 12px 22px;
+  background: var(--coral); color: var(--ink); text-decoration: none; font-weight: 600; border-radius: 4px;
+  transition: transform 140ms var(--ease-out);
+}
+.btn:active { transform: scale(.97); }
+.reset { background: none; border: 0; padding: 8px 0; cursor: pointer; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.reset[hidden] { display: none; }
+
+/* ---------- Planic's side ---------- */
+
+.plan__by { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; font-size: .9375rem; color: var(--on-plan-soft); }
+.plan__demo { font-weight: 500; }
+
+.plan__change {
+  display: flex; align-items: flex-start; gap: 12px; margin-top: 18px; padding: 10px 12px;
+  background: rgba(251, 251, 250, .1); border-radius: 4px; font-size: .9375rem; line-height: 1.45;
+}
+.plan__change[hidden] { display: none; }
+.plan__change.is-preview { background: transparent; outline: 1.5px dashed var(--on-plan-line); }
+.plan__change.is-preview .change__text::before { content: "If you pick it: "; font-weight: 600; }
+.change__text { flex: 1; }
+.undo { flex: none; background: none; border: 0; padding: 0; cursor: pointer; color: var(--on-plan); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.plan__change.is-preview .undo { visibility: hidden; }
+
+.plan__title {
+  margin-top: 22px;
+  font-family: var(--display);
+  font-weight: 750;
+  font-variation-settings: "opsz" 96;
+  font-size: clamp(2.75rem, 1.2rem + 5vw, 6rem);
+  line-height: .94;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  max-width: 11ch;
+}
+.plan__title .w { display: inline-block; white-space: nowrap; }
+.plan__title .ch { display: inline-block; transform-origin: 0 100%; }
+.plan__title { transform-origin: 0 50%; }
+.plan__meta {
+  margin-top: 16px;
+  font-family: var(--display); font-weight: 500;
+  font-size: clamp(1.1875rem, 1rem + .7vw, 1.625rem); line-height: 1.25; letter-spacing: -.01em;
+  max-width: 30ch;
+}
+.plan__then { margin-top: 6px; color: var(--on-plan-soft); }
+
+.plan__why { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin-top: 26px; }
+.why { padding: 10px 0 12px; border-top: 3px solid var(--c); transition: background-color 160ms ease; }
+.why__who { display: block; font-size: .8125rem; font-weight: 600; color: var(--on-plan-soft); }
+.why__text { display: block; font-weight: 500; line-height: 1.35; }
+.why.is-lit { background: rgba(251, 251, 250, .1); }
+.why.is-hit { animation: hit 700ms var(--ease-out); }
+@keyframes hit { from { background: color-mix(in srgb, var(--c) 45%, transparent); } to { background: transparent; } }
+
+.plan__trade { margin-top: 14px; max-width: 52ch; }
+.trade + .trade { margin-top: 4px; }
+.trade b { font-weight: 700; }
+
+.plan__bends { margin-top: 18px; display: grid; gap: 10px; }
+.plan__bends[hidden] { display: none; }
+.bend { padding: 12px 0; border-top: 1px solid var(--on-plan-line); line-height: 1.4; }
+.bend b { display: block; font-family: var(--display); font-size: 1.25rem; font-weight: 650; }
+
+.is-noplan .plan__then, .is-noplan .plan__why, .is-noplan .plan__trade { display: none; }
+.is-noplan .plan__title { max-width: 13ch; }
+
+.others { margin-top: 34px; }
+.others__head { font-size: .9375rem; font-weight: 600; color: var(--on-plan-soft); padding-bottom: 6px; border-bottom: 1px solid var(--on-plan-line); }
+.others__list { display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1240px) { .others__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; } }
+.other { padding: 10px 0 12px; border-bottom: 1px solid var(--on-plan-line); }
+.other__name { font-family: var(--display); font-weight: 650; font-size: 1.125rem; line-height: 1.2; }
+.other__name s { text-decoration-thickness: 2px; text-decoration-color: var(--strike, var(--on-plan-soft)); }
+.other--fits .other__name s { text-decoration: none; }
+.other--fits .other__name::after { content: "  fits, not picked"; font-family: var(--text); font-size: .8125rem; font-weight: 500; color: var(--on-plan-soft); white-space: pre; }
+.other__why { font-size: .9375rem; color: var(--on-plan-soft); line-height: 1.4; }
+.other__fix { font-size: .9375rem; line-height: 1.4; margin-top: 4px; }
+.try {
+  margin-left: 4px; padding: 4px 10px; min-height: 32px; cursor: pointer;
+  background: transparent; color: var(--on-plan); border: 1.5px solid var(--on-plan); border-radius: 4px; font-weight: 600; font-size: .875rem;
+  transition: background-color 120ms ease, color 120ms ease, transform 140ms var(--ease-out);
+}
+.try:hover { background: var(--on-plan); color: var(--plan); }
+.try:active { transform: scale(.97); }
+@media (pointer: coarse) { .try { min-height: 44px; padding: 8px 14px; } }
+.other.is-flip { animation: flip-in 420ms var(--ease-out); }
+@keyframes flip-in { from { background: rgba(251, 251, 250, .14); } to { background: transparent; } }
+
+.rules { margin-top: 22px; font-size: .9375rem; color: var(--on-plan-soft); }
+.rules summary { cursor: pointer; font-weight: 600; color: var(--on-plan); min-height: 32px; }
+.rules ol { list-style: decimal; padding-left: 1.3em; margin: 8px 0; display: grid; gap: 6px; max-width: 60ch; }
+.rules p { max-width: 60ch; }
+
+/* ---------- after ---------- */
+.after { padding: 56px var(--gutter) 96px; border-top: 1px solid var(--line); }
+.after h2 { font-family: var(--display); font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); letter-spacing: -.02em; line-height: 1.1; max-width: 26ch; }
+.after p { margin-top: 10px; max-width: 56ch; color: var(--ink-soft); }
+
+/* ---------- mobile peek: the answer stays in sight while you tune ---------- */
+.peek {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--plan); color: var(--on-plan);
+  transform: translateY(0); transition: transform 220ms var(--ease-out);
+}
+.peek[hidden] { display: grid; transform: translateY(110%); visibility: hidden; transition: transform 220ms var(--ease-out), visibility 0s 220ms; }
+.peek__label { grid-column: 1; font-size: .75rem; font-weight: 600; color: var(--on-plan-soft); }
+.peek__title { grid-column: 1; font-family: var(--display); font-weight: 700; font-size: 1.25rem; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.peek__go { grid-column: 2; grid-row: 1 / span 2; min-height: 44px; padding: 8px 14px; background: var(--on-plan); color: var(--plan); border: 0; border-radius: 4px; font-weight: 600; cursor: pointer; }
+.peek.is-hit .peek__title { animation: peek-hit 600ms var(--ease-out); }
+@keyframes peek-hit { from { color: var(--sun); } to { color: var(--on-plan); } }
+@media (min-width: 960px) { .peek { display: none !important; } }
+
+/* The value you changed, carried to the plan line it affects */
+.carry {
+  position: fixed; left: 0; top: 0; z-index: 30; pointer-events: none;
+  padding: 2px 8px; border-radius: 3px;
+  background: var(--c); color: var(--ink);
+  font-family: var(--display); font-weight: 650; font-size: 1.125rem; white-space: nowrap;
+}
+
+/* Intro: lines arrive, then the plan answers. Only with JS and motion allowed. */
+.is-intro .msg, .is-intro .why, .is-intro .plan__meta, .is-intro .plan__then, .is-intro .plan__trade, .is-intro .others { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+</style>
+  <script>document.documentElement.classList.add('js')</script>
+  <script type="module">
+// engine.js
+// Planic "talk back" demo engine: a small, fixed, explainable model.
+// Pure functions only (no DOM), so the same code renders the no-JS page at build time,
+// drives the live page, and runs under `node --test`.
+
+const PEOPLE = {
+  a: { name: 'Aanya', tone: 'coral' },
+  r: { name: 'Rohan', tone: 'lav' },
+  m: { name: 'Meera', tone: 'sun' },
+  k: { name: 'Kabir', tone: 'mint' },
+};
+
+// What the group actually said (docs/redesign/SCENARIO.md).
+const DEFAULT_ASKS = Object.freeze({ food: 'veg', novelty: 'new', budget: 600, free: 19 * 60 });
+
+const FREE_STOPS = [17 * 60, 19 * 60, 21 * 60];
+const BUDGET = { min: 200, max: 2500, step: 50 };
+const TRIP_BUFFER = 30; // Meera has the longest trip, so the plan starts 30 min after Kabir is free.
+const MIN_STAY = 120;   // An option needs at least two hours before it closes.
+
+// Illustrative options. No real venues; prices and hours are made up for the demo.
+const OPTIONS = [
+  { id: 'board', name: 'Board-game café', area: 'Hauz Khas', short: 'the board-game café', price: 550, veg: true, isNew: true, closes: 23 * 60 + 30 },
+  { id: 'rooftop', name: 'Rooftop lounge', short: 'the rooftop', price: 2000, plus: true, veg: true, isNew: true, closes: 25 * 60 },
+  { id: 'cafe', name: 'Our usual café', short: 'the usual café', price: 450, veg: true, isNew: false, closes: 23 * 60 },
+  { id: 'brunch', name: 'Brunch spot', short: 'the brunch spot', price: 500, veg: true, isNew: true, closes: 18 * 60 },
+  { id: 'crawl', name: 'Street-food crawl', short: 'the street-food crawl', price: 350, veg: true, isNew: true, closes: 21 * 60 },
+  { id: 'kebab', name: 'Kebab place with live music', short: 'the kebab place', price: 400, veg: false, isNew: true, closes: 24 * 60 },
+];
+
+/* ---------- formatting ---------- */
+
+const rupees = (n) => '₹' + n.toLocaleString('en-IN');
+const priceLabel = (o) => rupees(o.price) + (o.plus ? '+' : '');
+
+function clock(m) {
+  const h24 = Math.floor(m / 60) % 24;
+  const mm = m % 60;
+  const h = h24 % 12 || 12;
+  return { h, mm, pm: h24 >= 12 };
+}
+function timeShort(m) {
+  const { h, mm } = clock(m);
+  return mm ? `${h}:${String(mm).padStart(2, '0')}` : `${h}`;
+}
+function timeLong(m) {
+  const { pm } = clock(m);
+  return `${timeShort(m)} ${pm ? 'PM' : 'AM'}`;
+}
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ---------- the asks, as the group would say them ---------- */
+
+function sayFood(v) { return v === 'veg' ? 'veg options pls' : 'I’ll eat anything'; }
+function sayNovelty(v) { return v === 'new' ? 'somewhere new!!' : 'the usual’s fine'; }
+function sayBudget(v) { return `${rupees(v)} max`; }
+function sayFree(v) { return `free after ${timeShort(v)}`; }
+
+/* ---------- evaluation ---------- */
+
+function startOf(asks) { return asks.free + TRIP_BUFFER; }
+
+function failsFor(o, asks) {
+  const start = startOf(asks);
+  const fails = [];
+  if (asks.food === 'veg' && !o.veg) fails.push({ key: 'food', who: 'a', text: 'Few veg options for Aanya' });
+  if (asks.novelty === 'new' && !o.isNew) fails.push({ key: 'novelty', who: 'r', text: 'Not new for Rohan' });
+  if (o.price > asks.budget) fails.push({ key: 'budget', who: 'm', text: `${priceLabel(o)} each, over Meera’s ${rupees(asks.budget)}` });
+  if (start + MIN_STAY > o.closes) {
+    const text = o.closes <= asks.free
+      ? `Closes at ${timeLong(o.closes)}, before Kabir is free`
+      : `Closes at ${timeLong(o.closes)}, too early for a ${timeShort(start)} start`;
+    fails.push({ key: 'time', who: 'k', text });
+  }
+  return fails;
+}
+
+// The smallest change to the asks that would make this option fit everyone, or null if none can.
+function fixFor(o, fails, asks) {
+  const patch = {};
+  const words = [];
+  for (const f of fails) {
+    if (f.key === 'food') { patch.food = 'any'; words.push('Aanya’s fine without a veg menu'); }
+    if (f.key === 'novelty') { patch.novelty = 'usual'; words.push('Rohan’s fine with the usual'); }
+    if (f.key === 'budget') { patch.budget = o.price; words.push(`Meera stretches to ${rupees(o.price)}`); }
+    if (f.key === 'time') {
+      const ok = FREE_STOPS.filter((t) => t + TRIP_BUFFER + MIN_STAY <= o.closes && t < asks.free);
+      if (!ok.length) return null;
+      patch.free = ok[ok.length - 1];
+      words.push(`Kabir’s free by ${timeShort(patch.free)}`);
+    }
+  }
+  return { patch, text: words.join(' and ') };
+}
+
+function rank(a, b) {
+  if (a.isNew !== b.isNew) return a.isNew ? -1 : 1; // prefer somewhere new
+  return a.price - b.price;                          // then the cheaper one
+}
+
+function planFor(o, asks) {
+  const start = startOf(asks);
+  const meta = `Friday at ${timeLong(start)}${o.area ? ` in ${o.area}` : ''}, about ${priceLabel(o)} each.`;
+  let title = o.name;
+  let then = `Meet there at ${timeLong(start)}.`;
+  const trade = [`Meera has the longest trip, so it starts at ${timeShort(start)} rather than ${timeShort(asks.free)}.`];
+
+  if (o.id === 'board') {
+    if (start <= 20 * 60) {
+      title = 'Board games, then momos';
+      then = `Meet near the metro at ${timeLong(start - 10)}. Momos nearby from ${timeLong(start + 120)}.`;
+    } else {
+      title = 'Board games till close';
+      then = `Meet near the metro at ${timeLong(start - 10)}. Play till ${timeLong(o.closes)}.`;
+      trade.push('It starts late, so there’s no time for momos.');
+    }
+  } else if (o.id === 'crawl') {
+    title = 'A street-food crawl';
+    then = `Meet at ${timeLong(start - 10)}. Done by ${timeLong(o.closes)}.`;
+    trade.push(`It’s an early night: the stalls wind down by ${timeShort(o.closes)}.`);
+  } else if (o.id === 'kebab') {
+    title = 'Kebabs and a live set';
+    then = `Meet at ${timeLong(start - 10)}. Music till late.`;
+  } else if (o.id === 'cafe') {
+    title = 'The usual café';
+  } else if (o.id === 'rooftop') {
+    title = 'A rooftop evening';
+  }
+
+  const reasons = [
+    { who: 'a', text: asks.food === 'veg' ? 'Veg menu' : (o.veg ? 'Veg menu anyway' : 'Few veg dishes, and Aanya’s fine with that') },
+    { who: 'r', text: o.isNew ? 'New to all four' : 'The usual, which Rohan’s fine with' },
+    { who: 'm', text: o.price === asks.budget ? `${priceLabel(o)}, right at her limit` : `About ${priceLabel(o)}, under her ${rupees(asks.budget)}` },
+    { who: 'k', text: `Starts ${timeShort(start)}, after he’s free at ${timeShort(asks.free)}` },
+  ];
+  return { id: o.id, title, meta, then, reasons, trade };
+}
+
+function evaluate(asks) {
+  const rows = OPTIONS.map((o) => {
+    const fails = failsFor(o, asks);
+    return { o, fails, fix: fails.length ? fixFor(o, fails, asks) : null };
+  });
+  const fits = rows.filter((r) => !r.fails.length).sort((x, y) => rank(x.o, y.o));
+  const pick = fits[0] || null;
+
+  // Rows for "why not": everything except the pick, with a plain reason.
+  const others = rows.filter((r) => r !== pick).map((r) => {
+    let why;
+    if (r.fails.length) {
+      why = r.fails.map((f) => f.text).join('; ');
+    } else if (pick.o.isNew && !r.o.isNew) {
+      why = 'Fits everyone, but it isn’t new';
+    } else {
+      why = `Fits everyone, but costs ${rupees(r.o.price - pick.o.price)}${r.o.plus ? '+' : ''} more each`;
+    }
+    const fix = r.fails.length
+      ? (r.fix ? { text: `Fits everyone if ${r.fix.text}.`, patch: r.fix.patch } : { text: 'Can’t fit a Friday evening.', patch: null })
+      : null;
+    return { id: r.o.id, name: r.o.name, price: priceLabel(r.o), fits: !r.fails.length, fails: r.fails, why, fix };
+  });
+
+  let bends = [];
+  if (!pick) {
+    const fixable = rows.filter((r) => r.fix);
+    const least = Math.min(...fixable.map((r) => r.fails.length));
+    bends = fixable
+      .filter((r) => r.fails.length === least)
+      .sort((x, y) => rank(x.o, y.o))
+      .slice(0, 3)
+      .map((r) => ({ id: r.o.id, name: r.o.name, text: `${cap(r.fix.text)}.`, patch: r.fix.patch }));
+  }
+
+  return {
+    asks: { ...asks },
+    start: startOf(asks),
+    pick: pick ? pick.o : null,
+    plan: pick ? planFor(pick.o, asks) : null,
+    others,
+    bends,
+  };
+}
+
+/* ---------- explaining a change ---------- */
+
+function changePhrases(prev, next) {
+  const out = [];
+  if (prev.food !== next.food) out.push(next.food === 'veg' ? 'Aanya wants veg options again' : 'Aanya’s open to anything now');
+  if (prev.novelty !== next.novelty) out.push(next.novelty === 'new' ? 'Rohan wants somewhere new again' : 'Rohan’s fine with the usual now');
+  if (prev.budget !== next.budget) out.push(`Meera’s budget is ${rupees(next.budget)} now`);
+  if (prev.free !== next.free) out.push(`Kabir’s free after ${timeShort(next.free)} now`);
+  return out;
+}
+
+function sameAsks(x, y) {
+  return x.food === y.food && x.novelty === y.novelty && x.budget === y.budget && x.free === y.free;
+}
+
+function explainChange(prevAsks, nextAsks, { reset = false } = {}) {
+  const prev = evaluate(prevAsks);
+  const next = evaluate(nextAsks);
+  const phrases = changePhrases(prevAsks, nextAsks);
+  if (!phrases.length) return { kind: 'none', text: '' };
+  const joined = phrases.map((t, i) => (i < phrases.length - 1 ? t.replace(/ now$/, '') : t)).join(' and ');
+  const lead = reset ? 'Back to what they actually said' : cap(joined);
+
+  if (!next.pick) {
+    return { kind: 'none-fits', text: `${lead}. Nothing fits all four, so Planic won’t guess.` };
+  }
+  const name = next.pick.short;
+  if (!prev.pick) {
+    return { kind: 'new', text: `${lead}, so ${name} fits all four.` };
+  }
+  if (prev.pick.id === next.pick.id) {
+    if (prev.start !== next.start) {
+      return { kind: 'hold', text: `${lead}. Still ${name}, now starting at ${timeLong(next.start)}.` };
+    }
+    const newlyFit = next.others.filter((r) => r.fits && !prev.others.find((p) => p.id === r.id && p.fits));
+    if (newlyFit.length) {
+      const r = newlyFit[0];
+      const o = OPTIONS.find((x) => x.id === r.id);
+      const why = next.pick.isNew && !o.isNew ? 'it isn’t new' : 'it costs more';
+      return { kind: 'hold', text: `${lead}. ${cap(o.short)} fits too, but ${why}, so the plan holds.` };
+    }
+    return { kind: 'hold', text: `${lead}. ${cap(name)} still fits everyone, so the plan holds.` };
+  }
+  const prevRow = next.others.find((r) => r.id === prev.pick.id);
+  if (prevRow && !prevRow.fits) {
+    return { kind: 'new', text: `${lead}, so ${prev.pick.short} is out (${prevRow.fails[0].text.charAt(0).toLowerCase() + prevRow.fails[0].text.slice(1)}). ${cap(name)} fits all four.` };
+  }
+  const better = next.pick.isNew && !prev.pick.isNew
+    ? 'it’s somewhere new'
+    : `it’s ${rupees(prev.pick.price - next.pick.price)} cheaper each`;
+  return { kind: 'new', text: `${lead}, so ${name} fits all four, and ${better}.` };
+}
+
+// view.js
+// HTML string builders shared by the build step (no-JS page) and the live page.
+
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function reasonsHTML(plan) {
+  return plan.reasons.map((r) =>
+    `<li class="why" data-who="${r.who}"><span class="why__who">${PEOPLE[r.who].name}</span><span class="why__text">${esc(r.text)}</span></li>`
+  ).join('');
+}
+
+function tradeHTML(plan) {
+  return plan.trade.map((t, i) => `<p class="trade">${i === 0 ? '<b>Trade-off.</b> ' : ''}${esc(t)}</p>`).join('');
+}
+
+function othersHTML(result, { interactive = true } = {}) {
+  return result.others.map((o) => {
+    const fix = o.fix
+      ? `<p class="other__fix">${esc(o.fix.text)}${o.fix.patch && interactive ? ` <button type="button" class="try" data-patch='${esc(JSON.stringify(o.fix.patch))}'>Try it</button>` : ''}</p>`
+      : '';
+    const strike = o.fails.length ? ` style="--strike: var(--${PEOPLE[o.fails[0].who].tone})"` : '';
+    return `<li class="other${o.fits ? ' other--fits' : ''}" data-id="${o.id}"${strike}>` +
+      `<p class="other__name"><s>${esc(o.name)}</s></p>` +
+      `<p class="other__why">${esc(o.why)}</p>${fix}</li>`;
+  }).join('');
+}
+
+function bendsHTML(result, { interactive = true } = {}) {
+  return result.bends.map((b) =>
+    `<li class="bend" data-id="${b.id}"><b>${esc(b.name)}</b> <span>${esc(b.text)}</span>` +
+    (interactive ? ` <button type="button" class="try" data-patch='${esc(JSON.stringify(b.patch))}'>Try it</button>` : '') +
+    `</li>`
+  ).join('');
+}
+
+const NO_PLAN = {
+  title: 'Not without someone bending',
+  meta: 'Nothing fits all four. Planic won’t pick one and pretend. Each of these needs just one person to give a little:',
+};
+
+// hero.js
+// Planic "talk back" hero: the visitor changes what a friend said, the plan answers.
+
+
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const EASE_OUT = 'cubic-bezier(.23, 1, .32, 1)';
+const EASE_IN_OUT = 'cubic-bezier(.77, 0, .175, 1)';
+const WHO = { food: 'a', novelty: 'r', budget: 'm', free: 'k' };
+const SAY = { food: sayFood, novelty: sayNovelty, budget: sayBudget, free: sayFree };
+
+let asks = { ...DEFAULT_ASKS };
+let result = evaluate(asks);
+const history = [];
+let dragBase = null;
+let introRunning = false;
+let titleJob = 0;
+
+const hero = $('.hero');
+const plan = $('.plan');
+const titleEl = $('.plan__title');
+const changeBox = $('.plan__change');
+const changeText = $('.change__text');
+const peek = $('.peek');
+
+/* ---------- title: retypeset letter by letter ---------- */
+
+function lettersHTML(text) {
+  const words = text.split(' ').map((w) => `<span class="w">${[...w].map((c) => `<span class="ch">${c}</span>`).join('')}</span>`);
+  return `<span class="sr-only">${text}</span><span aria-hidden="true">${words.join(' ')}</span>`;
+}
+
+function setTitle(text, { animate = true } = {}) {
+  const current = titleEl.dataset.text;
+  if (current === text) {
+    // The plan held: a brief nod instead of a rewrite (unless a rewrite is still landing).
+    if (animate && !reduced.matches && !titleEl.getAnimations({ subtree: true }).length) {
+      titleEl.animate(
+        [{ transform: 'none' }, { transform: 'scaleX(.94)' }, { transform: 'none' }],
+        { duration: 420, easing: EASE_IN_OUT },
+      );
+    }
+    return;
+  }
+  const job = ++titleJob;
+  titleEl.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+  titleEl.dataset.text = text;
+  if (!animate || !current) { titleEl.innerHTML = lettersHTML(text); return; }
+  if (reduced.matches) {
+    titleEl.innerHTML = lettersHTML(text);
+    titleEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150 });
+    return;
+  }
+  const old = $$('.ch', titleEl);
+  const outStagger = Math.min(6, 80 / Math.max(old.length, 1));
+  const outs = old.map((ch, i) => ch.animate(
+    [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-.35em)', opacity: 0 }],
+    { duration: 150, delay: i * outStagger, easing: EASE_OUT, fill: 'forwards' },
+  ).finished.catch(() => {}));
+  Promise.all(outs).then(() => {
+    if (job !== titleJob) return;
+    titleEl.innerHTML = lettersHTML(text);
+    const fresh = $$('.ch', titleEl);
+    const inStagger = Math.min(16, 260 / Math.max(fresh.length, 1));
+    fresh.forEach((ch, i) => ch.animate(
+      [
+        // Letters arrive condensed and settle to full width. scaleX rather than the font's width
+        // axis: animating the axis per letter forced layout every frame (long tasks on phones).
+        { transform: 'translateY(.5em) scaleX(.72)', opacity: 0 },
+        { transform: 'none', opacity: 1 },
+      ],
+      { duration: 460, delay: i * inStagger, easing: EASE_OUT, fill: 'backwards' },
+    ));
+  });
+}
+
+/* ---------- render ---------- */
+
+function syncControls() {
+  for (const key of Object.keys(WHO)) {
+    const btn = $(`.live[data-ask="${key}"]`);
+    if (btn) btn.firstChild.textContent = SAY[key](asks[key]);
+  }
+  $$('.tune input[type="radio"]').forEach((r) => { r.checked = String(asks[r.name]) === r.value; });
+  const range = $('#budget');
+  range.value = asks.budget;
+  range.setAttribute('aria-valuetext', rupees(asks.budget));
+  const pct = ((asks.budget - BUDGET.min) / (BUDGET.max - BUDGET.min)) * 100;
+  range.style.setProperty('--pct', pct + '%');
+  // Bigger budget, heavier number: the value's weight follows it.
+  const budgetBtn = $('.live[data-ask="budget"]');
+  if (budgetBtn) budgetBtn.style.fontWeight = Math.round(520 + pct * 2.8);
+  $$('.ticks i').forEach((t) => t.classList.toggle('is-in', +t.dataset.price <= asks.budget));
+  $('.reset').hidden = sameAsks(asks, DEFAULT_ASKS);
+}
+
+function renderPlan(prev, { animate = true } = {}) {
+  const r = result;
+  plan.classList.toggle('is-noplan', !r.plan);
+  if (r.plan) {
+    setTitle(r.plan.title, { animate });
+    $('.plan__meta').textContent = r.plan.meta;
+    $('.plan__then').textContent = r.plan.then;
+    $('.plan__why').innerHTML = reasonsHTML(r.plan);
+    $('.plan__trade').innerHTML = tradeHTML(r.plan);
+    $('.plan__bends').hidden = true;
+  } else {
+    setTitle(NO_PLAN.title, { animate });
+    $('.plan__meta').textContent = NO_PLAN.meta;
+    $('.plan__bends').innerHTML = bendsHTML(r);
+    $('.plan__bends').hidden = false;
+  }
+  $('.others__list').innerHTML = othersHTML(r);
+  // Rows whose verdict changed get a brief flash so the eye finds them.
+  if (prev && animate) {
+    for (const o of r.others) {
+      const before = prev.others.find((p) => p.id === o.id);
+      if (!before || before.why !== o.why) $(`.other[data-id="${o.id}"]`)?.classList.add('is-flip');
+    }
+  }
+  $('.peek__title').textContent = r.plan ? r.plan.title : NO_PLAN.title;
+}
+
+function showChange(text, { preview = false } = {}) {
+  if (!text) return;
+  changeBox.hidden = false;
+  changeBox.classList.toggle('is-preview', preview);
+  changeText.textContent = text;
+  $('.undo').hidden = preview || !history.length;
+}
+
+let lastChange = '';
+function restoreChange() {
+  if (lastChange) showChange(lastChange);
+  else { changeBox.hidden = true; changeBox.classList.remove('is-preview'); }
+}
+
+const PEEK_LABEL = { hold: 'Plan holds', new: 'New plan', 'none-fits': 'Nothing fits yet', none: 'Planic’s plan' };
+function peekLabel(kind) { $('.peek__label').textContent = PEEK_LABEL[kind] || PEEK_LABEL.none; }
+
+/* ---------- carry: the changed value travels to the line it affects ---------- */
+
+function inView(rect) { return rect.bottom > 0 && rect.top < innerHeight && rect.width > 0; }
+
+function carry(key) {
+  if (reduced.matches) return;
+  const who = WHO[key];
+  const from = $(`.live[data-ask="${key}"]`);
+  const peekOn = !peek.hidden && getComputedStyle(peek).display !== 'none';
+  const to = peekOn ? $('.peek__title') : (result.plan ? $(`.why[data-who="${who}"]`) : titleEl);
+  if (!from || !to) return;
+  const a = from.getBoundingClientRect();
+  const b = to.getBoundingClientRect();
+  if (!inView(a) || !inView(b)) { hit(to, peekOn); return; }
+  const chip = document.createElement('span');
+  chip.className = 'carry';
+  chip.dataset.who = who;
+  chip.textContent = SAY[key](asks[key]);
+  document.body.appendChild(chip);
+  const dx = b.left - a.left;
+  const dy = b.top + Math.min(b.height, 40) / 2 - (a.top + a.height / 2);
+  chip.animate(
+    [
+      { transform: `translate(${a.left}px, ${a.top + a.height / 2 - 16}px) scale(1)`, opacity: 1 },
+      { transform: `translate(${a.left + dx * .6}px, ${a.top + a.height / 2 - 16 + dy * .6 - 40}px) scale(.95)`, opacity: 1, offset: .6 },
+      { transform: `translate(${a.left + dx}px, ${a.top + a.height / 2 - 16 + dy}px) scale(.8)`, opacity: 0 },
+    ],
+    { duration: 560, easing: EASE_IN_OUT },
+  ).finished.then(() => { chip.remove(); hit(to, peekOn); }, () => chip.remove());
+}
+
+function hit(el, peekOn) {
+  const target = peekOn ? peek : el;
+  const cls = peekOn ? 'is-hit' : (el.classList.contains('why') ? 'is-hit' : null);
+  if (!cls) return;
+  target.classList.remove(cls);
+  void target.offsetWidth;
+  target.classList.add(cls);
+}
+
+/* ---------- commits ---------- */
+
+function commit(next, { reset = false, undo = false, from = null } = {}) {
+  finishIntro();
+  if (sameAsks(next, asks) && !from) return;
+  const base = from || asks;
+  if (!undo && !sameAsks(base, next)) history.push({ ...base });
+  const prevResult = from ? evaluate(from) : result;
+  const changed = Object.keys(WHO).filter((k) => base[k] !== next[k]);
+  asks = { ...next };
+  result = evaluate(asks);
+  syncControls();
+  renderPlan(prevResult);
+  const ex = explainChange(base, asks, { reset });
+  lastChange = ex.text;
+  showChange(lastChange);
+  peekLabel(ex.kind);
+  changed.forEach((k, i) => setTimeout(() => carry(k), i * 90));
+}
+
+/* Live update while the budget slider moves; committed on release. */
+function live(next) {
+  finishIntro();
+  const prevPick = result.pick && result.pick.id;
+  const prevFits = result.others.filter((o) => o.fits).map((o) => o.id).join();
+  asks = { ...next };
+  result = evaluate(asks);
+  syncControls();
+  const pickChanged = (result.pick && result.pick.id) !== prevPick;
+  renderPlan(null, { animate: pickChanged });
+  if (pickChanged || prevFits !== result.others.filter((o) => o.fits).map((o) => o.id).join()) navigator.vibrate?.(8);
+  const ex = explainChange(dragBase, asks);
+  if (ex.text) showChange(ex.text);
+  peekLabel(ex.kind);
+}
+
+/* ---------- controls ---------- */
+
+function upgradeTokens() {
+  for (const span of $$('span.live')) {
+    const key = span.dataset.ask;
+    const who = PEOPLE[WHO[key]].name;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'live';
+    btn.dataset.ask = key;
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', `tune-${key}`);
+    btn.append(document.createTextNode(span.textContent));
+    const hint = document.createElement('span');
+    hint.className = 'sr-only';
+    hint.textContent = `, change what ${who} said`;
+    btn.append(hint);
+    span.replaceWith(btn);
+  }
+}
+
+function openTune(key, open) {
+  for (const btn of $$('button.live')) {
+    const isThis = btn.dataset.ask === key && open;
+    btn.setAttribute('aria-expanded', String(isThis));
+    $(`#tune-${btn.dataset.ask}`).hidden = !isThis;
+  }
+  if (open) {
+    // Keep the whole tuner above the fold, and above the phone peek bar if it's showing.
+    const r = $(`#tune-${key}`).getBoundingClientRect();
+    const peekH = matchMedia('(max-width: 959px)').matches ? peek.offsetHeight || 72 : 0;
+    const over = r.bottom - (innerHeight - peekH - 16);
+    if (over > 0) scrollBy({ top: over, behavior: reduced.matches ? 'auto' : 'smooth' });
+  }
+}
+
+function buildTicks() {
+  const box = $('.ticks');
+  const labelled = new Set([550, 2000]);
+  box.innerHTML = OPTIONS
+    .filter((o) => o.price >= BUDGET.min && o.price <= BUDGET.max)
+    .map((o) => `<i data-price="${o.price}" style="left:${((o.price - BUDGET.min) / (BUDGET.max - BUDGET.min)) * 100}%">${labelled.has(o.price) ? rupees(o.price) : ''}</i>`)
+    .join('');
+}
+
+const isMouse = (e) => e.pointerType === 'mouse';
+
+function wire() {
+  hero.addEventListener('click', (e) => {
+    const live = e.target.closest('button.live');
+    if (live) { openTune(live.dataset.ask, live.getAttribute('aria-expanded') !== 'true'); return; }
+    const tryBtn = e.target.closest('.try');
+    if (tryBtn) { commit({ ...asks, ...JSON.parse(tryBtn.dataset.patch) }); return; }
+    if (e.target.closest('.reset')) { commit({ ...DEFAULT_ASKS }, { reset: true }); return; }
+    if (e.target.closest('.undo') && history.length) {
+      commit(history.pop(), { undo: true });
+    }
+  });
+
+  hero.addEventListener('change', (e) => {
+    const t = e.target;
+    if (t.type === 'radio') commit({ ...asks, [t.name]: t.name === 'free' ? +t.value : t.value });
+    if (t.id === 'budget') {
+      const base = dragBase || asks;
+      dragBase = null;
+      commit({ ...asks, budget: +t.value }, { from: base });
+    }
+  });
+  $('#budget').addEventListener('input', (e) => {
+    if (!dragBase) dragBase = { ...asks };
+    live({ ...asks, budget: +e.target.value });
+  });
+
+  hero.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = $('button.live[aria-expanded="true"]');
+    if (open) { openTune(open.dataset.ask, false); open.focus(); }
+  });
+
+  // Desktop: point at a choice to see what it would do before you pick it.
+  hero.addEventListener('pointerover', (e) => {
+    if (!isMouse(e)) return;
+    const label = e.target.closest('.tune label');
+    const tryBtn = e.target.closest('.try');
+    let cand = null;
+    if (label) {
+      const input = $('input', label);
+      cand = { ...asks, [input.name]: input.name === 'free' ? +input.value : input.value };
+    } else if (tryBtn) {
+      cand = { ...asks, ...JSON.parse(tryBtn.dataset.patch) };
+    }
+    if (cand && !sameAsks(cand, asks)) showChange(explainChange(asks, cand).text, { preview: true });
+
+    // Point at a reason to see who it's for, or at a person to see what they shaped.
+    const why = e.target.closest('.why');
+    const msg = e.target.closest('.msg');
+    const who = (why || msg)?.dataset.who;
+    $$('.is-lit').forEach((el) => el.classList.remove('is-lit'));
+    if (who) $$(`.msg[data-who="${who}"], .why[data-who="${who}"]`).forEach((el) => el.classList.add('is-lit'));
+  });
+  hero.addEventListener('pointerout', (e) => {
+    if (!isMouse(e)) return;
+    if (e.target.closest('.tune label, .try') && changeBox.classList.contains('is-preview')) restoreChange();
+    if (e.target.closest('.why, .msg') && !e.relatedTarget?.closest?.('.why, .msg')) $$('.is-lit').forEach((el) => el.classList.remove('is-lit'));
+  });
+  hero.addEventListener('focusout', () => { if (changeBox.classList.contains('is-preview')) restoreChange(); });
+
+  // Mobile: keep the answer in sight while the plan itself is off-screen.
+  const narrow = matchMedia('(max-width: 959px)');
+  let titleSeen = true;
+  let chatSeen = true;
+  const updatePeek = () => { peek.hidden = !(narrow.matches && chatSeen && !titleSeen); };
+  new IntersectionObserver(([en]) => { titleSeen = en.intersectionRatio >= .6; updatePeek(); }, { threshold: [0, .6, 1] }).observe(titleEl);
+  new IntersectionObserver(([en]) => { chatSeen = en.isIntersecting; updatePeek(); }, { rootMargin: '0px 0px -80px 0px' }).observe($('.chat'));
+  narrow.addEventListener('change', updatePeek);
+  $('.peek__go').addEventListener('click', () => titleEl.scrollIntoView({ block: 'start', behavior: reduced.matches ? 'auto' : 'smooth' }));
+}
+
+/* ---------- intro: the lines arrive, then the plan answers ---------- */
+
+let introAnims = [];
+function finishIntro() {
+  if (!introRunning) return;
+  introRunning = false;
+  introAnims.forEach((a) => a.cancel());
+  introAnims = [];
+  hero.classList.remove('is-intro');
+  if (result.plan) setTitle(result.plan.title, { animate: false });
+}
+
+function intro() {
+  if (reduced.matches) return;
+  const r = hero.getBoundingClientRect();
+  if (r.top > innerHeight * .5) return;
+  introRunning = true;
+  hero.classList.add('is-intro');
+  titleEl.dataset.text = 'so… where?';
+  titleEl.innerHTML = lettersHTML('so… where?');
+  const fade = (el, delay) => {
+    const a = el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 340, delay, easing: EASE_OUT, fill: 'both' });
+    introAnims.push(a);
+    return a.finished.catch(() => {});
+  };
+  $$('.msg').forEach((m, i) => fade(m, 150 + i * 170));
+  setTimeout(() => {
+    if (!introRunning) return;
+    setTitle(result.plan.title);
+    const rest = [$('.plan__meta'), $('.plan__then'), ...$$('.why'), $('.plan__trade'), $('.others')];
+    Promise.all(rest.map((el, i) => fade(el, 380 + i * 60))).then(() => {
+      if (!introRunning) return;
+      introRunning = false;
+      hero.classList.remove('is-intro');
+      introAnims.forEach((a) => a.cancel());
+      introAnims = [];
+    });
+  }, 1050);
+  const skip = () => finishIntro();
+  addEventListener('pointerdown', skip, { once: true });
+  addEventListener('keydown', skip, { once: true });
+}
+
+/* ---------- start ---------- */
+
+upgradeTokens();
+buildTicks();
+$('.hint').hidden = false;
+titleEl.dataset.text = titleEl.textContent.trim();
+titleEl.innerHTML = lettersHTML(titleEl.dataset.text);
+syncControls();
+renderPlan(null, { animate: false });
+wire();
+intro();
+
+// For tests and debugging only.
+window.__planic = { get asks() { return { ...asks }; }, get result() { return result; }, commit };
+</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <header class="top">
+        <a class="wordmark" href="#main" aria-label="Planic">
+          <svg viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
+          <span>Planic</span>
+        </a>
+        <a class="top__cta" href="#early-access">Join early access</a>
+      </header>
+
+      <div class="group">
+        <h1 id="hero-title">Turn “let’s go somewhere” into a plan everyone actually wants to do.</h1>
+        <p class="lede">Planic is being built in New Delhi to weigh what everyone in your group wants, then suggest one plan with its reasons and its trade-offs.</p>
+
+        <div class="chat" role="group" aria-labelledby="chat-head">
+          <p class="chat__head"><span id="chat-head">The usual four, planning Friday night.</span> <span class="hint" hidden>Change what anyone said, and the plan answers back.</span></p>
+
+          <div class="msg" data-who="a">
+            <p class="msg__who"><i class="av" aria-hidden="true">A</i><span class="msg__name">Aanya</span></p>
+            <p class="msg__said"><span class="live" data-ask="food">veg options pls</span></p>
+            <fieldset class="tune" id="tune-food" data-ask="food" hidden>
+              <legend class="sr-only">What Aanya says about food</legend>
+              <label><input type="radio" name="food" value="veg" checked /><span>veg options pls</span></label>
+              <label><input type="radio" name="food" value="any" /><span>I’ll eat anything</span></label>
+            </fieldset>
+          </div>
+
+          <div class="msg" data-who="r">
+            <p class="msg__who"><i class="av" aria-hidden="true">R</i><span class="msg__name">Rohan</span></p>
+            <p class="msg__said"><span class="live" data-ask="novelty">somewhere new!!</span></p>
+            <fieldset class="tune" id="tune-novelty" data-ask="novelty" hidden>
+              <legend class="sr-only">What Rohan says about where to go</legend>
+              <label><input type="radio" name="novelty" value="new" checked /><span>somewhere new!!</span></label>
+              <label><input type="radio" name="novelty" value="usual" /><span>the usual’s fine</span></label>
+            </fieldset>
+          </div>
+
+          <div class="msg" data-who="m">
+            <p class="msg__who"><i class="av" aria-hidden="true">M</i><span class="msg__name">Meera</span></p>
+            <p class="msg__said"><span class="live" data-ask="budget">₹600 max</span>, coming from Noida</p>
+            <div class="tune tune--range" id="tune-budget" data-ask="budget" hidden>
+              <label class="sr-only" for="budget">Meera’s budget per person</label>
+              <input id="budget" type="range" min="200" max="2500" step="50" value="600" />
+              <div class="ticks" aria-hidden="true"></div>
+              <p class="tune__scale" aria-hidden="true"><span>₹200</span><span>₹2,500</span></p>
+            </div>
+          </div>
+
+          <div class="msg" data-who="k">
+            <p class="msg__who"><i class="av" aria-hidden="true">K</i><span class="msg__name">Kabir</span></p>
+            <p class="msg__said">anything works, <span class="live" data-ask="free">free after 7</span></p>
+            <fieldset class="tune" id="tune-free" data-ask="free" hidden>
+              <legend class="sr-only">When Kabir is free</legend>
+              <label><input type="radio" name="free" value="1020" /><span>after 5</span></label>
+              <label><input type="radio" name="free" value="1140" checked /><span>after 7</span></label>
+              <label><input type="radio" name="free" value="1260" /><span>after 9</span></label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="btn" href="#early-access">Join early access</a>
+          <button class="reset" type="button" hidden>Back to what they said</button>
+        </div>
+      </div>
+
+      <div class="plan" aria-labelledby="plan-title">
+        <p class="plan__by"><span>Planic’s plan</span><span class="plan__demo">Illustrative demo</span></p>
+        <div class="plan__change" aria-live="polite" hidden><p class="change__text"></p><button type="button" class="undo">Undo</button></div>
+        <h2 class="plan__title" id="plan-title">Board games, then momos</h2>
+        <p class="plan__meta">Friday at 7:30 PM in Hauz Khas, about ₹550 each.</p>
+        <p class="plan__then">Meet near the metro at 7:20 PM. Momos nearby from 9:30 PM.</p>
+        <ul class="plan__why" aria-label="Why it works for each person"><li class="why" data-who="a"><span class="why__who">Aanya</span><span class="why__text">Veg menu</span></li><li class="why" data-who="r"><span class="why__who">Rohan</span><span class="why__text">New to all four</span></li><li class="why" data-who="m"><span class="why__who">Meera</span><span class="why__text">About ₹550, under her ₹600</span></li><li class="why" data-who="k"><span class="why__who">Kabir</span><span class="why__text">Starts 7:30, after he’s free at 7</span></li></ul>
+        <div class="plan__trade"><p class="trade"><b>Trade-off.</b> Meera has the longest trip, so it starts at 7:30 rather than 7.</p></div>
+        <ul class="plan__bends" hidden></ul>
+
+        <div class="others">
+          <h3 class="others__head">Why not the others</h3>
+          <ul class="others__list"><li class="other" data-id="rooftop" style="--strike: var(--sun)"><p class="other__name"><s>Rooftop lounge</s></p><p class="other__why">₹2,000+ each, over Meera’s ₹600</p><p class="other__fix">Fits everyone if Meera stretches to ₹2,000.</p></li><li class="other" data-id="cafe" style="--strike: var(--lav)"><p class="other__name"><s>Our usual café</s></p><p class="other__why">Not new for Rohan</p><p class="other__fix">Fits everyone if Rohan’s fine with the usual.</p></li><li class="other" data-id="brunch" style="--strike: var(--mint)"><p class="other__name"><s>Brunch spot</s></p><p class="other__why">Closes at 6 PM, before Kabir is free</p><p class="other__fix">Can’t fit a Friday evening.</p></li><li class="other" data-id="crawl" style="--strike: var(--mint)"><p class="other__name"><s>Street-food crawl</s></p><p class="other__why">Closes at 9 PM, too early for a 7:30 start</p><p class="other__fix">Fits everyone if Kabir’s free by 5.</p></li><li class="other" data-id="kebab" style="--strike: var(--coral)"><p class="other__name"><s>Kebab place with live music</s></p><p class="other__why">Few veg options for Aanya</p><p class="other__fix">Fits everyone if Aanya’s fine without a veg menu.</p></li></ul>
+        </div>
+
+        <details class="rules">
+          <summary>How this demo decides</summary>
+          <ol>
+            <li>An option has to work for every ask: Aanya’s food, Rohan’s “somewhere new”, Meera’s budget and Kabir’s time. It starts half an hour after Kabir is free, because Meera has the longest trip, and it needs two hours before the place closes.</li>
+            <li>If more than one works, it prefers somewhere new, then the cheaper one.</li>
+            <li>If nothing works, it doesn’t guess. It shows what each option would need, so the group can decide.</li>
+          </ol>
+          <p>Four made-up friends, six made-up options and three fixed rules. Nothing here is a live recommendation, a real venue or a real price.</p>
+        </details>
+        <a class="btn btn--plan" href="#early-access">Join early access</a>
+      </div>
+    </section>
+
+    <section class="after" id="early-access" aria-labelledby="after-title">
+      <h2 id="after-title">The rest of the page isn’t part of this prototype.</h2>
+      <p>This is a test of one interaction. The early-access form and the other sections stay as they are on the live site until a direction is chosen.</p>
+    </section>
+  </main>
+
+  <div class="peek" hidden>
+    <p class="peek__label">Planic’s plan</p>
+    <p class="peek__title"></p>
+    <button type="button" class="peek__go">See why</button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Planic talk-back hero</title>
+  <meta name="description" content="Prototype: change what one of four friends said and watch Planic's illustrative plan answer back." />
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&display=swap" />
+  {{STYLE}}
+  <script>document.documentElement.classList.add('js')</script>
+  {{SCRIPT}}
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <header class="top">
+        <a class="wordmark" href="#main" aria-label="Planic">
+          <svg viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
+          <span>Planic</span>
+        </a>
+        <a class="top__cta" href="#early-access">Join early access</a>
+      </header>
+
+      <div class="group">
+        <h1 id="hero-title">Turn “let’s go somewhere” into a plan everyone actually wants to do.</h1>
+        <p class="lede">Planic is being built in New Delhi to weigh what everyone in your group wants, then suggest one plan with its reasons and its trade-offs.</p>
+
+        <div class="chat" role="group" aria-labelledby="chat-head">
+          <p class="chat__head"><span id="chat-head">The usual four, planning Friday night.</span> <span class="hint" hidden>Change what anyone said, and the plan answers back.</span></p>
+
+          <div class="msg" data-who="a">
+            <p class="msg__who"><i class="av" aria-hidden="true">A</i><span class="msg__name">Aanya</span></p>
+            <p class="msg__said"><span class="live" data-ask="food">veg options pls</span></p>
+            <fieldset class="tune" id="tune-food" data-ask="food" hidden>
+              <legend class="sr-only">What Aanya says about food</legend>
+              <label><input type="radio" name="food" value="veg" checked /><span>veg options pls</span></label>
+              <label><input type="radio" name="food" value="any" /><span>I’ll eat anything</span></label>
+            </fieldset>
+          </div>
+
+          <div class="msg" data-who="r">
+            <p class="msg__who"><i class="av" aria-hidden="true">R</i><span class="msg__name">Rohan</span></p>
+            <p class="msg__said"><span class="live" data-ask="novelty">somewhere new!!</span></p>
+            <fieldset class="tune" id="tune-novelty" data-ask="novelty" hidden>
+              <legend class="sr-only">What Rohan says about where to go</legend>
+              <label><input type="radio" name="novelty" value="new" checked /><span>somewhere new!!</span></label>
+              <label><input type="radio" name="novelty" value="usual" /><span>the usual’s fine</span></label>
+            </fieldset>
+          </div>
+
+          <div class="msg" data-who="m">
+            <p class="msg__who"><i class="av" aria-hidden="true">M</i><span class="msg__name">Meera</span></p>
+            <p class="msg__said"><span class="live" data-ask="budget">₹600 max</span>, coming from Noida</p>
+            <div class="tune tune--range" id="tune-budget" data-ask="budget" hidden>
+              <label class="sr-only" for="budget">Meera’s budget per person</label>
+              <input id="budget" type="range" min="200" max="2500" step="50" value="600" />
+              <div class="ticks" aria-hidden="true"></div>
+              <p class="tune__scale" aria-hidden="true"><span>₹200</span><span>₹2,500</span></p>
+            </div>
+          </div>
+
+          <div class="msg" data-who="k">
+            <p class="msg__who"><i class="av" aria-hidden="true">K</i><span class="msg__name">Kabir</span></p>
+            <p class="msg__said">anything works, <span class="live" data-ask="free">free after 7</span></p>
+            <fieldset class="tune" id="tune-free" data-ask="free" hidden>
+              <legend class="sr-only">When Kabir is free</legend>
+              <label><input type="radio" name="free" value="1020" /><span>after 5</span></label>
+              <label><input type="radio" name="free" value="1140" checked /><span>after 7</span></label>
+              <label><input type="radio" name="free" value="1260" /><span>after 9</span></label>
+            </fieldset>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="btn" href="#early-access">Join early access</a>
+          <button class="reset" type="button" hidden>Back to what they said</button>
+        </div>
+      </div>
+
+      <div class="plan" aria-labelledby="plan-title">
+        <p class="plan__by"><span>Planic’s plan</span><span class="plan__demo">Illustrative demo</span></p>
+        <div class="plan__change" aria-live="polite" hidden><p class="change__text"></p><button type="button" class="undo">Undo</button></div>
+        <h2 class="plan__title" id="plan-title">{{TITLE}}</h2>
+        <p class="plan__meta">{{META}}</p>
+        <p class="plan__then">{{THEN}}</p>
+        <ul class="plan__why" aria-label="Why it works for each person">{{REASONS}}</ul>
+        <div class="plan__trade">{{TRADE}}</div>
+        <ul class="plan__bends" hidden></ul>
+
+        <div class="others">
+          <h3 class="others__head">Why not the others</h3>
+          <ul class="others__list">{{OTHERS}}</ul>
+        </div>
+
+        <details class="rules">
+          <summary>How this demo decides</summary>
+          <ol>
+            <li>An option has to work for every ask: Aanya’s food, Rohan’s “somewhere new”, Meera’s budget and Kabir’s time. It starts half an hour after Kabir is free, because Meera has the longest trip, and it needs two hours before the place closes.</li>
+            <li>If more than one works, it prefers somewhere new, then the cheaper one.</li>
+            <li>If nothing works, it doesn’t guess. It shows what each option would need, so the group can decide.</li>
+          </ol>
+          <p>Four made-up friends, six made-up options and three fixed rules. Nothing here is a live recommendation, a real venue or a real price.</p>
+        </details>
+        <a class="btn btn--plan" href="#early-access">Join early access</a>
+      </div>
+    </section>
+
+    <section class="after" id="early-access" aria-labelledby="after-title">
+      <h2 id="after-title">The rest of the page isn’t part of this prototype.</h2>
+      <p>This is a test of one interaction. The early-access form and the other sections stay as they are on the live site until a direction is chosen.</p>
+    </section>
+  </main>
+
+  <div class="peek" hidden>
+    <p class="peek__label">Planic’s plan</p>
+    <p class="peek__title"></p>
+    <button type="button" class="peek__go">See why</button>
+  </div>
+</body>
+</html>
