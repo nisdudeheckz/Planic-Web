@@ -17,4 +17,5 @@ The static marketing/landing site for Planic, an early-stage group going-out dec
 - Brand palette only: ink `#111216`, periwinkle `#7567F8` (primary), coral `#FF6B61` (CTAs and confirmation), lavender `#B8AEFF`, off-white `#F7F4EE`, text `#17171A`, neutral `#E9E5DE`. Coral buttons use ink text for contrast.
 - Animate only `transform` and `opacity`. Hidden-until-revealed states are scoped under `html.js`, so the page renders fully without JS. Honour `prefers-reduced-motion` (already handled globally).
 - Scroll reveal: add the `.reveal` class. JS adds `.in` when the element is visible. A `--i` variable staggers the delay.
+- One story: every example uses the illustrative group and plan in `docs/redesign/SCENARIO.md`. Keep names, budgets, options and times consistent across the hero, problem, how-it-works, preview and differentiator. Show reasons and trade-offs, not fit scores, consensus claims or travel times.
 - Content integrity: never add invented traction, testimonials, investors, partners, user counts or launch dates. Product UI is labelled as a concept or early preview. Venue examples are generic place types, not real businesses.

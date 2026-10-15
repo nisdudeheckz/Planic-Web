@@ -84,6 +84,17 @@
     }
   }
 
+  // The preview rail is a keyboard stop only while it actually scrolls (narrow screens)
+  const rail = document.querySelector('.rail');
+  if (rail) {
+    const syncRail = () => {
+      if (rail.scrollWidth > rail.clientWidth + 1) rail.setAttribute('tabindex', '0');
+      else rail.removeAttribute('tabindex');
+    };
+    syncRail();
+    window.addEventListener('resize', syncRail, { passive: true });
+  }
+
   // Footer year
   document.querySelectorAll('[data-year]').forEach((el) => { el.textContent = new Date().getFullYear(); });
 

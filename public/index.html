@@ -14,9 +14,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..600&display=swap" />
-  <link rel="stylesheet" href="/assets/styles.css?v=2" />
+  <link rel="stylesheet" href="/assets/styles.css?v=3" />
   <script>document.documentElement.classList.add('js')</script>
-  <script src="/assets/main.js?v=2" defer></script>
+  <script src="/assets/main.js?v=3" defer></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -81,7 +81,14 @@
               </svg>
 
               <div class="story__head">
-                <div><small>Friday night</small><b>The usual four</b></div>
+                <div>
+                  <small>The usual four · Friday night</small>
+                  <b class="story__now">
+                    <span class="now--heard">Four people, four different asks</span>
+                    <span class="now--weighed">Every option, checked with everyone</span>
+                    <span class="now--planned">One plan, and its trade-off</span>
+                  </b>
+                </div>
                 <div class="stack"><i class="av av--a">A</i><i class="av av--r">R</i><i class="av av--m">M</i><i class="av av--k">K</i></div>
               </div>
 
@@ -136,85 +143,91 @@
       </div>
     </section>
 
-    <!-- PROBLEM -->
+    <!-- PROBLEM: the same four people, before Planic. Text must match docs/redesign/SCENARIO.md -->
     <section class="problem" aria-labelledby="problem-title">
-      <div class="wrap problem__inner">
-        <h2 id="problem-title" class="problem__title reveal">So… what are we doing?</h2>
-        <div class="chat reveal" aria-label="A typical group chat">
-          <div class="msg" style="--i:0"><i class="av av--a">A</i><p>I want food.</p></div>
-          <div class="msg msg--r" style="--i:1"><p>I want something fun.</p><i class="av av--r">R</i></div>
-          <div class="msg" style="--i:2"><i class="av av--m">M</i><p>Not too far.</p></div>
-          <div class="msg msg--r" style="--i:3"><p>Anything works.</p><i class="av av--k">K</i></div>
-          <div class="msg msg--q" style="--i:4"><i class="av av--a">A</i><p>Where should we go?</p></div>
-          <div class="msg msg--typing" style="--i:5" aria-hidden="true"><p><span></span><span></span><span></span></p></div>
+      <div class="wrap problem__grid">
+        <div class="problem__head">
+          <p class="kicker kicker--lav reveal">The usual four · Friday</p>
+          <h2 id="problem-title" class="problem__title reveal">So… what are we doing?</h2>
         </div>
-        <p class="problem__answer reveal">Planic is built to <span>solve that.</span></p>
+
+        <ol class="chat reveal" aria-label="Example group chat">
+          <li class="msg" style="--i:0"><i class="av av--r" aria-hidden="true">R</i><p><b class="msg__who">Rohan<span class="sr-only">:</span></b>ok so what are we doing friday?</p></li>
+          <li class="msg msg--me" style="--i:1"><p><b class="msg__who">Aanya<span class="sr-only">:</span></b>food! but <span class="cue cue--a">veg options</span> pls</p></li>
+          <li class="msg" style="--i:2"><i class="av av--r" aria-hidden="true">R</i><p><b class="msg__who">Rohan<span class="sr-only">:</span></b><span class="cue cue--r">somewhere new</span>, not the usual café again</p></li>
+          <li class="msg" style="--i:3"><i class="av av--m" aria-hidden="true">M</i><p><b class="msg__who">Meera<span class="sr-only">:</span></b>coming from <span class="cue cue--m">Noida</span>, and <span class="cue cue--m">₹600 max</span></p></li>
+          <li class="msg" style="--i:4"><i class="av av--k" aria-hidden="true">K</i><p><b class="msg__who">Kabir<span class="sr-only">:</span></b>anything works, I’m <span class="cue cue--k">free after 7</span></p></li>
+          <li class="msg msg--me" style="--i:5"><p><b class="msg__who">Aanya<span class="sr-only">:</span></b>so… where?</p></li>
+          <li class="msg msg--typing" style="--i:6" aria-hidden="true"><i class="av av--r">R</i><p><span></span><span></span><span></span></p></li>
+        </ol>
+
+        <div class="problem__outro">
+          <p class="tally reveal"><span><b>6</b> messages</span><span><b>4</b> different asks</span><span><b>0</b> plans</span></p>
+          <p class="problem__answer reveal" style="--i:1">Planic is built to <span>solve that.</span></p>
+        </div>
       </div>
     </section>
 
-    <!-- HOW IT WORKS -->
+    <!-- HOW IT WORKS: one connected flow that reuses the hero's pieces (chips, ticket) -->
     <section class="how" id="how" aria-labelledby="how-title">
       <div class="wrap">
-        <div class="section-head reveal">
-          <p class="kicker">How it works</p>
-          <h2 id="how-title">From vague idea to solid plan.</h2>
+        <div class="section-head section-head--split reveal">
+          <div>
+            <p class="kicker">How it works</p>
+            <h2 id="how-title">From vague idea to solid plan.</h2>
+          </div>
+          <p class="section-head__aside">The same Friday night, step by step. The examples show the experience we’re designing, not a finished app.</p>
         </div>
 
-        <ol class="steps">
-          <li class="step step--1 reveal">
-            <div class="step__art" aria-hidden="true">
-              <div class="typer">
-                <span class="typer__text">something chill but not boring, after work</span><span class="caret"></span>
-              </div>
-              <div class="mood"><span class="on">Chill</span><span class="on">Food</span><span>Live music</span><span>Outdoors</span></div>
+        <ol class="flow">
+          <li class="flow__step reveal" style="--i:0">
+            <span class="flow__num" aria-hidden="true">01</span>
+            <div class="flow__body">
+              <h3>Say what you’re after</h3>
+              <p>Describe the outing the way you’d text it. No filters, no forms.</p>
             </div>
-            <div class="step__body">
-              <span class="step__num">01</span>
-              <h3>Tell Planic what you’re feeling</h3>
-              <p>Describe what you want to do naturally.</p>
+            <div class="flow__art ask" aria-hidden="true">
+              <p class="ask__who"><i class="av av--r">R</i>Rohan, for the usual four</p>
+              <p class="ask__text">something new on friday after 7, nothing too pricey<span class="caret"></span></p>
             </div>
           </li>
 
-          <li class="step step--2 reveal">
-            <div class="step__art" aria-hidden="true">
-              <div class="orbit">
-                <div class="orbit__core"><i class="av av--a">A</i><i class="av av--r">R</i><i class="av av--m">M</i><i class="av av--k">K</i></div>
-                <span class="o o1">Preferences</span>
-                <span class="o o2">Budget</span>
-                <span class="o o3">Location</span>
-                <span class="o o4">Timing</span>
-                <span class="o o5">Context</span>
-              </div>
+          <li class="flow__step flow__step--key reveal" style="--i:1">
+            <span class="flow__num" aria-hidden="true">02</span>
+            <div class="flow__body">
+              <h3>Planic weighs everyone together</h3>
+              <p>Each person’s tastes and limits are designed to shape the result, and you can see how.</p>
             </div>
-            <div class="step__body">
-              <span class="step__num">02</span>
-              <h3>Planic understands the group</h3>
-              <p>Preferences, constraints, location, timing and context are considered together.</p>
+            <div class="flow__art effects">
+              <ul aria-label="How each person’s ask changes the plan">
+                <li><span class="chip"><i class="av av--a" aria-hidden="true">A</i>Veg options</span><span><span class="effects__arrow" aria-hidden="true">→</span>Only places with a veg menu</span></li>
+                <li><span class="chip"><i class="av av--r" aria-hidden="true">R</i>Somewhere new</span><span><span class="effects__arrow" aria-hidden="true">→</span>The usual café is set aside</span></li>
+                <li><span class="chip"><i class="av av--m" aria-hidden="true">M</i>₹600 max</span><span><span class="effects__arrow" aria-hidden="true">→</span>The rooftop lounge is set aside</span></li>
+                <li><span class="chip"><i class="av av--m" aria-hidden="true">M</i>From Noida</span><span><span class="effects__arrow" aria-hidden="true">→</span>Start moves from 7 to 7:30</span></li>
+              </ul>
             </div>
           </li>
 
-          <li class="step step--3 reveal">
-            <div class="step__art" aria-hidden="true">
-              <div class="plan-mini">
-                <small>Saturday · 6:00 PM</small>
-                <b>Street-food walk, then dessert</b>
-                <span>Chandni Chowk · ₹450 each</span>
-              </div>
-              <div class="yeses">
-                <span style="--i:0">Yes!</span><span style="--i:1">I’m in</span><span style="--i:2">Perfect</span>
-              </div>
+          <li class="flow__step reveal" style="--i:2">
+            <span class="flow__num" aria-hidden="true">03</span>
+            <div class="flow__body">
+              <h3>Get one plan you can act on</h3>
+              <p>One suggestion with its reasons. Go with it, tweak it, or send it to the group.</p>
             </div>
-            <div class="step__body">
-              <span class="step__num">03</span>
-              <h3>Get a plan worth saying yes to</h3>
-              <p>Planic helps you arrive at a recommendation your group is actually likely to enjoy.</p>
+            <div class="flow__art plan-step" aria-hidden="true">
+              <div class="ticket ticket--mini">
+                <p class="ticket__kicker"><span>The plan</span><span>Fri · 7:30 PM</span></p>
+                <p class="ticket__title">Board games, then momos</p>
+                <p class="ticket__meta">Hauz Khas · about ₹550 each</p>
+              </div>
+              <p class="actions"><span>Sounds good</span><span>Swap a stop</span><span>Send to group</span></p>
             </div>
           </li>
         </ol>
       </div>
     </section>
 
-    <!-- PRODUCT PREVIEW -->
+    <!-- PRODUCT PREVIEW: three concept screens for the same plan -->
     <section class="preview" aria-labelledby="preview-title">
       <div class="wrap">
         <div class="section-head section-head--split reveal">
@@ -222,120 +235,100 @@
             <p class="badge"><span class="dot"></span>Early product preview</p>
             <h2 id="preview-title">Built around how people actually decide.</h2>
           </div>
-          <p class="section-head__aside">A glimpse of the mobile experience we’re designing. Screens are concepts and will change as we build.</p>
+          <p class="section-head__aside">Three concept screens from the mobile experience we’re designing. People, places and prices are illustrative, and the screens will change as we build.</p>
         </div>
       </div>
 
-      <div class="rail" tabindex="0" aria-label="Product preview screens">
+      <div class="rail" tabindex="0" role="region" aria-label="Product preview screens, scrollable">
         <div class="rail__track">
-          <!-- Screen 1 -->
           <figure class="pv reveal" style="--i:0">
             <div class="phone">
-              <div class="phone__notch"></div>
+              <div class="phone__notch" aria-hidden="true"></div>
               <div class="screen">
-                <p class="scr-step">1 / 4</p>
-                <h4 class="scr-title">What are we feeling?</h4>
-                <div class="field">something chill but not boring after work<span class="caret"></span></div>
-                <div class="chipgrid">
-                  <span class="on">Food</span><span class="on">Chill</span><span>Active</span><span class="on">Fun</span><span>Live music</span><span>Outdoors</span>
-                </div>
-                <div class="rowkv"><span>When</span><b>Fri · 7:00 PM</b></div>
-                <div class="rowkv"><span>Budget</span><b>Up to ₹800</b></div>
-                <div class="slider"><i style="--w:.55"></i></div>
-                <div class="scr-cta">Find our plan</div>
-              </div>
-            </div>
-            <figcaption>Start with a feeling, not a search.</figcaption>
-          </figure>
-
-          <!-- Screen 2 -->
-          <figure class="pv reveal" style="--i:1">
-            <div class="phone">
-              <div class="phone__notch"></div>
-              <div class="screen">
-                <p class="scr-step">2 / 4</p>
-                <h4 class="scr-title">Your group</h4>
+                <p class="scr-step">Concept · 1 of 3</p>
+                <p class="scr-title">The usual four</p>
                 <ul class="members">
                   <li><i class="av av--a">A</i><div><b>Aanya</b><span><em>Veg</em><em>Food first</em></span></div></li>
-                  <li><i class="av av--r">R</i><div><b>Rohan</b><span><em>Something new</em><em>Games</em></span></div></li>
-                  <li><i class="av av--m">M</i><div><b>Meera</b><span><em>From Noida</em><em>Under ₹600</em></span></div></li>
-                  <li><i class="av av--k">K</i><div><b>Kabir</b><span><em>Anything works</em></span></div></li>
+                  <li><i class="av av--r">R</i><div><b>Rohan</b><span><em>Somewhere new</em></span></div></li>
+                  <li><i class="av av--m">M</i><div><b>Meera</b><span><em>From Noida</em><em>₹600 max</em></span></div></li>
+                  <li><i class="av av--k">K</i><div><b>Kabir</b><span><em>Free after 7</em></span></div></li>
                 </ul>
-                <div class="note"><span class="spark"></span>Keeping it central so no one travels over 30 min.</div>
+                <div class="note"><span class="spark"></span>Meera has the longest trip, so a central area and a later start come first.</div>
               </div>
             </div>
-            <figcaption>Everyone’s input, weighed together.</figcaption>
+            <figcaption>Everyone’s asks, side by side.</figcaption>
           </figure>
 
-          <!-- Screen 3 -->
-          <figure class="pv reveal" style="--i:2">
+          <figure class="pv pv--lead reveal" style="--i:1">
             <div class="phone">
-              <div class="phone__notch"></div>
+              <div class="phone__notch" aria-hidden="true"></div>
               <div class="screen">
-                <p class="scr-step">3 / 4</p>
-                <h4 class="scr-title">Ranked for your group</h4>
+                <p class="scr-step">Concept · 2 of 3</p>
+                <p class="scr-title">What works for everyone</p>
                 <ol class="ranked">
-                  <li class="r1" style="--j:0"><span class="rk">1</span><div><b>Board-game café</b><small>Veg menu · ₹550 each · 22 min avg</small></div><span class="fit">94</span></li>
-                  <li style="--j:1"><span class="rk">2</span><div><b>Bowling &amp; arcade</b><small>New for Rohan · ₹700 each</small></div><span class="fit">81</span></li>
-                  <li style="--j:2"><span class="rk">3</span><div><b>Open-mic café</b><small>Chill · ₹500 each · 35 min avg</small></div><span class="fit">74</span></li>
+                  <li class="r1"><div><b>Board-game café</b><small>Veg menu · new to all four · about ₹550</small></div><span class="tag tag--pick">Best fit</span></li>
+                  <li><div><b>Our usual café</b><small>Not new for Rohan</small></div><span class="tag">Set aside</span></li>
+                  <li><div><b>Rooftop lounge</b><small>₹2,000+, over Meera’s ₹600</small></div><span class="tag">Set aside</span></li>
                 </ol>
-                <div class="why"><b>Why #1?</b> Fits Meera’s budget, has Aanya’s veg options, and it’s new for Rohan.</div>
+                <div class="why"><b>Why this one?</b> A veg menu for Aanya, new for Rohan, under ₹600 for Meera, and open late for Kabir.</div>
               </div>
             </div>
             <figcaption>Fewer options, clearer reasons.</figcaption>
           </figure>
 
-          <!-- Screen 4 -->
-          <figure class="pv reveal" style="--i:3">
+          <figure class="pv reveal" style="--i:2">
             <div class="phone phone--ink">
-              <div class="phone__notch"></div>
+              <div class="phone__notch" aria-hidden="true"></div>
               <div class="screen">
-                <p class="scr-step">4 / 4</p>
-                <h4 class="scr-title">Your plan</h4>
+                <p class="scr-step">Concept · 3 of 3</p>
+                <p class="scr-title">Your plan</p>
                 <div class="final">
                   <small>Friday · Hauz Khas</small>
                   <b>Board games, then momos</b>
                   <ul class="timeline">
-                    <li><time>7:15</time>Meet at the metro gate</li>
+                    <li><time>7:20</time>Meet near the metro</li>
                     <li><time>7:30</time>Board-game café</li>
-                    <li><time>9:30</time>Momos down the lane</li>
+                    <li><time>9:30</time>Momos nearby</li>
                   </ul>
                 </div>
-                <div class="voters"><div class="stack"><i class="av av--a">A</i><i class="av av--r">R</i><i class="av av--m">M</i><i class="av av--k">K</i></div><span>4 of 4 are in</span></div>
-                <div class="scr-cta scr-cta--coral">Send to group</div>
+                <div class="tradeoff"><b>Trade-off</b> Starts at 7:30 so Meera isn’t rushing from Noida.</div>
+                <div class="scr-cta scr-cta--coral">Send to the group</div>
+                <div class="scr-cta scr-cta--ghost">Suggest a change</div>
               </div>
             </div>
-            <figcaption>One plan. Everybody’s in.</figcaption>
+            <figcaption>One plan, ready to share.</figcaption>
           </figure>
         </div>
       </div>
+      <p class="rail__hint" aria-hidden="true">Swipe to see all three screens →</p>
     </section>
 
-    <!-- DIFFERENTIATOR -->
+    <!-- DIFFERENTIATOR: the same places, ranked two ways -->
     <section class="diff" aria-labelledby="diff-title">
       <div class="wrap diff__grid">
         <div class="diff__copy reveal">
           <p class="kicker">Why Planic</p>
           <h2 id="diff-title">Not another place to browse.</h2>
-          <p>Planic isn’t here to show you everything. It’s here to help you choose something you’re unlikely to regret.</p>
+          <p>A list of popular places tells you what’s good around here. Your group needs to know what works for all four of you on Friday. Planic is being built for the second question.</p>
         </div>
 
         <div class="compare reveal">
+          <p class="compare__note">Illustrative example</p>
           <div class="col col--generic">
-            <p class="col__label">Generic “popular near you”</p>
+            <p class="col__label">Popular near you</p>
             <ol>
-              <li><span>1</span>Famous rooftop bar<small>★ 4.6 · ₹2,000+ each</small></li>
-              <li><span>2</span>Trending brunch spot<small>★ 4.5 · 50 min away</small></li>
-              <li><span>3</span>Board-game café<small>★ 4.4</small></li>
+              <li><span class="col__rank">1</span>Rooftop lounge<small>★ 4.6 · ₹2,000+ each</small></li>
+              <li><span class="col__rank">2</span>Brunch spot<small>★ 4.5 · closes at 6 PM</small></li>
+              <li><span class="col__rank">3</span>Board-game café<small>★ 4.4</small></li>
             </ol>
           </div>
           <div class="compare__arrow" aria-hidden="true">→</div>
           <div class="col col--planic">
-            <p class="col__label">Ranked around your group</p>
+            <p class="col__label">Ranked for the usual four</p>
             <ol>
-              <li style="--j:0"><span>1</span>Board-game café<small>Fits budget · central · veg-friendly</small></li>
-              <li style="--j:1"><span>2</span>Bowling &amp; arcade<small>Something new · after 7</small></li>
-              <li style="--j:2" class="muted"><span>—</span>Famous rooftop bar<small>Over budget for 3 of 4</small></li>
+              <li style="--j:0"><span class="col__rank">1</span>Board-game café<small>Veg menu · new to all four · about ₹550</small><em class="col__move">Was #3 on the popular list</em></li>
+              <li style="--j:1" class="is-aside"><span class="col__rank">–</span>Rooftop lounge<small>Over Meera’s ₹600</small></li>
+              <li style="--j:2" class="is-aside"><span class="col__rank">–</span>Brunch spot<small>Closes before Kabir is free</small></li>
             </ol>
           </div>
         </div>
