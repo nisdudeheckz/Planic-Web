@@ -59,7 +59,7 @@ const settle = (p) => p.waitForTimeout(1100);
   await p.focus('#budget');
   for (let i = 0; i < 4; i++) await p.keyboard.press('ArrowLeft');
   await settle(p);
-  check('desktop: keyboard on the budget slider to ₹400 → no plan', (await title(p)) === 'Not without someone bending', await title(p));
+  check('desktop: keyboard on the budget slider to ₹400 → no plan', (await title(p)) === 'Nothing fits all four yet', await title(p));
   check('desktop: no-plan state offers bends', await p.locator('.bend').count() >= 1);
   check('desktop: token text follows the slider', (await p.locator('button.live[data-ask="budget"]').innerText()).startsWith('₹400 max'));
   await p.mouse.move(10, 10);
@@ -69,7 +69,7 @@ const settle = (p) => p.waitForTimeout(1100);
   await p.locator('.bend .try').first().click();
   await settle(p);
   const afterBend = await title(p);
-  check('desktop: "Try it" on a bend produces a plan', afterBend !== 'Not without someone bending', afterBend);
+  check('desktop: "Try it" on a bend produces a plan', afterBend !== 'Nothing fits all four yet', afterBend);
 
   await p.click('.reset');
   await settle(p);

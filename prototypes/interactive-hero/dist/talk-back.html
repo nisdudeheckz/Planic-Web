@@ -148,6 +148,7 @@ h1 {
   padding: 0 .08em;
 }
 button.live {
+  display: inline-block;
   font: inherit; letter-spacing: inherit; border: 0; margin: 0; cursor: pointer;
   border-radius: 2px;
   transition: background-size 160ms var(--ease-out);
@@ -195,7 +196,7 @@ button.live:hover, button.live[aria-expanded="true"], .msg.is-lit .live {
 .ticks { position: relative; height: 18px; margin: -6px 15px 0; }
 .ticks i {
   position: absolute; top: 0; transform: translateX(-50%);
-  font-style: normal; font-size: .6875rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
+  font-style: normal; font-size: .75rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
 }
 .ticks i::before { content: ""; display: block; width: 1.5px; height: 6px; margin: 0 auto 1px; background: currentColor; }
 .ticks i.is-in { color: var(--ink); }
@@ -615,8 +616,8 @@ function bendsHTML(result, { interactive = true } = {}) {
 }
 
 const NO_PLAN = {
-  title: 'Not without someone bending',
-  meta: 'Nothing fits all four. Planic won’t pick one and pretend. Each of these needs just one person to give a little:',
+  title: 'Nothing fits all four yet',
+  meta: 'Planic won’t pick one and pretend it works. Each of these needs one person to give a little:',
 };
 
 // hero.js
@@ -928,7 +929,7 @@ function wire() {
     } else if (tryBtn) {
       cand = { ...asks, ...JSON.parse(tryBtn.dataset.patch) };
     }
-    if (cand && !sameAsks(cand, asks)) showChange(explainChange(asks, cand).text, { preview: true });
+    if (cand && !sameAsks(cand, asks)) showChange(explainChange(asks, cand).text.replace(/ now(?=[,.])/g, ''), { preview: true });
 
     // Point at a reason to see who it's for, or at a person to see what they shaped.
     const why = e.target.closest('.why');
@@ -991,11 +992,21 @@ function intro() {
       hero.classList.remove('is-intro');
       introAnims.forEach((a) => a.cancel());
       introAnims = [];
+      invite();
     });
   }, 1050);
   const skip = () => finishIntro();
   addEventListener('pointerdown', skip, { once: true });
   addEventListener('keydown', skip, { once: true });
+}
+
+// Once, after the intro: each live phrase hops in turn, so it reads as something you can move.
+function invite() {
+  if (reduced.matches) return;
+  $$('button.live').forEach((btn, i) => btn.animate(
+    [{ transform: 'none' }, { transform: 'translateY(-5px)' }, { transform: 'none' }],
+    { duration: 420, delay: 300 + i * 140, easing: EASE_IN_OUT },
+  ));
 }
 
 /* ---------- start ---------- */

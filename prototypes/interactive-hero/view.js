@@ -34,6 +34,6 @@ export function bendsHTML(result, { interactive = true } = {}) {
 }
 
 export const NO_PLAN = {
-  title: 'Not without someone bending',
-  meta: 'Nothing fits all four. Planic won’t pick one and pretend. Each of these needs just one person to give a little:',
+  title: 'Nothing fits all four yet',
+  meta: 'Planic won’t pick one and pretend it works. Each of these needs one person to give a little:',
 };

@@ -136,6 +136,7 @@ h1 {
   padding: 0 .08em;
 }
 button.live {
+  display: inline-block;
   font: inherit; letter-spacing: inherit; border: 0; margin: 0; cursor: pointer;
   border-radius: 2px;
   transition: background-size 160ms var(--ease-out);
@@ -183,7 +184,7 @@ button.live:hover, button.live[aria-expanded="true"], .msg.is-lit .live {
 .ticks { position: relative; height: 18px; margin: -6px 15px 0; }
 .ticks i {
   position: absolute; top: 0; transform: translateX(-50%);
-  font-style: normal; font-size: .6875rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
+  font-style: normal; font-size: .75rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap;
 }
 .ticks i::before { content: ""; display: block; width: 1.5px; height: 6px; margin: 0 auto 1px; background: currentColor; }
 .ticks i.is-in { color: var(--ink); }

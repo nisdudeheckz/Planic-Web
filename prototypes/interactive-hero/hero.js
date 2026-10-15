@@ -306,7 +306,7 @@ function wire() {
     } else if (tryBtn) {
       cand = { ...asks, ...JSON.parse(tryBtn.dataset.patch) };
     }
-    if (cand && !sameAsks(cand, asks)) showChange(explainChange(asks, cand).text, { preview: true });
+    if (cand && !sameAsks(cand, asks)) showChange(explainChange(asks, cand).text.replace(/ now(?=[,.])/g, ''), { preview: true });
 
     // Point at a reason to see who it's for, or at a person to see what they shaped.
     const why = e.target.closest('.why');
@@ -369,11 +369,21 @@ function intro() {
       hero.classList.remove('is-intro');
       introAnims.forEach((a) => a.cancel());
       introAnims = [];
+      invite();
     });
   }, 1050);
   const skip = () => finishIntro();
   addEventListener('pointerdown', skip, { once: true });
   addEventListener('keydown', skip, { once: true });
+}
+
+// Once, after the intro: each live phrase hops in turn, so it reads as something you can move.
+function invite() {
+  if (reduced.matches) return;
+  $$('button.live').forEach((btn, i) => btn.animate(
+    [{ transform: 'none' }, { transform: 'translateY(-5px)' }, { transform: 'none' }],
+    { duration: 420, delay: 300 + i * 140, easing: EASE_IN_OUT },
+  ));
 }
 
 /* ---------- start ---------- */
