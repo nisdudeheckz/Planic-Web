@@ -184,7 +184,7 @@ function weighMotion() {
   enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * .95}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.3}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   let t = .1;
   out.forEach((o) => {
@@ -194,7 +194,7 @@ function weighMotion() {
   });
   tl.fromTo($('.opt__yes', pick), { autoAlpha: 0, y: -10 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'power2.out' }, t);
   tl.to(pick, { scale: 1.06, zIndex: 3, duration: .4, ease: 'power2.out' }, t);
-  tl.to({}, { duration: .15 });
+  tl.to({}, { duration: .55 }); // a beat to read the reasons before the page moves on
 }
 
 /* ---------- 4. the plan: the pick opens up into the whole screen ---------- */
@@ -209,14 +209,14 @@ function planMotion() {
   G.set(reveal, { '--scrim': 0 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.15}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.5}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
   tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);
   tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .08, duration: .35, ease: 'power2.out' }, .58);
   tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
   tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, 1.1);
-  tl.to({}, { duration: .2 });
+  tl.to({}, { duration: .6 }); // a beat to read the plan
 }
 
 /* ---------- 6. night: snapshots drift past at different depths ---------- */
@@ -375,6 +375,17 @@ join.addEventListener('submit', (e) => {
   $('.join__msg').textContent = ok
     ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
     : 'That email doesn’t look right. Check it and try again.';
+});
+
+/* ---------- 4b. the plan's actions ---------- */
+const acceptBtn = $('.act--accept');
+acceptBtn.addEventListener('click', () => {
+  const on = acceptBtn.getAttribute('aria-pressed') !== 'true';
+  acceptBtn.setAttribute('aria-pressed', String(on));
+  acceptBtn.textContent = on ? 'Accepted ✓' : 'Accept';
+  $('.plan__note').textContent = on ? 'Accepted. In the app, all four would see you’re in.' : '';
+  // all four dots light up in turn: everyone sees it
+  if (on && MOTION) G.fromTo($$('.plan .why__dot'), { scale: 1 }, { scale: 1.9, duration: .22, yoyo: true, repeat: 1, stagger: .12, ease: 'power2.out' });
 });
 
 /* ---------- in-page links glide instead of jumping ---------- */

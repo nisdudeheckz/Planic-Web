@@ -311,8 +311,8 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
 .trade { margin-top: 16px; color: var(--on-dark-soft); }
 .trade b { color: var(--ink); background: var(--sun); padding: 2px 8px; border-radius: 6px; font-size: .8125rem; margin-right: 6px; }
 .plan__acts { display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
-.plan__acts span { padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(251,251,250,.5); font-weight: 600; font-size: .9375rem; }
-.plan__acts span:last-child { background: var(--coral); border-color: var(--coral); color: var(--ink); }
+.plan__acts .act { padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(251,251,250,.5); font-weight: 600; font-size: .9375rem; }
+.plan__acts .act--send { background: var(--coral); border-color: var(--coral); color: var(--ink); }
 @media (max-width: 899px) {
   .reveal::after { background: linear-gradient(180deg, rgba(58,47,192,.35) 0%, rgba(42,34,144,.92) 45%); }
   .plan { align-self: end; }
@@ -594,7 +594,7 @@ html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
   .why { padding: 7px 0; }
   .trade { margin-top: 10px; font-size: .9375rem; }
   .plan__acts { margin-top: 14px; }
-  .plan__acts span { padding: 6px 14px; }
+  .plan__acts .act { padding: 6px 14px; }
   .opt .ph { aspect-ratio: 16 / 9; }
   .opts { gap: 12px; }
   .ch--weigh h2 { font-size: clamp(2.2rem, 7svh, 4rem); }
@@ -643,7 +643,7 @@ html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
   .why { padding: 6px 0; font-size: .875rem; }
   .trade { margin-top: 8px; font-size: .875rem; }
   .plan__acts { margin-top: 10px; }
-  .plan__acts span { padding: 6px 12px; font-size: .875rem; }
+  .plan__acts .act { padding: 6px 12px; font-size: .875rem; }
 }
 
 /* Start states of animations (stamps sliding in, the card swinging in) must never widen the page on phones. */
@@ -659,3 +659,15 @@ html.js .foot { padding-bottom: 76px; }
   .peek { transition: opacity .25s, translate .25s; }
   .peek.is-near { opacity: 0; translate: 0 12px; pointer-events: none; }
 }
+
+/* The plan's actions work: Accept confirms, Tweak and Send jump to their chapters. */
+.plan__acts .act { font: inherit; font-weight: 600; color: var(--on-dark); background: transparent; text-decoration: none; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s, translate .25s var(--ease-out); }
+.plan__acts .act--send { color: var(--ink); }
+.plan__acts .act:hover { translate: 0 -2px; border-color: var(--on-dark); }
+.plan__acts .act--send:hover { background: #ff8a82; border-color: #ff8a82; }
+.plan__acts .act:focus-visible { outline: 2px solid var(--on-dark); outline-offset: 3px; }
+.plan__acts .act--accept[aria-pressed="true"] { background: var(--on-dark); color: var(--plan-deep); border-color: var(--on-dark); }
+.plan__acts .act--send { background: var(--coral); border-color: var(--coral); }
+/* The confirmation is spoken to screen readers; on screen the button and the four dots say it, so the layout never grows. */
+.plan__note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 899px) { .plan__acts { gap: 6px; } .plan__acts .act { padding: 6px 12px; font-size: .875rem; } }

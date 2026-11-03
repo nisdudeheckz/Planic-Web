@@ -323,8 +323,8 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
 .trade { margin-top: 16px; color: var(--on-dark-soft); }
 .trade b { color: var(--ink); background: var(--sun); padding: 2px 8px; border-radius: 6px; font-size: .8125rem; margin-right: 6px; }
 .plan__acts { display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
-.plan__acts span { padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(251,251,250,.5); font-weight: 600; font-size: .9375rem; }
-.plan__acts span:last-child { background: var(--coral); border-color: var(--coral); color: var(--ink); }
+.plan__acts .act { padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(251,251,250,.5); font-weight: 600; font-size: .9375rem; }
+.plan__acts .act--send { background: var(--coral); border-color: var(--coral); color: var(--ink); }
 @media (max-width: 899px) {
   .reveal::after { background: linear-gradient(180deg, rgba(58,47,192,.35) 0%, rgba(42,34,144,.92) 45%); }
   .plan { align-self: end; }
@@ -606,7 +606,7 @@ html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
   .why { padding: 7px 0; }
   .trade { margin-top: 10px; font-size: .9375rem; }
   .plan__acts { margin-top: 14px; }
-  .plan__acts span { padding: 6px 14px; }
+  .plan__acts .act { padding: 6px 14px; }
   .opt .ph { aspect-ratio: 16 / 9; }
   .opts { gap: 12px; }
   .ch--weigh h2 { font-size: clamp(2.2rem, 7svh, 4rem); }
@@ -655,7 +655,7 @@ html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
   .why { padding: 6px 0; font-size: .875rem; }
   .trade { margin-top: 8px; font-size: .875rem; }
   .plan__acts { margin-top: 10px; }
-  .plan__acts span { padding: 6px 12px; font-size: .875rem; }
+  .plan__acts .act { padding: 6px 12px; font-size: .875rem; }
 }
 
 /* Start states of animations (stamps sliding in, the card swinging in) must never widen the page on phones. */
@@ -671,6 +671,18 @@ html.js .foot { padding-bottom: 76px; }
   .peek { transition: opacity .25s, translate .25s; }
   .peek.is-near { opacity: 0; translate: 0 12px; pointer-events: none; }
 }
+
+/* The plan's actions work: Accept confirms, Tweak and Send jump to their chapters. */
+.plan__acts .act { font: inherit; font-weight: 600; color: var(--on-dark); background: transparent; text-decoration: none; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s, translate .25s var(--ease-out); }
+.plan__acts .act--send { color: var(--ink); }
+.plan__acts .act:hover { translate: 0 -2px; border-color: var(--on-dark); }
+.plan__acts .act--send:hover { background: #ff8a82; border-color: #ff8a82; }
+.plan__acts .act:focus-visible { outline: 2px solid var(--on-dark); outline-offset: 3px; }
+.plan__acts .act--accept[aria-pressed="true"] { background: var(--on-dark); color: var(--plan-deep); border-color: var(--on-dark); }
+.plan__acts .act--send { background: var(--coral); border-color: var(--coral); }
+/* The confirmation is spoken to screen readers; on screen the button and the four dots say it, so the layout never grows. */
+.plan__note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 899px) { .plan__acts { gap: 6px; } .plan__acts .act { padding: 6px 12px; font-size: .875rem; } }
 </style>
   <script>document.documentElement.classList.add('js')</script>
   <script>
@@ -1333,7 +1345,7 @@ function weighMotion() {
   enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * .95}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.3}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   let t = .1;
   out.forEach((o) => {
@@ -1343,7 +1355,7 @@ function weighMotion() {
   });
   tl.fromTo($('.opt__yes', pick), { autoAlpha: 0, y: -10 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'power2.out' }, t);
   tl.to(pick, { scale: 1.06, zIndex: 3, duration: .4, ease: 'power2.out' }, t);
-  tl.to({}, { duration: .15 });
+  tl.to({}, { duration: .55 }); // a beat to read the reasons before the page moves on
 }
 
 /* ---------- 4. the plan: the pick opens up into the whole screen ---------- */
@@ -1358,14 +1370,14 @@ function planMotion() {
   G.set(reveal, { '--scrim': 0 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.15}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.5}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
   tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);
   tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .08, duration: .35, ease: 'power2.out' }, .58);
   tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
   tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, 1.1);
-  tl.to({}, { duration: .2 });
+  tl.to({}, { duration: .6 }); // a beat to read the plan
 }
 
 /* ---------- 6. night: snapshots drift past at different depths ---------- */
@@ -1524,6 +1536,17 @@ join.addEventListener('submit', (e) => {
   $('.join__msg').textContent = ok
     ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
     : 'That email doesn’t look right. Check it and try again.';
+});
+
+/* ---------- 4b. the plan's actions ---------- */
+const acceptBtn = $('.act--accept');
+acceptBtn.addEventListener('click', () => {
+  const on = acceptBtn.getAttribute('aria-pressed') !== 'true';
+  acceptBtn.setAttribute('aria-pressed', String(on));
+  acceptBtn.textContent = on ? 'Accepted ✓' : 'Accept';
+  $('.plan__note').textContent = on ? 'Accepted. In the app, all four would see you’re in.' : '';
+  // all four dots light up in turn: everyone sees it
+  if (on && MOTION) G.fromTo($$('.plan .why__dot'), { scale: 1 }, { scale: 1.9, duration: .22, yoyo: true, repeat: 1, stagger: .12, ease: 'power2.out' });
 });
 
 /* ---------- in-page links glide instead of jumping ---------- */
@@ -1731,7 +1754,8 @@ if (MOTION) {
           <p class="plan__then">Meet near the metro at 7:20 PM. Momos nearby from 9:30 PM.</p>
           <ul class="plan__why"><li class="why" data-who="a"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Aanya</span><span class="why__text">Veg menu</span></li><li class="why" data-who="r"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Rohan</span><span class="why__text">New to all four</span></li><li class="why" data-who="m"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Meera</span><span class="why__text">About ₹550, under her ₹600</span></li><li class="why" data-who="k"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Kabir</span><span class="why__text">Starts 7:30, after he’s free at 7</span></li></ul>
           <div class="plan__trade"><p class="trade"><b>Trade-off</b> Meera has the longest trip, so it starts at 7:30 rather than 7.</p></div>
-          <p class="plan__acts" aria-hidden="true"><span>Accept</span><span>Tweak</span><span>Send to the group</span></p>
+          <div class="plan__acts"><button type="button" class="act act--accept" aria-pressed="false">Accept</button><a class="act" href="#try">Tweak</a><a class="act act--send" href="#share">Send to the group</a></div>
+          <p class="plan__note" aria-live="polite"></p>
         </article>
       </div>
     </section>
