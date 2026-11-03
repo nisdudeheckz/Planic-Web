@@ -25,8 +25,10 @@ function setClock(day, time) {
   if (clockDay.textContent !== day) clockDay.textContent = day;
   if (clockTime.textContent !== time) clockTime.textContent = time;
 }
+const navBg = document.querySelector('.nav__bg');
 function enterChapter(sec) {
   document.body.dataset.ink = sec.dataset.ink;
+  if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
   if (sec.id !== 'top') setClock(sec.dataset.day, sec.dataset.time);
 }
 const chapterIO = new IntersectionObserver((entries) => {
@@ -76,7 +78,7 @@ function chatMotion() {
   const tl = G.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: {
-      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 2.2 : 1.8)}`,
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 1.6 : 1.3)}`,
       pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate(self) {
         const shown = Math.min(items.length - 1, FIRST - 1 + Math.floor(self.progress * 1.18 * (items.length - FIRST + 1)));
@@ -98,7 +100,7 @@ function chatMotion() {
   }
   tl.to('.tally span', { autoAlpha: 1, y: 0, stagger: .18, duration: .5, ease: 'power2.out' }, t + .1);
   tl.from('.count[data-to]', { textContent: 0, snap: { textContent: 1 }, duration: .8, stagger: .15 }, t + .1);
-  tl.to({}, { duration: .5 });
+  tl.to({}, { duration: .2 });
 
   // The floating photos drift out as the chat takes over, and bob while they wait.
   $$('.floater').forEach((f, i) => {
@@ -135,7 +137,7 @@ function tickers() {
 
 /* ---------- the sky: one colour field that turns with the day ---------- */
 function sky() {
-  const el = $('.sky');
+  const el = [$('.sky'), navBg];
   G.set(el, { backgroundColor: sections[0].dataset.sky });
   sections.slice(1).forEach((sec, i) => {
     G.fromTo(el, { backgroundColor: sections[i].dataset.sky }, {
@@ -175,13 +177,16 @@ function weighMotion() {
   const pick = $('.opt.is-pick');
   const out = ['rooftop', 'cafe', 'brunch', 'crawl', 'kebab'].map((id) => $(`.opt[data-id="${id}"]`));
   G.set($$('.opt__no, .opt__yes'), { autoAlpha: 0 });
+  // The heading and the six options arrive while the chapter scrolls in, so there is never an empty screen;
+  // the pin then holds them while the reasons are stamped on.
+  const enter = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 5%', scrub: .5, invalidateOnRefresh: true } });
+  enter.from('.ch--weigh .ch__head > *', { y: 40, opacity: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 0);
+  enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.6}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * .95}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
-  tl.from('.ch--weigh .ch__head > *', { y: 30, autoAlpha: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 0);
-  tl.from(opts, { y: 70, autoAlpha: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .08, duration: .5, ease: 'power2.out' }, .1);
-  let t = .9;
+  let t = .1;
   out.forEach((o) => {
     tl.fromTo($('.opt__no', o), { autoAlpha: 0, scale: 1.5, rotation: -10 }, { autoAlpha: 1, scale: 1, rotation: -2, duration: .3, ease: 'back.out(2)' }, t);
     tl.to(o, { '--dim': .62, y: 10, scale: .97, duration: .3 }, t + .1);
@@ -189,7 +194,7 @@ function weighMotion() {
   });
   tl.fromTo($('.opt__yes', pick), { autoAlpha: 0, y: -10 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'power2.out' }, t);
   tl.to(pick, { scale: 1.06, zIndex: 3, duration: .4, ease: 'power2.out' }, t);
-  tl.to({}, { duration: .4 });
+  tl.to({}, { duration: .15 });
 }
 
 /* ---------- 4. the plan: the pick opens up into the whole screen ---------- */
@@ -198,20 +203,20 @@ function planMotion() {
   const reveal = $('.reveal');
   const ph = $('.ph', reveal);
   const plan = $('.plan');
-  const proxy = { s: .1 };
+  const proxy = { s: .16 };
   const apply = () => { G.set(reveal, { scale: proxy.s }); G.set(ph, { scale: 1 / proxy.s }); };
   apply();
   G.set(reveal, { '--scrim': 0 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.7}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.15}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
-  tl.to(proxy, { s: 1, duration: 1, ease: 'power2.in', onUpdate: apply }, 0);
-  tl.to(reveal, { '--scrim': 1, duration: .5 }, .6);
-  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 1);
-  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .1, duration: .35, ease: 'power2.out' }, 1.35);
-  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .1, duration: .35, ease: 'power2.out' }, 1.75);
-  tl.to({}, { duration: .5 });
+  tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
+  tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);
+  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .08, duration: .35, ease: 'power2.out' }, .58);
+  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
+  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, 1.1);
+  tl.to({}, { duration: .2 });
 }
 
 /* ---------- 6. night: snapshots drift past at different depths ---------- */
@@ -227,9 +232,9 @@ function nightMotion() {
 
 function sectionReveals() {
   $$('.ch--try .ch__head > :not(h2), .ch--share .ch__head > :not(h2), .ch--join > :not(h2)').forEach((el) => {
-    G.from(el, { y: 36, autoAlpha: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
+    G.from(el, { y: 36, opacity: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
   });
-  G.from('.decode', { y: 80, rotation: -6, autoAlpha: 0, ease: 'none', scrollTrigger: { trigger: '.share', start: 'top 95%', end: 'top 45%', scrub: true } });
+  G.from('.decode', { y: 80, rotation: -6, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.share', start: 'top 95%', end: 'top 45%', scrub: true } });
 }
 
 /* ---------- "that's me" + received invitations ---------- */
@@ -306,10 +311,11 @@ if (navigator.share) {
   shareBtn.addEventListener('click', () => { const { text, link } = updateShare(); navigator.share({ text, url: link }).catch(() => {}); });
 }
 $('#send-copy').addEventListener('click', async (e) => {
+  const btn = e.currentTarget; // currentTarget is gone after the await
   const { text, link } = updateShare();
-  try { await navigator.clipboard.writeText(`${text} ${link}`); e.currentTarget.textContent = 'Copied'; }
-  catch { e.currentTarget.textContent = 'Couldn’t copy'; }
-  setTimeout(() => { e.target.textContent = 'Copy link'; }, 2200);
+  try { await navigator.clipboard.writeText(`${text} ${link}`); btn.textContent = 'Copied'; }
+  catch { btn.textContent = 'Couldn’t copy'; }
+  setTimeout(() => { btn.textContent = 'Copy link'; }, 2200);
 });
 
 /* ---------- 5. your turn: talk back ---------- */
@@ -317,6 +323,10 @@ const asksForm = $('.asks');
 const said = $('.answer__said');
 const card = $('.answer__card');
 const resetBtn = $('.reset');
+const peek = $('.peek');
+peek.addEventListener('click', () => card.scrollIntoView({ behavior: MOTION ? 'smooth' : 'auto', block: 'center' }));
+// The peek bar is only for when the answer is off screen; it steps aside once the card itself is in view.
+new IntersectionObserver(([e]) => peek.classList.toggle('is-near', e.isIntersecting), { threshold: .35 }).observe(card);
 let asks = { ...DEFAULT_ASKS };
 function readAsks() {
   const v = (n) => $(`.asks input[name="${n}"]:checked`).value;
@@ -336,6 +346,10 @@ function renderAnswer(r, text) {
   card.classList.toggle('is-none', !r.plan);
   said.textContent = text;
   resetBtn.hidden = sameAsks(asks, DEFAULT_ASKS);
+  peek.hidden = false;
+  $('.peek__title', peek).textContent = r.plan ? r.plan.title : NO_PLAN.title;
+  $('.peek__said', peek).textContent = text;
+  peek.classList.toggle('is-none', !r.plan);
   if (MOTION) G.fromTo([...card.children], { y: 14, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: .05, duration: .45, ease: 'power2.out', overwrite: true });
 }
 asksForm.addEventListener('change', () => {
@@ -362,6 +376,21 @@ join.addEventListener('submit', (e) => {
     ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
     : 'That email doesn’t look right. Check it and try again.';
 });
+
+/* ---------- in-page links glide instead of jumping ---------- */
+$$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+  const href = a.getAttribute('href');
+  if (!/^#[\w-]+$/.test(href)) return; // e.g. the WhatsApp link, whose href is set later
+  const t = document.getElementById(href.slice(1));
+  if (!t) return;
+  e.preventDefault();
+  // A pinned chapter sits at its pin's end once you've scrolled past it, so aim for its spacer.
+  const box = t.parentElement.classList.contains('pin-spacer') ? t.parentElement : t;
+  const y = t.id === 'top' ? 0 : box.getBoundingClientRect().top + scrollY - (t.id === 'four' ? 8 : 0);
+  scrollTo({ top: y, behavior: MOTION ? 'smooth' : 'auto' });
+  t.setAttribute('tabindex', '-1');
+  t.focus({ preventScroll: true });
+}));
 
 /* ---------- start ---------- */
 readInvite();

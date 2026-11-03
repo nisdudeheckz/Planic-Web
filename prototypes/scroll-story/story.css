@@ -217,7 +217,7 @@ html:not(.motion) .thread__win { height: auto; }
    2. The four
    ========================================================= */
 .ch--four .ch__head { margin-bottom: 40px; }
-.deck { display: grid; gap: 22svh; padding-bottom: 4vh; }
+.deck { display: grid; gap: 22svh; }
 .card {
   position: sticky; top: calc(var(--navh) + 16px + var(--i) * 14px);
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: min(68svh, 620px);
@@ -300,7 +300,7 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
 .plan { position: relative; z-index: 1; max-width: 640px; }
 .plan__label { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; color: var(--on-dark-soft); }
 .badge { font-size: .8125rem; padding: 3px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
-.plan__title { font-size: clamp(3rem, 1.6rem + 5.4vw, 6.4rem); margin: 18px 0 16px; }
+.plan__title { font-size: min(clamp(3rem, 1.6rem + 5.4vw, 6.4rem), 10.5svh); margin: 14px 0 12px; }
 .plan__meta { font-size: clamp(1.15rem, 1rem + .6vw, 1.5rem); font-weight: 600; }
 .plan__then { color: var(--on-dark-soft); margin-top: 4px; }
 .plan__why, .answer__why { margin-top: 26px; border-top: 1px solid rgba(251,251,250,.2); }
@@ -354,8 +354,8 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
    6. Night
    ========================================================= */
 .ch--night { padding-bottom: 0; }
-.night-stage { position: relative; min-height: 190svh; overflow-x: clip; }
-.night__words { position: sticky; top: 28svh; z-index: 2; text-align: center; max-width: 52rem; margin: 0 auto; padding: 8svh 0 40svh; }
+.night-stage { position: relative; min-height: 145svh; overflow-x: clip; }
+.night__words { position: sticky; top: 28svh; z-index: 2; text-align: center; max-width: 52rem; margin: 0 auto; padding: 6svh 0 22svh; }
 .night__title { font-size: clamp(3.2rem, 1.4rem + 7vw, 8.4rem); }
 .night__title .l { display: block; }
 .night__title .l + .l { color: var(--coral); }
@@ -573,4 +573,89 @@ html.motion .thread__win { height: min(48svh, 440px); }
 @media (max-width: 899px) {
   .still { width: 40px; height: 40px; min-height: 0; padding: 0; justify-content: center; }
   .still__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* ---------- polish pass ---------- */
+/* The top bar is solid and takes the sky's colour, so the page never shows through it. */
+html.js .nav::before { display: none; }
+.nav__bg { position: absolute; inset: 0; z-index: -1; background: var(--day); opacity: 1; box-shadow: 0 1px 0 rgba(17,18,22,.06); transition: box-shadow .3s; }
+html:not(.js) .nav__bg { display: none; }
+body[data-ink="light"] .nav__bg { box-shadow: 0 1px 0 rgba(251,251,250,.08); }
+
+/* Less empty scroll between chapters. */
+.ch--four { padding-bottom: 32px; }
+html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
+
+/* Short laptop screens (e.g. 1366x650, 1536x730): pinned chapters must fit in one screen. */
+@media (min-width: 900px) and (max-height: 820px) {
+  .plan-stage { padding-top: calc(var(--navh) + 12px); padding-bottom: 20px; }
+  .plan__meta { font-size: 1.125rem; }
+  .plan__why { margin-top: 14px; }
+  .why { padding: 7px 0; }
+  .trade { margin-top: 10px; font-size: .9375rem; }
+  .plan__acts { margin-top: 14px; }
+  .plan__acts span { padding: 6px 14px; }
+  .opt .ph { aspect-ratio: 16 / 9; }
+  .opts { gap: 12px; }
+  .ch--weigh h2 { font-size: clamp(2.2rem, 7svh, 4rem); }
+  .weigh-stage { gap: 16px 4vw; }
+  .open__title { font-size: min(clamp(3rem, 1.2rem + 6.4vw, 7.4rem), 13svh); }
+  .card { min-height: min(62svh, 560px); }
+  .card__name { font-size: min(clamp(3rem, 2rem + 4vw, 6rem), 11svh); }
+}
+@media (min-width: 900px) and (max-height: 680px) {
+  .plan__then, .plan__label .badge { display: none; }
+  .ch--weigh .ch__lede { display: none; }
+  .opt__name { margin-top: 6px; font-size: .9375rem; }
+}
+
+/* Phone: the answer stays in view while you change what people said. */
+.peek { display: none; }
+@media (max-width: 899px) {
+  .peek:not([hidden]) {
+    display: grid; gap: 2px; text-align: left; position: sticky; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 50px); z-index: 5;
+    margin-top: 8px; padding: 12px 16px; border: 0; border-radius: 18px; background: var(--plan); color: var(--on-dark);
+    box-shadow: 0 18px 30px -12px rgba(0,0,0,.6); outline: 1.5px solid rgba(251,251,250,.25);
+  }
+  .peek.is-none { background: var(--night); }
+  .peek__said { font-size: .8125rem; color: var(--on-dark-soft); }
+  .peek__title { font-family: var(--display); font-size: 1.25rem; letter-spacing: -.02em; }
+  .peek__go { font-size: .75rem; font-weight: 600; color: var(--lav); }
+  .try { padding-bottom: 8px; }
+}
+
+/* Short phones (e.g. 360x640, iPhone SE): pinned chapters still fit in one screen. */
+@media (max-width: 899px) and (max-height: 740px) {
+  html.motion .ch--weigh { padding-top: calc(var(--navh) + 8px); }
+  .weigh-stage { gap: 10px; }
+  .ch--weigh h2 { font-size: 1.75rem; }
+  .ch--weigh .ch__lede { display: none; }
+  .opts { gap: 8px; }
+  .opt { padding: 5px 5px 7px; }
+  .opt .ph { aspect-ratio: 16 / 8; }
+  .opt__name { margin-top: 4px; font-size: .8125rem; }
+  .opt__price { display: none; }
+  .plan-stage { padding-top: calc(var(--navh) + 8px); padding-bottom: 16px; }
+  .plan__title { font-size: 2.3rem; margin: 8px 0 6px; }
+  .plan__meta { font-size: 1rem; }
+  .plan__then, .plan__label .badge { display: none; }
+  .plan__why { margin-top: 10px; }
+  .why { padding: 6px 0; font-size: .875rem; }
+  .trade { margin-top: 8px; font-size: .875rem; }
+  .plan__acts { margin-top: 10px; }
+  .plan__acts span { padding: 6px 12px; font-size: .875rem; }
+}
+
+/* Start states of animations (stamps sliding in, the card swinging in) must never widen the page on phones. */
+html.js body, .ch--weigh, .ch--share { overflow-x: clip; }
+/* Phones: pinned chapters end above the Pause motion button. */
+@media (max-width: 899px) {
+  html.motion .tally { padding-bottom: 64px; }
+  .plan-stage, .plan-stage { padding-bottom: 68px; }
+}
+/* The footer's last line stays clear of the Pause motion button. */
+html.js .foot { padding-bottom: 76px; }
+@media (max-width: 899px) {
+  .peek { transition: opacity .25s, translate .25s; }
+  .peek.is-near { opacity: 0; translate: 0 12px; pointer-events: none; }
 }

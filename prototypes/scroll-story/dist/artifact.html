@@ -226,7 +226,7 @@ html:not(.motion) .thread__win { height: auto; }
    2. The four
    ========================================================= */
 .ch--four .ch__head { margin-bottom: 40px; }
-.deck { display: grid; gap: 22svh; padding-bottom: 4vh; }
+.deck { display: grid; gap: 22svh; }
 .card {
   position: sticky; top: calc(var(--navh) + 16px + var(--i) * 14px);
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: min(68svh, 620px);
@@ -309,7 +309,7 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
 .plan { position: relative; z-index: 1; max-width: 640px; }
 .plan__label { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; color: var(--on-dark-soft); }
 .badge { font-size: .8125rem; padding: 3px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
-.plan__title { font-size: clamp(3rem, 1.6rem + 5.4vw, 6.4rem); margin: 18px 0 16px; }
+.plan__title { font-size: min(clamp(3rem, 1.6rem + 5.4vw, 6.4rem), 10.5svh); margin: 14px 0 12px; }
 .plan__meta { font-size: clamp(1.15rem, 1rem + .6vw, 1.5rem); font-weight: 600; }
 .plan__then { color: var(--on-dark-soft); margin-top: 4px; }
 .plan__why, .answer__why { margin-top: 26px; border-top: 1px solid rgba(251,251,250,.2); }
@@ -363,8 +363,8 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
    6. Night
    ========================================================= */
 .ch--night { padding-bottom: 0; }
-.night-stage { position: relative; min-height: 190svh; overflow-x: clip; }
-.night__words { position: sticky; top: 28svh; z-index: 2; text-align: center; max-width: 52rem; margin: 0 auto; padding: 8svh 0 40svh; }
+.night-stage { position: relative; min-height: 145svh; overflow-x: clip; }
+.night__words { position: sticky; top: 28svh; z-index: 2; text-align: center; max-width: 52rem; margin: 0 auto; padding: 6svh 0 22svh; }
 .night__title { font-size: clamp(3.2rem, 1.4rem + 7vw, 8.4rem); }
 .night__title .l { display: block; }
 .night__title .l + .l { color: var(--coral); }
@@ -582,6 +582,91 @@ html.motion .thread__win { height: min(48svh, 440px); }
 @media (max-width: 899px) {
   .still { width: 40px; height: 40px; min-height: 0; padding: 0; justify-content: center; }
   .still__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* ---------- polish pass ---------- */
+/* The top bar is solid and takes the sky's colour, so the page never shows through it. */
+html.js .nav::before { display: none; }
+.nav__bg { position: absolute; inset: 0; z-index: -1; background: var(--day); opacity: 1; box-shadow: 0 1px 0 rgba(17,18,22,.06); transition: box-shadow .3s; }
+html:not(.js) .nav__bg { display: none; }
+body[data-ink="light"] .nav__bg { box-shadow: 0 1px 0 rgba(251,251,250,.08); }
+
+/* Less empty scroll between chapters. */
+.ch--four { padding-bottom: 32px; }
+html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
+
+/* Short laptop screens (e.g. 1366x650, 1536x730): pinned chapters must fit in one screen. */
+@media (min-width: 900px) and (max-height: 820px) {
+  .plan-stage { padding-top: calc(var(--navh) + 12px); padding-bottom: 20px; }
+  .plan__meta { font-size: 1.125rem; }
+  .plan__why { margin-top: 14px; }
+  .why { padding: 7px 0; }
+  .trade { margin-top: 10px; font-size: .9375rem; }
+  .plan__acts { margin-top: 14px; }
+  .plan__acts span { padding: 6px 14px; }
+  .opt .ph { aspect-ratio: 16 / 9; }
+  .opts { gap: 12px; }
+  .ch--weigh h2 { font-size: clamp(2.2rem, 7svh, 4rem); }
+  .weigh-stage { gap: 16px 4vw; }
+  .open__title { font-size: min(clamp(3rem, 1.2rem + 6.4vw, 7.4rem), 13svh); }
+  .card { min-height: min(62svh, 560px); }
+  .card__name { font-size: min(clamp(3rem, 2rem + 4vw, 6rem), 11svh); }
+}
+@media (min-width: 900px) and (max-height: 680px) {
+  .plan__then, .plan__label .badge { display: none; }
+  .ch--weigh .ch__lede { display: none; }
+  .opt__name { margin-top: 6px; font-size: .9375rem; }
+}
+
+/* Phone: the answer stays in view while you change what people said. */
+.peek { display: none; }
+@media (max-width: 899px) {
+  .peek:not([hidden]) {
+    display: grid; gap: 2px; text-align: left; position: sticky; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 50px); z-index: 5;
+    margin-top: 8px; padding: 12px 16px; border: 0; border-radius: 18px; background: var(--plan); color: var(--on-dark);
+    box-shadow: 0 18px 30px -12px rgba(0,0,0,.6); outline: 1.5px solid rgba(251,251,250,.25);
+  }
+  .peek.is-none { background: var(--night); }
+  .peek__said { font-size: .8125rem; color: var(--on-dark-soft); }
+  .peek__title { font-family: var(--display); font-size: 1.25rem; letter-spacing: -.02em; }
+  .peek__go { font-size: .75rem; font-weight: 600; color: var(--lav); }
+  .try { padding-bottom: 8px; }
+}
+
+/* Short phones (e.g. 360x640, iPhone SE): pinned chapters still fit in one screen. */
+@media (max-width: 899px) and (max-height: 740px) {
+  html.motion .ch--weigh { padding-top: calc(var(--navh) + 8px); }
+  .weigh-stage { gap: 10px; }
+  .ch--weigh h2 { font-size: 1.75rem; }
+  .ch--weigh .ch__lede { display: none; }
+  .opts { gap: 8px; }
+  .opt { padding: 5px 5px 7px; }
+  .opt .ph { aspect-ratio: 16 / 8; }
+  .opt__name { margin-top: 4px; font-size: .8125rem; }
+  .opt__price { display: none; }
+  .plan-stage { padding-top: calc(var(--navh) + 8px); padding-bottom: 16px; }
+  .plan__title { font-size: 2.3rem; margin: 8px 0 6px; }
+  .plan__meta { font-size: 1rem; }
+  .plan__then, .plan__label .badge { display: none; }
+  .plan__why { margin-top: 10px; }
+  .why { padding: 6px 0; font-size: .875rem; }
+  .trade { margin-top: 8px; font-size: .875rem; }
+  .plan__acts { margin-top: 10px; }
+  .plan__acts span { padding: 6px 12px; font-size: .875rem; }
+}
+
+/* Start states of animations (stamps sliding in, the card swinging in) must never widen the page on phones. */
+html.js body, .ch--weigh, .ch--share { overflow-x: clip; }
+/* Phones: pinned chapters end above the Pause motion button. */
+@media (max-width: 899px) {
+  html.motion .tally { padding-bottom: 64px; }
+  .plan-stage, .plan-stage { padding-bottom: 68px; }
+}
+/* The footer's last line stays clear of the Pause motion button. */
+html.js .foot { padding-bottom: 76px; }
+@media (max-width: 899px) {
+  .peek { transition: opacity .25s, translate .25s; }
+  .peek.is-near { opacity: 0; translate: 0 12px; pointer-events: none; }
 }
 </style>
   <script>document.documentElement.classList.add('js')</script>
@@ -1060,8 +1145,10 @@ function setClock(day, time) {
   if (clockDay.textContent !== day) clockDay.textContent = day;
   if (clockTime.textContent !== time) clockTime.textContent = time;
 }
+const navBg = document.querySelector('.nav__bg');
 function enterChapter(sec) {
   document.body.dataset.ink = sec.dataset.ink;
+  if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
   if (sec.id !== 'top') setClock(sec.dataset.day, sec.dataset.time);
 }
 const chapterIO = new IntersectionObserver((entries) => {
@@ -1111,7 +1198,7 @@ function chatMotion() {
   const tl = G.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: {
-      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 2.2 : 1.8)}`,
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 1.6 : 1.3)}`,
       pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate(self) {
         const shown = Math.min(items.length - 1, FIRST - 1 + Math.floor(self.progress * 1.18 * (items.length - FIRST + 1)));
@@ -1133,7 +1220,7 @@ function chatMotion() {
   }
   tl.to('.tally span', { autoAlpha: 1, y: 0, stagger: .18, duration: .5, ease: 'power2.out' }, t + .1);
   tl.from('.count[data-to]', { textContent: 0, snap: { textContent: 1 }, duration: .8, stagger: .15 }, t + .1);
-  tl.to({}, { duration: .5 });
+  tl.to({}, { duration: .2 });
 
   // The floating photos drift out as the chat takes over, and bob while they wait.
   $$('.floater').forEach((f, i) => {
@@ -1170,7 +1257,7 @@ function tickers() {
 
 /* ---------- the sky: one colour field that turns with the day ---------- */
 function sky() {
-  const el = $('.sky');
+  const el = [$('.sky'), navBg];
   G.set(el, { backgroundColor: sections[0].dataset.sky });
   sections.slice(1).forEach((sec, i) => {
     G.fromTo(el, { backgroundColor: sections[i].dataset.sky }, {
@@ -1210,13 +1297,16 @@ function weighMotion() {
   const pick = $('.opt.is-pick');
   const out = ['rooftop', 'cafe', 'brunch', 'crawl', 'kebab'].map((id) => $(`.opt[data-id="${id}"]`));
   G.set($$('.opt__no, .opt__yes'), { autoAlpha: 0 });
+  // The heading and the six options arrive while the chapter scrolls in, so there is never an empty screen;
+  // the pin then holds them while the reasons are stamped on.
+  const enter = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 5%', scrub: .5, invalidateOnRefresh: true } });
+  enter.from('.ch--weigh .ch__head > *', { y: 40, opacity: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 0);
+  enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.6}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * .95}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
-  tl.from('.ch--weigh .ch__head > *', { y: 30, autoAlpha: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 0);
-  tl.from(opts, { y: 70, autoAlpha: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .08, duration: .5, ease: 'power2.out' }, .1);
-  let t = .9;
+  let t = .1;
   out.forEach((o) => {
     tl.fromTo($('.opt__no', o), { autoAlpha: 0, scale: 1.5, rotation: -10 }, { autoAlpha: 1, scale: 1, rotation: -2, duration: .3, ease: 'back.out(2)' }, t);
     tl.to(o, { '--dim': .62, y: 10, scale: .97, duration: .3 }, t + .1);
@@ -1224,7 +1314,7 @@ function weighMotion() {
   });
   tl.fromTo($('.opt__yes', pick), { autoAlpha: 0, y: -10 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'power2.out' }, t);
   tl.to(pick, { scale: 1.06, zIndex: 3, duration: .4, ease: 'power2.out' }, t);
-  tl.to({}, { duration: .4 });
+  tl.to({}, { duration: .15 });
 }
 
 /* ---------- 4. the plan: the pick opens up into the whole screen ---------- */
@@ -1233,20 +1323,20 @@ function planMotion() {
   const reveal = $('.reveal');
   const ph = $('.ph', reveal);
   const plan = $('.plan');
-  const proxy = { s: .1 };
+  const proxy = { s: .16 };
   const apply = () => { G.set(reveal, { scale: proxy.s }); G.set(ph, { scale: 1 / proxy.s }); };
   apply();
   G.set(reveal, { '--scrim': 0 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.7}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.15}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
   });
-  tl.to(proxy, { s: 1, duration: 1, ease: 'power2.in', onUpdate: apply }, 0);
-  tl.to(reveal, { '--scrim': 1, duration: .5 }, .6);
-  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 1);
-  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .1, duration: .35, ease: 'power2.out' }, 1.35);
-  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .1, duration: .35, ease: 'power2.out' }, 1.75);
-  tl.to({}, { duration: .5 });
+  tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
+  tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);
+  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .08, duration: .35, ease: 'power2.out' }, .58);
+  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
+  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, 1.1);
+  tl.to({}, { duration: .2 });
 }
 
 /* ---------- 6. night: snapshots drift past at different depths ---------- */
@@ -1262,9 +1352,9 @@ function nightMotion() {
 
 function sectionReveals() {
   $$('.ch--try .ch__head > :not(h2), .ch--share .ch__head > :not(h2), .ch--join > :not(h2)').forEach((el) => {
-    G.from(el, { y: 36, autoAlpha: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
+    G.from(el, { y: 36, opacity: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
   });
-  G.from('.decode', { y: 80, rotation: -6, autoAlpha: 0, ease: 'none', scrollTrigger: { trigger: '.share', start: 'top 95%', end: 'top 45%', scrub: true } });
+  G.from('.decode', { y: 80, rotation: -6, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.share', start: 'top 95%', end: 'top 45%', scrub: true } });
 }
 
 /* ---------- "that's me" + received invitations ---------- */
@@ -1341,10 +1431,11 @@ if (navigator.share) {
   shareBtn.addEventListener('click', () => { const { text, link } = updateShare(); navigator.share({ text, url: link }).catch(() => {}); });
 }
 $('#send-copy').addEventListener('click', async (e) => {
+  const btn = e.currentTarget; // currentTarget is gone after the await
   const { text, link } = updateShare();
-  try { await navigator.clipboard.writeText(`${text} ${link}`); e.currentTarget.textContent = 'Copied'; }
-  catch { e.currentTarget.textContent = 'Couldn’t copy'; }
-  setTimeout(() => { e.target.textContent = 'Copy link'; }, 2200);
+  try { await navigator.clipboard.writeText(`${text} ${link}`); btn.textContent = 'Copied'; }
+  catch { btn.textContent = 'Couldn’t copy'; }
+  setTimeout(() => { btn.textContent = 'Copy link'; }, 2200);
 });
 
 /* ---------- 5. your turn: talk back ---------- */
@@ -1352,6 +1443,10 @@ const asksForm = $('.asks');
 const said = $('.answer__said');
 const card = $('.answer__card');
 const resetBtn = $('.reset');
+const peek = $('.peek');
+peek.addEventListener('click', () => card.scrollIntoView({ behavior: MOTION ? 'smooth' : 'auto', block: 'center' }));
+// The peek bar is only for when the answer is off screen; it steps aside once the card itself is in view.
+new IntersectionObserver(([e]) => peek.classList.toggle('is-near', e.isIntersecting), { threshold: .35 }).observe(card);
 let asks = { ...DEFAULT_ASKS };
 function readAsks() {
   const v = (n) => $(`.asks input[name="${n}"]:checked`).value;
@@ -1371,6 +1466,10 @@ function renderAnswer(r, text) {
   card.classList.toggle('is-none', !r.plan);
   said.textContent = text;
   resetBtn.hidden = sameAsks(asks, DEFAULT_ASKS);
+  peek.hidden = false;
+  $('.peek__title', peek).textContent = r.plan ? r.plan.title : NO_PLAN.title;
+  $('.peek__said', peek).textContent = text;
+  peek.classList.toggle('is-none', !r.plan);
   if (MOTION) G.fromTo([...card.children], { y: 14, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: .05, duration: .45, ease: 'power2.out', overwrite: true });
 }
 asksForm.addEventListener('change', () => {
@@ -1397,6 +1496,21 @@ join.addEventListener('submit', (e) => {
     ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
     : 'That email doesn’t look right. Check it and try again.';
 });
+
+/* ---------- in-page links glide instead of jumping ---------- */
+$$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+  const href = a.getAttribute('href');
+  if (!/^#[\w-]+$/.test(href)) return; // e.g. the WhatsApp link, whose href is set later
+  const t = document.getElementById(href.slice(1));
+  if (!t) return;
+  e.preventDefault();
+  // A pinned chapter sits at its pin's end once you've scrolled past it, so aim for its spacer.
+  const box = t.parentElement.classList.contains('pin-spacer') ? t.parentElement : t;
+  const y = t.id === 'top' ? 0 : box.getBoundingClientRect().top + scrollY - (t.id === 'four' ? 8 : 0);
+  scrollTo({ top: y, behavior: MOTION ? 'smooth' : 'auto' });
+  t.setAttribute('tabindex', '-1');
+  t.focus({ preventScroll: true });
+}));
 
 /* ---------- start ---------- */
 readInvite();
@@ -1439,6 +1553,7 @@ if (MOTION) {
   </svg>
 
   <header class="nav">
+    <span class="nav__bg" aria-hidden="true"></span>
     <a class="wordmark" href="#top" aria-label="Planic, back to top">
       <svg viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
       <span>Planic</span>
@@ -1628,6 +1743,7 @@ if (MOTION) {
           </div>
           <button type="button" class="reset" hidden>Put it back</button>
         </div>
+        <button type="button" class="peek" hidden><span class="peek__said"></span><b class="peek__title"></b><span class="peek__go" aria-hidden="true">See the plan ↑</span></button>
       </div>
     </section>
 
