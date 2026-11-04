@@ -170,7 +170,8 @@ function filmMotion() {
     .to('.toasts', { y: -50, opacity: 0, duration: .45 }, .08)
     .fromTo(film, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: () => (innerWidth < 900 ? 'inset(7% 4% 7% 4% round 24px)' : 'inset(9% 6% 9% 6% round 32px)'), duration: 1 }, 0)
     .to(video, { scale: 1.08, duration: 1 }, 0)
-    .to('.film__shade', { opacity: .6, duration: 1 }, 0);
+    .to('.film__shade', { opacity: .6, duration: 1 }, 0)
+    .fromTo('.film__one', { opacity: 0, scale: .7, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: .4, ease: 'back.out(1.8)' }, .38);
   filmST = tl.scrollTrigger;
 }
 
@@ -341,10 +342,10 @@ function planMotion() {
     scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
-  tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);
-  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .08, duration: .35, ease: 'power2.out' }, .58);
-  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
-  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, 1.1);
+  tl.to(reveal, { '--scrim': 1, duration: .35 }, .25);
+  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .07, duration: .3, ease: 'power2.out' }, .32);
+  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .07, duration: .28, ease: 'power2.out' }, .58);
+  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
   tl.to({}, { duration: .6 }); // a beat to read the plan
 }
 
@@ -356,7 +357,15 @@ function nightMotion() {
     G.fromTo(snap, { yPercent: 40 * d }, { yPercent: -80 * d, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: true } });
     addAmbient(sec, G.to(snap, { y: -12 - 6 * d, rotation: `+=${i % 2 ? 2.5 : -2.5}`, duration: 2.8 + i * .4, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
   });
-  G.from('.night__title .l', { yPercent: 70, autoAlpha: 0, stagger: .15, ease: 'none', scrollTrigger: { trigger: sec, start: 'top 70%', end: 'top 10%', scrub: true } });
+  G.from('.night__title .l', { yPercent: 70, autoAlpha: 0, stagger: .15, ease: 'none', scrollTrigger: { trigger: sec, start: 'top 45%', end: 'top 0%', scrub: true } });
+  // All in: Rohan, Meera, Aanya, Kabir say yes one by one; each yes draws that friend's stroke of the mark.
+  const tl = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 92%', end: 'top 20%', scrub: SMOOTH } });
+  ['r', 'm', 'a', 'k'].forEach((w, i) => {
+    tl.fromTo(`.allin__chip[data-who="${w}"]`, { autoAlpha: 0, scale: .5, y: 14 }, { autoAlpha: 1, scale: 1, y: 0, duration: .3, ease: 'back.out(2.4)' }, i * .45)
+      .fromTo(`.allin__s[data-who="${w}"]`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .45, ease: 'power1.inOut' }, i * .45 + .05);
+  });
+  tl.fromTo('.allin__pin', { scale: 0, transformOrigin: '50% 50%' }, { scale: 1, duration: .3, ease: 'back.out(3)' }, 1.85)
+    .fromTo('.allin__mark', { rotation: -8 }, { rotation: 0, duration: .5, ease: 'power2.out' }, 1.85);
 }
 
 function sectionReveals() {
@@ -412,6 +421,54 @@ function pickMe(who, btn) {
   updateShare();
 }
 $$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who, b)));
+
+/* ---------- familiar things: tap them ---------- */
+$$('.thing').forEach((t) => t.addEventListener('click', () => {
+  const on = t.getAttribute('aria-pressed') !== 'true';
+  t.setAttribute('aria-pressed', String(on));
+  if (on) track('touched-thing', { what: t.classList[1].replace('thing--', '') }, false);
+  if (on && navigator.vibrate) try { navigator.vibrate(8); } catch { /* not allowed here */ }
+}));
+
+// The poll: two each, always. Your vote breaks the tie, and it still isn't a plan.
+{
+  const opts = $$('.poll__opt');
+  const foot = $('.poll__foot');
+  const paint = (votes) => {
+    const total = votes.fri + votes.sat;
+    opts.forEach((o) => { $('b', o).textContent = votes[o.dataset.v]; o.style.setProperty('--share', votes[o.dataset.v] / total); });
+    return total;
+  };
+  paint({ fri: 2, sat: 2 });
+  opts.forEach((o) => o.addEventListener('click', () => {
+    const was = o.getAttribute('aria-pressed') === 'true';
+    opts.forEach((x) => x.setAttribute('aria-pressed', String(!was && x === o)));
+    const votes = { fri: 2, sat: 2 };
+    if (!was) votes[o.dataset.v]++;
+    const n = paint(votes);
+    foot.textContent = was ? '4 votes · it’s a tie. Tap to break it.' : `${n} votes · you broke the tie. Still no plan.`;
+  }));
+}
+
+// Meera's voice note: plays as a waveform with its transcript (there's no sound on this page).
+{
+  const vn = $('.vn');
+  const bars = $$('.vn__wave i', vn);
+  const t = $('.vn__t', vn);
+  let timer = 0;
+  vn.addEventListener('click', () => {
+    clearInterval(timer);
+    if (vn.classList.toggle('is-on')) {
+      let n = 0;
+      timer = setInterval(() => {
+        n++;
+        bars.forEach((b, i) => b.classList.toggle('is-past', i < n));
+        t.textContent = `0:0${Math.min(7, Math.floor((n / bars.length) * 7))}`;
+        if (n >= bars.length) { clearInterval(timer); vn.classList.remove('is-on'); t.textContent = '0:07'; }
+      }, 7000 / bars.length / 2.2);
+    } else { bars.forEach((b) => b.classList.remove('is-past')); t.textContent = '0:07'; }
+  });
+}
 $('#send-wa').addEventListener('click', () => track('sent', { how: 'whatsapp' }, false));
 
 function readInvite() {
@@ -730,6 +787,7 @@ join.addEventListener('submit', async (e) => {
   if (!SITE) {
     msg.textContent = 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.';
     welcome();
+    ask();
     return;
   }
   btn.disabled = true;
@@ -745,12 +803,32 @@ join.addEventListener('submit', async (e) => {
     email.value = '';
     track('signed-up', { me: me ? ROLE[me] : 'not picked' });
     welcome();
+    ask();
   } catch {
     msg.textContent = 'That didn’t save. Check your connection and try again.';
   } finally {
     btn.disabled = false;
   }
 });
+
+// After you join, one optional tap: what does your group argue about? Anonymous, saved as its own form.
+const argue = $('.argue');
+function ask() { argue.hidden = false; }
+$$('button', argue).forEach((b) => b.addEventListener('click', async () => {
+  $$('button', argue).forEach((x) => { x.setAttribute('aria-pressed', String(x === b)); x.disabled = true; });
+  const out = $('.argue__msg', argue);
+  track('argues-about', { what: b.value });
+  if (!SITE) { out.textContent = 'Thanks. (Prototype: not saved.)'; return; }
+  try {
+    const res = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ 'form-name': 'group-argues', argue: b.value, me: me ? ROLE[me] : '' }).toString() });
+    if (!res.ok) throw new Error(res.status);
+    out.textContent = b.value === 'nobody' ? 'Thanks. That’s exactly who Planic is for.' : 'Thanks. That helps us build the right thing first.';
+  } catch {
+    out.textContent = 'That didn’t save. Tap again.';
+    $$('button', argue).forEach((x) => { x.disabled = false; });
+  }
+}));
 
 // A small hello from the group when you join (decoration only; the message above says what really happened).
 function welcome() {
