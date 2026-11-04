@@ -730,3 +730,16 @@ body[data-me="a"] .opt__no[data-who="a"] i, body[data-me="r"] .opt__no[data-who=
 body[data-me="m"] .opt__no[data-who="m"] i, body[data-me="k"] .opt__no[data-who="k"] i { box-shadow: 0 0 0 2px var(--ink); }
 body[data-me="a"] .ticker [data-who="a"], body[data-me="r"] .ticker [data-who="r"],
 body[data-me="m"] .ticker [data-who="m"], body[data-me="k"] .ticker [data-who="k"] { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Friday night: throwable photos and the group's reactions (alive.js photoDump) */
+html.fine .snap.is-loose { cursor: grab; }
+html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0,0,0,.8); }
+.react { position: absolute; z-index: 60; translate: -50% 0; white-space: nowrap; pointer-events: none;
+  padding: 8px 14px; border-radius: 18px 18px 18px 6px; background: var(--tone); color: var(--ink); font-weight: 600; font-size: .9375rem;
+  box-shadow: 0 12px 24px -10px rgba(0,0,0,.6); }
+
+/* join: the group says hello */
+.join__hello { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 14px; }
+.join__hello:empty { display: none; }
+.hello { padding: 8px 14px; border-radius: 16px 16px 16px 6px; background: var(--tone); color: var(--ink); font-size: .9375rem; max-width: 100%; }
+.hello b { display: block; font-size: .75rem; opacity: .7; }

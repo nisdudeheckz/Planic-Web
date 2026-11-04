@@ -253,3 +253,110 @@ export function liveWords(G, addAmbient) {
     },
   });
 }
+
+/* ---------- Friday night: a photo dump you can throw around ---------- */
+// Grab a snapshot and throw it; it slides to a stop like a print on a table, and someone in the group reacts.
+// On a touch screen, a tap tosses it a little instead, so the page still scrolls under your finger.
+const REACT = [
+  ['a', 'send pics!!'], ['r', 'who took this 😂'], ['m', 'best friday'], ['k', 'same time next week?'],
+  ['a', 'the momos tho'], ['r', 'I was winning'], ['m', 'made the last metro'], ['k', '10/10'],
+];
+export function photoDump(G) {
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const stage = document.querySelector('.night-stage');
+  const snaps = [...document.querySelectorAll('.snap')].map((el) => ({ el, x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, held: null }));
+  if (!stage || !snaps.length) return;
+  let n = 0;
+  let z = 10;
+  function react(s) {
+    const [who, text] = REACT[n++ % REACT.length];
+    const b = document.createElement('p');
+    b.className = 'react';
+    b.dataset.who = who;
+    b.textContent = text;
+    b.setAttribute('aria-hidden', 'true');
+    const r = s.el.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    b.style.left = `${r.left - sr.left + r.width * .5}px`;
+    b.style.top = `${r.top - sr.top}px`;
+    stage.append(b);
+    G.fromTo(b, { y: 10, scale: .6, opacity: 0 }, { y: -40, scale: 1, opacity: 1, duration: .45, ease: 'back.out(2)' });
+    G.to(b, { y: -90, opacity: 0, duration: .6, delay: 1.4, ease: 'power2.in', onComplete: () => b.remove() });
+  }
+  const paint = (s) => {
+    s.el.style.translate = `${s.x.toFixed(1)}px ${s.y.toFixed(1)}px`;
+    s.el.style.rotate = `${s.r.toFixed(2)}deg`;
+  };
+  let running = false;
+  const glide = (_, dtMs) => {
+    const dt = Math.min(dtMs, 40) / 1000;
+    let moving = false;
+    snaps.forEach((s) => {
+      const out = s.b && (s.x < s.b.minX - 1 || s.x > s.b.maxX + 1 || s.y < s.b.minY - 1 || s.y > s.b.maxY + 1);
+      if (s.held || (!out && Math.abs(s.vx) < 4 && Math.abs(s.vy) < 4 && Math.abs(s.vr) < 2)) return;
+      moving = true;
+      const f = Math.exp(-4 * dt); // friction: a print sliding on a table
+      s.vx *= f; s.vy *= f; s.vr *= f;
+      s.x += s.vx * dt; s.y += s.vy * dt; s.r += s.vr * dt;
+      // stay on the table: past an edge, it eases back in
+      const b = s.b;
+      if (b) {
+        if (s.x < b.minX) s.vx = Math.max(s.vx, (b.minX - s.x) * 5);
+        if (s.x > b.maxX) s.vx = Math.min(s.vx, (b.maxX - s.x) * 5);
+        if (s.y < b.minY) s.vy = Math.max(s.vy, (b.minY - s.y) * 5);
+        if (s.y > b.maxY) s.vy = Math.min(s.vy, (b.maxY - s.y) * 5);
+      }
+      paint(s);
+    });
+    if (!moving) { running = false; G.ticker.remove(glide); }
+  };
+  // how far each print may travel: inside the chapter, a little past the sides
+  function bounds(s) {
+    const r = s.el.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    s.b = {
+      minX: s.x + (sr.left - r.left) - r.width * .25, maxX: s.x + (sr.right - r.right) + r.width * .25,
+      minY: s.y + (sr.top - r.top), maxY: s.y + (sr.bottom - r.bottom),
+    };
+  }
+  const go = () => { if (!running) { running = true; G.ticker.add(glide); } };
+
+  snaps.forEach((s) => {
+    s.el.classList.add('is-loose');
+    s.el.addEventListener('pointerdown', (e) => {
+      s.el.style.zIndex = String(++z);
+      if (e.pointerType !== 'mouse' || !fine) {
+        const a = Math.random() * Math.PI * 2;
+        s.vx = Math.cos(a) * 520; s.vy = Math.sin(a) * 380; s.vr = (Math.random() - .5) * 120;
+        bounds(s); react(s); go();
+        return;
+      }
+      e.preventDefault();
+      s.held = { lx: e.clientX, ly: e.clientY, lt: performance.now(), vx: 0, vy: 0 };
+      s.el.classList.add('is-held');
+      s.el.setPointerCapture(e.pointerId);
+    });
+    s.el.addEventListener('pointermove', (e) => {
+      const h = s.held;
+      if (!h) return;
+      const now = performance.now();
+      const dt = Math.max(8, now - h.lt) / 1000;
+      h.vx = (e.clientX - h.lx) / dt; h.vy = (e.clientY - h.ly) / dt;
+      s.x += e.clientX - h.lx; s.y += e.clientY - h.ly;
+      s.r += (e.clientX - h.lx) * .04;
+      h.lx = e.clientX; h.ly = e.clientY; h.lt = now;
+      paint(s);
+    });
+    const drop = () => {
+      const h = s.held;
+      if (!h) return;
+      s.held = null;
+      s.el.classList.remove('is-held');
+      s.vx = Math.max(-1800, Math.min(1800, h.vx)); s.vy = Math.max(-1800, Math.min(1800, h.vy)); s.vr = s.vx * .06;
+      if (Math.hypot(s.vx, s.vy) > 250) react(s);
+      bounds(s); go();
+    };
+    s.el.addEventListener('pointerup', drop);
+    s.el.addEventListener('pointercancel', drop);
+  });
+}

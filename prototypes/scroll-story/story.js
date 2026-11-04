@@ -4,7 +4,7 @@
 import { evaluate, explainChange, sameAsks, DEFAULT_ASKS, PEOPLE } from '../interactive-hero/engine.js';
 import { whyRowsHTML, tradeHTML, bendsHTML, NO_PLAN, esc } from '../interactive-hero/view.js';
 import { pointerLife, splitHeads } from './life.js';
-import { threads, liveWords } from './alive.js';
+import { threads, liveWords, photoDump } from './alive.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -27,6 +27,7 @@ function setClock(day, time) {
   if (clockTime.textContent !== time) clockTime.textContent = time;
 }
 const navBg = document.querySelector('.nav__bg');
+let filmST = null; // the film's pin, so the sky can follow it
 let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
 function enterChapter(sec) {
   document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
@@ -124,9 +125,8 @@ function filmMotion() {
     .to('.toasts', { y: -50, opacity: 0, duration: .45 }, .08)
     .fromTo(film, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: () => (innerWidth < 900 ? 'inset(7% 4% 7% 4% round 24px)' : 'inset(9% 6% 9% 6% round 32px)'), duration: 1 }, 0)
     .to(video, { scale: 1.08, duration: 1 }, 0)
-    .to('.film__shade', { opacity: .6, duration: 1 }, 0)
-    // the day comes up around the film as it closes, so the chat arrives in daylight
-    .fromTo([$('.sky'), navBg], { backgroundColor: sec.dataset.sky }, { backgroundColor: $('.ch--chat').dataset.sky, duration: .55, immediateRender: false }, .3);
+    .to('.film__shade', { opacity: .6, duration: 1 }, 0);
+  filmST = tl.scrollTrigger;
 }
 
 /* ---------- 1. the chat ---------- */
@@ -220,11 +220,12 @@ function sky() {
   G.set(el, { backgroundColor: sections[0].dataset.sky });
   sections.slice(1).forEach((sec, i) => {
     const prev = sections[i];
-    if (prev.id === 'film') return; // the film turns the day up itself, while it closes
-    G.fromTo(el, { backgroundColor: prev.dataset.sky }, {
-      backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false,
-      scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true },
-    });
+    // The day comes up around the film while it closes, so the chat arrives in daylight. Unsmoothed (scrub: true)
+    // like every other sky change, so a jump down the page can't let it land last and paint the night white.
+    const st = prev.id === 'film' && filmST
+      ? { start: () => filmST.start + innerHeight * .24, end: () => filmST.start + innerHeight * .68, scrub: true }
+      : { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true };
+    G.fromTo(el, { backgroundColor: prev.dataset.sky }, { backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false, scrollTrigger: st });
   });
 }
 
@@ -568,7 +569,33 @@ join.addEventListener('submit', (e) => {
   $('.join__msg').textContent = ok
     ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
     : 'That email doesn’t look right. Check it and try again.';
+  if (ok) welcome();
 });
+
+// A small hello from the group when you join (decoration only; the message above says what really happened).
+function welcome() {
+  const box = $('.join__hello');
+  if (box.childElementCount) return;
+  [['k', 'Kabir', 'welcome to the group 👋'], ['m', 'Meera', 'finally someone else plans'], ['a', 'Aanya', 'is there veg tho']].forEach(([who, name, text], i) => {
+    const b = document.createElement('p');
+    b.className = 'hello';
+    b.dataset.who = who;
+    b.innerHTML = `<b>${name}</b> ${text}`;
+    box.append(b);
+    if (MOTION) G.from(b, { y: 18, scale: .8, opacity: 0, duration: .5, delay: .25 + i * .55, ease: 'back.out(2)' });
+  });
+  if (navigator.vibrate) try { navigator.vibrate([10, 60, 10]); } catch { /* not allowed here */ }
+}
+
+/* ---------- the tab: when you look away, the group chat keeps going ---------- */
+{
+  const title = document.title;
+  let away = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { away = Math.min(away + 3, 47); document.title = `(${away}) so… where? · Planic`; }
+    else document.title = title;
+  });
+}
 
 /* ---------- 4b. the plan's actions ---------- */
 const acceptBtn = $('.act--accept');
@@ -576,6 +603,7 @@ acceptBtn.addEventListener('click', () => {
   const on = acceptBtn.getAttribute('aria-pressed') !== 'true';
   acceptBtn.setAttribute('aria-pressed', String(on));
   acceptBtn.textContent = on ? 'Accepted ✓' : 'Accept';
+  if (on && navigator.vibrate) try { navigator.vibrate(12); } catch { /* not allowed here */ }
   $('.plan__note').textContent = on ? 'Accepted. In the app, all four would see you’re in.' : '';
   // all four dots light up in turn: everyone sees it
   if (on && MOTION) G.fromTo($$('.plan .why__dot'), { scale: 1 }, { scale: 1.9, duration: .22, yoyo: true, repeat: 1, stagger: .12, ease: 'power2.out' });
@@ -630,6 +658,7 @@ if (MOTION) {
   sky(); // last: its triggers sit below every pinned chapter, so they must be measured after the pins
   threads(G, ST, addAmbient);
   liveWords(G, addAmbient);
+  photoDump(G);
   // Photos load lazily; re-measure once they arrive so pinned lengths stay right.
   if (document.readyState === 'complete') ST.refresh(); else addEventListener('load', () => ST.refresh());
 }

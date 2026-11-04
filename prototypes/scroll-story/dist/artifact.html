@@ -747,6 +747,19 @@ body[data-me="a"] .opt__no[data-who="a"] i, body[data-me="r"] .opt__no[data-who=
 body[data-me="m"] .opt__no[data-who="m"] i, body[data-me="k"] .opt__no[data-who="k"] i { box-shadow: 0 0 0 2px var(--ink); }
 body[data-me="a"] .ticker [data-who="a"], body[data-me="r"] .ticker [data-who="r"],
 body[data-me="m"] .ticker [data-who="m"], body[data-me="k"] .ticker [data-who="k"] { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Friday night: throwable photos and the group's reactions (alive.js photoDump) */
+html.fine .snap.is-loose { cursor: grab; }
+html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0,0,0,.8); }
+.react { position: absolute; z-index: 60; translate: -50% 0; white-space: nowrap; pointer-events: none;
+  padding: 8px 14px; border-radius: 18px 18px 18px 6px; background: var(--tone); color: var(--ink); font-weight: 600; font-size: .9375rem;
+  box-shadow: 0 12px 24px -10px rgba(0,0,0,.6); }
+
+/* join: the group says hello */
+.join__hello { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 14px; }
+.join__hello:empty { display: none; }
+.hello { padding: 8px 14px; border-radius: 16px 16px 16px 6px; background: var(--tone); color: var(--ink); font-size: .9375rem; max-width: 100%; }
+.hello b { display: block; font-size: .75rem; opacity: .7; }
 </style>
   <script>document.documentElement.classList.add('js')</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
@@ -1455,6 +1468,113 @@ function liveWords(G, addAmbient) {
   });
 }
 
+/* ---------- Friday night: a photo dump you can throw around ---------- */
+// Grab a snapshot and throw it; it slides to a stop like a print on a table, and someone in the group reacts.
+// On a touch screen, a tap tosses it a little instead, so the page still scrolls under your finger.
+const REACT = [
+  ['a', 'send pics!!'], ['r', 'who took this 😂'], ['m', 'best friday'], ['k', 'same time next week?'],
+  ['a', 'the momos tho'], ['r', 'I was winning'], ['m', 'made the last metro'], ['k', '10/10'],
+];
+function photoDump(G) {
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const stage = document.querySelector('.night-stage');
+  const snaps = [...document.querySelectorAll('.snap')].map((el) => ({ el, x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, held: null }));
+  if (!stage || !snaps.length) return;
+  let n = 0;
+  let z = 10;
+  function react(s) {
+    const [who, text] = REACT[n++ % REACT.length];
+    const b = document.createElement('p');
+    b.className = 'react';
+    b.dataset.who = who;
+    b.textContent = text;
+    b.setAttribute('aria-hidden', 'true');
+    const r = s.el.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    b.style.left = `${r.left - sr.left + r.width * .5}px`;
+    b.style.top = `${r.top - sr.top}px`;
+    stage.append(b);
+    G.fromTo(b, { y: 10, scale: .6, opacity: 0 }, { y: -40, scale: 1, opacity: 1, duration: .45, ease: 'back.out(2)' });
+    G.to(b, { y: -90, opacity: 0, duration: .6, delay: 1.4, ease: 'power2.in', onComplete: () => b.remove() });
+  }
+  const paint = (s) => {
+    s.el.style.translate = `${s.x.toFixed(1)}px ${s.y.toFixed(1)}px`;
+    s.el.style.rotate = `${s.r.toFixed(2)}deg`;
+  };
+  let running = false;
+  const glide = (_, dtMs) => {
+    const dt = Math.min(dtMs, 40) / 1000;
+    let moving = false;
+    snaps.forEach((s) => {
+      const out = s.b && (s.x < s.b.minX - 1 || s.x > s.b.maxX + 1 || s.y < s.b.minY - 1 || s.y > s.b.maxY + 1);
+      if (s.held || (!out && Math.abs(s.vx) < 4 && Math.abs(s.vy) < 4 && Math.abs(s.vr) < 2)) return;
+      moving = true;
+      const f = Math.exp(-4 * dt); // friction: a print sliding on a table
+      s.vx *= f; s.vy *= f; s.vr *= f;
+      s.x += s.vx * dt; s.y += s.vy * dt; s.r += s.vr * dt;
+      // stay on the table: past an edge, it eases back in
+      const b = s.b;
+      if (b) {
+        if (s.x < b.minX) s.vx = Math.max(s.vx, (b.minX - s.x) * 5);
+        if (s.x > b.maxX) s.vx = Math.min(s.vx, (b.maxX - s.x) * 5);
+        if (s.y < b.minY) s.vy = Math.max(s.vy, (b.minY - s.y) * 5);
+        if (s.y > b.maxY) s.vy = Math.min(s.vy, (b.maxY - s.y) * 5);
+      }
+      paint(s);
+    });
+    if (!moving) { running = false; G.ticker.remove(glide); }
+  };
+  // how far each print may travel: inside the chapter, a little past the sides
+  function bounds(s) {
+    const r = s.el.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    s.b = {
+      minX: s.x + (sr.left - r.left) - r.width * .25, maxX: s.x + (sr.right - r.right) + r.width * .25,
+      minY: s.y + (sr.top - r.top), maxY: s.y + (sr.bottom - r.bottom),
+    };
+  }
+  const go = () => { if (!running) { running = true; G.ticker.add(glide); } };
+
+  snaps.forEach((s) => {
+    s.el.classList.add('is-loose');
+    s.el.addEventListener('pointerdown', (e) => {
+      s.el.style.zIndex = String(++z);
+      if (e.pointerType !== 'mouse' || !fine) {
+        const a = Math.random() * Math.PI * 2;
+        s.vx = Math.cos(a) * 520; s.vy = Math.sin(a) * 380; s.vr = (Math.random() - .5) * 120;
+        bounds(s); react(s); go();
+        return;
+      }
+      e.preventDefault();
+      s.held = { lx: e.clientX, ly: e.clientY, lt: performance.now(), vx: 0, vy: 0 };
+      s.el.classList.add('is-held');
+      s.el.setPointerCapture(e.pointerId);
+    });
+    s.el.addEventListener('pointermove', (e) => {
+      const h = s.held;
+      if (!h) return;
+      const now = performance.now();
+      const dt = Math.max(8, now - h.lt) / 1000;
+      h.vx = (e.clientX - h.lx) / dt; h.vy = (e.clientY - h.ly) / dt;
+      s.x += e.clientX - h.lx; s.y += e.clientY - h.ly;
+      s.r += (e.clientX - h.lx) * .04;
+      h.lx = e.clientX; h.ly = e.clientY; h.lt = now;
+      paint(s);
+    });
+    const drop = () => {
+      const h = s.held;
+      if (!h) return;
+      s.held = null;
+      s.el.classList.remove('is-held');
+      s.vx = Math.max(-1800, Math.min(1800, h.vx)); s.vy = Math.max(-1800, Math.min(1800, h.vy)); s.vr = s.vx * .06;
+      if (Math.hypot(s.vx, s.vy) > 250) react(s);
+      bounds(s); go();
+    };
+    s.el.addEventListener('pointerup', drop);
+    s.el.addEventListener('pointercancel', drop);
+  });
+}
+
 // story.js
 // Planic scroll story. Scroll is the clock; every chapter reads in its finished state without this file.
 // Uses GSAP + ScrollTrigger (self-hosted in vendor/) for scroll-linked motion, and the frozen
@@ -1485,6 +1605,7 @@ function setClock(day, time) {
   if (clockTime.textContent !== time) clockTime.textContent = time;
 }
 const navBg = document.querySelector('.nav__bg');
+let filmST = null; // the film's pin, so the sky can follow it
 let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
 function enterChapter(sec) {
   document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
@@ -1582,9 +1703,8 @@ function filmMotion() {
     .to('.toasts', { y: -50, opacity: 0, duration: .45 }, .08)
     .fromTo(film, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: () => (innerWidth < 900 ? 'inset(7% 4% 7% 4% round 24px)' : 'inset(9% 6% 9% 6% round 32px)'), duration: 1 }, 0)
     .to(video, { scale: 1.08, duration: 1 }, 0)
-    .to('.film__shade', { opacity: .6, duration: 1 }, 0)
-    // the day comes up around the film as it closes, so the chat arrives in daylight
-    .fromTo([$('.sky'), navBg], { backgroundColor: sec.dataset.sky }, { backgroundColor: $('.ch--chat').dataset.sky, duration: .55, immediateRender: false }, .3);
+    .to('.film__shade', { opacity: .6, duration: 1 }, 0);
+  filmST = tl.scrollTrigger;
 }
 
 /* ---------- 1. the chat ---------- */
@@ -1678,11 +1798,12 @@ function sky() {
   G.set(el, { backgroundColor: sections[0].dataset.sky });
   sections.slice(1).forEach((sec, i) => {
     const prev = sections[i];
-    if (prev.id === 'film') return; // the film turns the day up itself, while it closes
-    G.fromTo(el, { backgroundColor: prev.dataset.sky }, {
-      backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false,
-      scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true },
-    });
+    // The day comes up around the film while it closes, so the chat arrives in daylight. Unsmoothed (scrub: true)
+    // like every other sky change, so a jump down the page can't let it land last and paint the night white.
+    const st = prev.id === 'film' && filmST
+      ? { start: () => filmST.start + innerHeight * .24, end: () => filmST.start + innerHeight * .68, scrub: true }
+      : { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true };
+    G.fromTo(el, { backgroundColor: prev.dataset.sky }, { backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false, scrollTrigger: st });
   });
 }
 
@@ -2026,7 +2147,33 @@ join.addEventListener('submit', (e) => {
   $('.join__msg').textContent = ok
     ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
     : 'That email doesn’t look right. Check it and try again.';
+  if (ok) welcome();
 });
+
+// A small hello from the group when you join (decoration only; the message above says what really happened).
+function welcome() {
+  const box = $('.join__hello');
+  if (box.childElementCount) return;
+  [['k', 'Kabir', 'welcome to the group 👋'], ['m', 'Meera', 'finally someone else plans'], ['a', 'Aanya', 'is there veg tho']].forEach(([who, name, text], i) => {
+    const b = document.createElement('p');
+    b.className = 'hello';
+    b.dataset.who = who;
+    b.innerHTML = `<b>${name}</b> ${text}`;
+    box.append(b);
+    if (MOTION) G.from(b, { y: 18, scale: .8, opacity: 0, duration: .5, delay: .25 + i * .55, ease: 'back.out(2)' });
+  });
+  if (navigator.vibrate) try { navigator.vibrate([10, 60, 10]); } catch { /* not allowed here */ }
+}
+
+/* ---------- the tab: when you look away, the group chat keeps going ---------- */
+{
+  const title = document.title;
+  let away = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { away = Math.min(away + 3, 47); document.title = `(${away}) so… where? · Planic`; }
+    else document.title = title;
+  });
+}
 
 /* ---------- 4b. the plan's actions ---------- */
 const acceptBtn = $('.act--accept');
@@ -2034,6 +2181,7 @@ acceptBtn.addEventListener('click', () => {
   const on = acceptBtn.getAttribute('aria-pressed') !== 'true';
   acceptBtn.setAttribute('aria-pressed', String(on));
   acceptBtn.textContent = on ? 'Accepted ✓' : 'Accept';
+  if (on && navigator.vibrate) try { navigator.vibrate(12); } catch { /* not allowed here */ }
   $('.plan__note').textContent = on ? 'Accepted. In the app, all four would see you’re in.' : '';
   // all four dots light up in turn: everyone sees it
   if (on && MOTION) G.fromTo($$('.plan .why__dot'), { scale: 1 }, { scale: 1.9, duration: .22, yoyo: true, repeat: 1, stagger: .12, ease: 'power2.out' });
@@ -2088,6 +2236,7 @@ if (MOTION) {
   sky(); // last: its triggers sit below every pinned chapter, so they must be measured after the pins
   threads(G, ST, addAmbient);
   liveWords(G, addAmbient);
+  photoDump(G);
   // Photos load lazily; re-measure once they arrive so pinned lengths stay right.
   if (document.readyState === 'complete') ST.refresh(); else addEventListener('load', () => ST.refresh());
 }
@@ -2381,6 +2530,7 @@ if (MOTION) {
           <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
           <button type="submit">Get early access</button>
         </div>
+        <div class="join__hello" aria-hidden="true"></div>
         <p class="join__msg" role="status" aria-live="polite">No account needed. We’ll only email you about Planic.</p>
       </form>
     </section>
