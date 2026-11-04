@@ -2093,6 +2093,8 @@ async function drawCard() {
   return new Promise((res) => c.toBlob(res, 'image/png'));
 }
 const cardBtn = $('#send-card');
+// Only the claude.ai preview has window.claude; on the real site this stays null and the browser saves directly.
+const hostDownloads = window.claude && window.claude.use ? window.claude.use('downloads').catch(() => null) : Promise.resolve(null);
 if (HTMLCanvasElement.prototype.toBlob && CanvasRenderingContext2D.prototype.roundRect) {
   cardBtn.hidden = false;
   cardBtn.addEventListener('click', async (e) => {
@@ -2101,7 +2103,12 @@ if (HTMLCanvasElement.prototype.toBlob && CanvasRenderingContext2D.prototype.rou
     try {
       const blob = await drawCard();
       const file = new File([blob], 'our-group-chat-decoded.png', { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      // Inside a claude.ai preview the page can't download by itself; the viewer's app offers the save instead.
+      const host = await hostDownloads;
+      if (host) {
+        try { await host.save({ filename: file.name, data: blob }); }
+        catch (err) { btn.textContent = err && err.code === 'declined' ? 'Save as image' : 'Couldn’t save it here'; setTimeout(() => { btn.textContent = 'Save as image'; }, 2400); return; }
+      } else if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], text: updateShare().text }).catch(() => {});
       } else {
         const a = document.createElement('a');
