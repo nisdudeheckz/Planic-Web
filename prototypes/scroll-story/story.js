@@ -202,7 +202,7 @@ function chatMotion() {
   const tl = G.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: {
-      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 1.6 : 1.3)}`,
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 1.25 : 1)}`,
       pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate(self) {
         const shown = Math.min(items.length - 1, FIRST - 1 + Math.floor(self.progress * 1.18 * (items.length - FIRST + 1)));
@@ -313,7 +313,7 @@ function weighMotion() {
   enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.3}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * .9}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   let t = .1;
   out.forEach((o) => {
@@ -338,7 +338,7 @@ function planMotion() {
   G.set(reveal, { '--scrim': 0 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.5}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
   tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);
@@ -360,7 +360,7 @@ function nightMotion() {
 }
 
 function sectionReveals() {
-  $$('.ch--try .ch__head > :not(h2), .ch--share .ch__head > :not(h2), .ch--join > :not(h2)').forEach((el) => {
+  $$('.ch--try .ch__head > :not(h2), .ch--share .ch__head > :not(h2), .ch--join > :not(h2, .glimpse)').forEach((el) => {
     G.from(el, { y: 36, opacity: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
   });
   G.from('.decode', { y: 80, rotation: -6, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.share', start: 'top 95%', end: 'top 45%', scrub: true } });
@@ -767,6 +767,20 @@ function welcome() {
   if (navigator.vibrate) try { navigator.vibrate([10, 60, 10]); } catch { /* not allowed here */ }
 }
 
+// The glimpse: when it comes into view, Planic's answer arrives in the chat and the fourth friend joins.
+function glimpse() {
+  const fig = $('.glimpse');
+  if (!fig || !MOTION) return;
+  const items = $$('.gb', fig);
+  const count = $('.gp__count', fig);
+  const tl = G.timeline({ paused: true });
+  tl.from(fig, { y: 40, autoAlpha: 0, duration: .7, ease: 'power3.out' })
+    .from(items, { y: 16, scale: .9, autoAlpha: 0, stagger: .45, duration: .5, ease: 'back.out(2)', transformOrigin: '0% 100%' }, .3)
+    .add(() => { count.textContent = '4'; }, '+=.9')
+    .fromTo(count, { scale: 1 }, { scale: 1.6, duration: .18, yoyo: true, repeat: 1, ease: 'power2.out' }, '<');
+  ST.create({ trigger: fig, start: 'top 85%', once: true, onEnter: () => tl.play() });
+}
+
 /* ---------- the tab: when you look away, the group chat keeps going ---------- */
 {
   const title = document.title;
@@ -839,6 +853,7 @@ if (MOTION) {
   threads(G, ST, addAmbient);
   liveWords(G, addAmbient);
   photoDump(G);
+  glimpse();
   // Photos load lazily; re-measure once they arrive so pinned lengths stay right.
   if (document.readyState === 'complete') ST.refresh(); else addEventListener('load', () => ST.refresh());
 }
