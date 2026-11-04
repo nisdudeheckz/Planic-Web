@@ -32,7 +32,10 @@
       <svg viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
       <span>Planic</span>
     </a>
-    <p class="clock" aria-hidden="true"><span class="clock__day">Wed</span> <span class="clock__time">4:12 PM</span></p>
+    <div class="nav__mid">
+      <p class="clock" aria-hidden="true"><span class="clock__day">Wed</span> <span class="clock__time">4:12 PM</span></p>
+      <button type="button" class="pause" aria-pressed="false" aria-label="Pause motion" title="Pause motion" hidden><span class="pause__icon" aria-hidden="true"></span></button>
+    </div>
     <a class="nav__cta" href="#early-access">Join early access</a>
   </header>
 
@@ -305,7 +308,6 @@
     </section>
   </main>
 
-  <button type="button" class="still" aria-pressed="false" hidden><span class="still__icon" aria-hidden="true"></span><span class="still__label">Pause motion</span></button>
 
   <footer class="foot">
     <p class="foot__small"><span>The four friends, the chat, the places, prices and plan are an illustrative example, not real people, venues or live results. {{PHOTO_NOTE}} The opening film is cut from free <a href="https://www.pexels.com/">Pexels</a> clips of other people and places.</span></p>

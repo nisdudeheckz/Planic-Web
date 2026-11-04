@@ -39,7 +39,7 @@ sections.forEach((s) => chapterIO.observe(s));
 
 /* ---------- ambient motion: runs only while its chapter is on screen ---------- */
 const ambient = []; // [{ el, tweens: [] }]
-const stillBtn = $('.still');
+const pauseBtn = $('.pause');
 let still = false;
 const offIO = new IntersectionObserver((entries) => {
   for (const e of entries) {
@@ -494,12 +494,14 @@ updateShare();
 if (MOTION) {
   G.registerPlugin(ST);
   ST.config({ ignoreMobileResize: true });
-  stillBtn.hidden = false;
-  stillBtn.addEventListener('click', () => {
+  pauseBtn.hidden = false;
+  pauseBtn.addEventListener('click', () => {
     still = !still;
     root.classList.toggle('still', still);
-    stillBtn.setAttribute('aria-pressed', String(still));
-    $('.still__label').textContent = still ? 'Play motion' : 'Pause motion';
+    pauseBtn.setAttribute('aria-pressed', String(still));
+    const label = still ? 'Play motion' : 'Pause motion';
+    pauseBtn.setAttribute('aria-label', label);
+    pauseBtn.title = label;
     ambient.forEach((a) => a.tweens.forEach((t) => (still || a.el.classList.contains('off') ? t.pause() : t.play())));
   });
   splitHeads(G);

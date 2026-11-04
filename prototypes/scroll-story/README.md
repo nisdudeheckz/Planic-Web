@@ -29,7 +29,7 @@ With a mouse, a follower changes over things: it takes a person's colour over an
 ## Motion rules
 
 - Scroll-linked motion uses GSAP 3 + ScrollTrigger (`vendor/`, GSAP's standard no-charge licence). Native scrolling, no smooth-scroll library.
-- Ambient loops animate only decoration, never text you are reading. They pause when their chapter is off screen, and the "Pause motion" button stops all of them (WCAG 2.2.2).
+- Ambient loops animate only decoration, never text you are reading. They pause when their chapter is off screen, and a small pause icon next to the clock in the top bar stops all of them, the film included (WCAG 2.2.2).
 - `prefers-reduced-motion`: no pins, no scrubbing, no loops; every chapter is laid out finished on its own colour. Same without JavaScript.
 
 ## Photos
@@ -38,7 +38,7 @@ Real photos from Unsplash (Unsplash License), chosen through the official API wi
 
 ## Opening film
 
-`film/open-wide.mp4` (1280×720) and `film/open-tall.mp4` (720×1280, picked for portrait screens), each about 1.8 MB, H.264, no sound, 17.2 s loop. Cut with ffmpeg from free Pexels clips (Pexels License): seven shots, cross-faded, chosen so no face is recognisable (crowd shots are from behind or far away). The footer says the film shows other people and places. `film/poster-*.webp` is the still frame shown before it plays, with reduced motion, without JavaScript, or when a browser refuses to autoplay. The film plays only while on screen and stops with Pause motion.
+`film/open-wide.mp4` (1280×720) and `film/open-tall.mp4` (720×1280, picked for portrait screens), each about 1.8 MB, H.264, no sound, 17.2 s loop. Cut with ffmpeg from free Pexels clips (Pexels License): seven shots, cross-faded, chosen so no face is recognisable (crowd shots are from behind or far away). The footer says the film shows other people and places. `film/poster-*.webp` is the still frame shown before it plays, with reduced motion, without JavaScript, or when a browser refuses to autoplay. The film plays only while on screen and stops with the pause icon.
 
 ## Run it
 
