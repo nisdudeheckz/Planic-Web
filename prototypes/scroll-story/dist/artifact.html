@@ -1877,6 +1877,90 @@ $('#send-copy').addEventListener('click', async (e) => {
   setTimeout(() => { btn.textContent = 'Copy link'; }, 2200);
 });
 
+/* ---------- the decoded card as a story-sized picture (1080 x 1920) ---------- */
+const TONES = { a: '#FF6B61', r: '#B8AEFF', m: '#F5C76B', k: '#9ED9B8' };
+async function drawCard() {
+  const W = 1080, H = 1920;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const D = '"Bricolage Grotesque", system-ui, sans-serif';
+  const B = '"Instrument Sans", system-ui, sans-serif';
+  try { await Promise.all([document.fonts.load(`800 120px ${D}`), document.fonts.load(`500 40px ${B}`)]); } catch { /* system fonts then */ }
+  x.fillStyle = '#111216'; x.fillRect(0, 0, W, H);
+  // four soft lights, one per friend
+  [['a', 120, 260], ['r', 980, 520], ['m', 140, 1500], ['k', 960, 1760]].forEach(([w, cx, cy]) => {
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, 520);
+    g.addColorStop(0, `${TONES[w]}55`); g.addColorStop(1, `${TONES[w]}00`);
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+  });
+  // the four threads, coming together at the bottom
+  ['a', 'r', 'm', 'k'].forEach((w, i) => {
+    x.strokeStyle = TONES[w]; x.lineWidth = 6; x.lineCap = 'round';
+    x.beginPath();
+    for (let y = 0; y <= H; y += 20) {
+      const s = Math.max(0, 1 - y / (H * .92));
+      const px = 56 + (i - 1.5) * 14 * s + Math.sin(y / 90 + i * 2) * 16 * s;
+      if (y) x.lineTo(px, y); else x.moveTo(px, y);
+    }
+    x.stroke();
+  });
+  // mark
+  x.fillStyle = '#7567F8'; x.beginPath(); x.arc(130, 140, 22, 0, 7); x.fill();
+  x.fillStyle = '#FF6B61'; x.beginPath(); x.arc(162, 140, 22, 0, 7); x.fill();
+  x.fillStyle = '#FBFBFA'; x.font = `700 44px ${D}`; x.textBaseline = 'middle'; x.fillText('Planic', 200, 142);
+  // title
+  x.textBaseline = 'alphabetic';
+  x.font = `800 124px ${D}`; x.fillStyle = '#FBFBFA';
+  x.fillText('Our group chat,', 110, 400);
+  x.fillStyle = '#FF6B61'; x.fillText('decoded.', 110, 520);
+  // the four
+  const names = Object.fromEntries($$('.decode__rows li').map((li) => [li.dataset.who, clean($('input', li).value)]));
+  ['a', 'r', 'm', 'k'].forEach((w, i) => {
+    const top = 640 + i * 250;
+    x.fillStyle = TONES[w];
+    x.beginPath(); x.roundRect(110, top, 860, 220, 36); x.fill();
+    x.fillStyle = '#111216';
+    x.font = `600 34px ${B}`;
+    x.fillText($(`.decode__rows li[data-who="${w}"] .decode__role`).textContent, 150, top + 62);
+    const n = names[w] && !isMe(names[w]) ? names[w] : (w === me ? 'Me' : '???');
+    const label = n + (w === me && n !== 'Me' ? ' (me)' : '');
+    let size = 92; // long names shrink to fit the card
+    do { x.font = `800 ${size}px ${D}`; size -= 4; } while (x.measureText(label).width > 780 && size > 44);
+    x.fillText(label, 150, top + 156);
+    x.font = `500 30px ${B}`; x.globalAlpha = .7;
+    x.fillText(`“${SAID[w]}”`, 150, top + 198); x.globalAlpha = 1;
+  });
+  x.fillStyle = '#FBFBFA'; x.font = `800 76px ${D}`;
+  x.fillText('Which one are you?', 110, 1720);
+  x.font = `500 34px ${B}`; x.fillStyle = 'rgba(251,251,250,.7)';
+  x.fillText('Planic · plans for the group chat · early access', 110, 1790);
+  return new Promise((res) => c.toBlob(res, 'image/png'));
+}
+const cardBtn = $('#send-card');
+if (HTMLCanvasElement.prototype.toBlob && CanvasRenderingContext2D.prototype.roundRect) {
+  cardBtn.hidden = false;
+  cardBtn.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    btn.textContent = 'Making it…';
+    try {
+      const blob = await drawCard();
+      const file = new File([blob], 'our-group-chat-decoded.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: updateShare().text }).catch(() => {});
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = file.name;
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      }
+      btn.textContent = 'Saved ✓';
+    } catch { btn.textContent = 'Couldn’t make it'; }
+    setTimeout(() => { btn.textContent = 'Save as image'; }, 2400);
+  });
+}
+
 /* ---------- 5. your turn: talk back ---------- */
 const asksForm = $('.asks');
 const said = $('.answer__said');
@@ -2272,6 +2356,7 @@ if (MOTION) {
             <a class="btn btn--ink" id="send-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
             <button type="button" class="btn btn--ghost-ink" id="send-share" hidden>Share…</button>
             <button type="button" class="btn btn--ghost-ink" id="send-copy">Copy link</button>
+            <button type="button" class="btn btn--ghost-ink" id="send-card" hidden>Save as image</button>
           </div>
           <p class="send__note">The names travel only inside the link you send. Nothing is saved anywhere.</p>
         </div>
