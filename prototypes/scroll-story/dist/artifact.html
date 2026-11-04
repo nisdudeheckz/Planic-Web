@@ -1238,7 +1238,7 @@ function splitHeads(G) {
 //                Reading text (paragraphs, plan details) never moves this way.
 
 const ORDER = ['a', 'r', 'm', 'k'];
-const TONE = { a: '#FF6B61', r: '#B8AEFF', m: '#F5C76B', k: '#9ED9B8' };
+const HUE = { a: '#FF6B61', r: '#B8AEFF', m: '#F5C76B', k: '#9ED9B8' };
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const smooth = (t) => t * t * (3 - 2 * t);
 
@@ -1252,7 +1252,7 @@ function threads(G, ST, addAmbient) {
   const paths = ORDER.map((who) => {
     const p = document.createElementNS(NS, 'path');
     p.setAttribute('class', 'thread');
-    p.setAttribute('stroke', TONE[who]);
+    p.setAttribute('stroke', HUE[who]);
     p.dataset.who = who;
     svg.append(p);
     return p;

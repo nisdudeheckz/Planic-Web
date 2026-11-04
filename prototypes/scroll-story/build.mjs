@@ -4,6 +4,7 @@
 //   dist/artifact.html     the same, without the document skeleton, for a claude.ai Artifact page
 // The decision engine is reused unchanged from the frozen talk-back prototype.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { Script } from 'node:vm';
 import { evaluate, DEFAULT_ASKS, PEOPLE } from '../interactive-hero/engine.js';
 import { whyRowsHTML, tradeHTML, esc } from '../interactive-hero/view.js';
 
@@ -72,6 +73,9 @@ const single = html
   .replace('{{STYLE}}', () => `<style>\n${read('story.css')}</style>`)
   .replace('{{VENDOR}}', () => `<script>\n${read('vendor/gsap.min.js')}\n</script>\n<script>\n${read('vendor/ScrollTrigger.min.js')}\n</script>`)
   .replace('{{SCRIPT}}', () => `<script type="module">\n${bundle}</script>`);
+// The bundle joins several modules into one script, so two files declaring the same top-level name would
+// break the whole page with nothing visible until it runs. Compile it here and stop the build instead.
+try { new Script(bundle); } catch (e) { console.error('bundle does not compile:', e.message); process.exit(1); }
 mkdirSync(new URL('dist/', here), { recursive: true });
 writeFileSync(new URL('dist/scroll-story.html', here), single);
 // The Artifact page loads GSAP from cdnjs (an allowed host) instead of inlining it; photos are published beside it in img/.
