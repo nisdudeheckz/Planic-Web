@@ -974,3 +974,6 @@ html:not(.motion) .film__one { display: none; }
 .allin__chip[data-who="r"], .allin__chip[data-who="m"] { top: 8%; }
 .allin__chip[data-who="a"], .allin__chip[data-who="k"] { bottom: 8%; }
 @media (max-width: 899px) { .allin { height: 190px; } .allin__mark { width: 128px; } }
+
+/* the glimpse: Planic arrives as a link the planner sends, not as a member of the chat */
+.gp__link { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(251,251,250,.18); font-size: .75rem; font-weight: 600; color: var(--on-dark-soft); }
