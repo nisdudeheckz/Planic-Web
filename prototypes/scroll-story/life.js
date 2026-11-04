@@ -80,9 +80,9 @@ export function pointerLife(G) {
   });
 }
 
-/* Chapter headings: each word rises out of its own line as the chapter arrives. */
+/* Chapter headings: each word drops in under gravity and lands as the chapter arrives. */
 export function splitHeads(G) {
-  const heads = [...document.querySelectorAll('main h2:not(.plan__title):not(.night__title)')];
+  const heads = [...document.querySelectorAll('main h2:not(.plan__title), .film__line')];
   heads.forEach((h) => {
     const walk = (node) => {
       for (const n of [...node.childNodes]) {
@@ -103,9 +103,11 @@ export function splitHeads(G) {
       }
     };
     walk(h);
-    if (h.closest('.ch--weigh')) return; // the pinned weigh timeline brings its own heading in
+    // the pinned weigh timeline and the scrubbed night line bring their own headings in
+    if (h.closest('.ch--weigh') || h.classList.contains('night__title')) return;
     G.from([...h.querySelectorAll('.split > span')], {
-      yPercent: 110, rotation: 4, duration: .9, stagger: .05, ease: 'power4.out',
+      yPercent: -160, rotation: () => G.utils.random(-14, 14), opacity: 0, duration: 1.1, ease: 'bounce.out',
+      stagger: { each: .07, from: 'random' },
       scrollTrigger: { trigger: h, start: 'top 85%', toggleActions: 'play none none reverse' },
     });
   });

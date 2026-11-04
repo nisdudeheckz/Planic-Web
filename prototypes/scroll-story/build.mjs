@@ -66,7 +66,7 @@ writeFileSync(new URL('index.html', here), html
   .replace('{{SCRIPT}}', '<script type="module" src="story.js"></script>'));
 
 const strip = (src) => src.replace(/^import [\s\S]*?;$/gm, '').replace(/^export /gm, '');
-const bundle = ['../interactive-hero/engine.js', '../interactive-hero/view.js', 'life.js', 'story.js']
+const bundle = ['../interactive-hero/engine.js', '../interactive-hero/view.js', 'life.js', 'alive.js', 'story.js']
   .map((f) => `// ${f.split('/').pop()}\n${strip(read(f))}`).join('\n');
 const single = html
   .replace('{{STYLE}}', () => `<style>\n${read('story.css')}</style>`)

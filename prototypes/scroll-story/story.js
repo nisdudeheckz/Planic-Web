@@ -4,6 +4,7 @@
 import { evaluate, explainChange, sameAsks, DEFAULT_ASKS, PEOPLE } from '../interactive-hero/engine.js';
 import { whyRowsHTML, tradeHTML, bendsHTML, NO_PLAN, esc } from '../interactive-hero/view.js';
 import { pointerLife, splitHeads } from './life.js';
+import { threads, liveWords } from './alive.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -149,7 +150,7 @@ function chatMotion() {
   G.set('.tally span', { autoAlpha: 0, y: 20 });
   // The headline and chat arrive as the film hands over to them.
   const arrive = { trigger: sec, start: 'top 70%', toggleActions: 'play none none none' };
-  G.from('.open__title .w', { yPercent: 60, autoAlpha: 0, duration: .9, stagger: .07, ease: 'power3.out', scrollTrigger: arrive });
+  G.from('.open__title .w', { yPercent: -140, rotation: () => G.utils.random(-12, 12), autoAlpha: 0, duration: 1.1, stagger: { each: .07, from: 'random' }, ease: 'bounce.out', scrollTrigger: arrive });
   // yPercent and opacity, so it never fights the pinned timeline below, which moves the thread by y
   G.from([thread], { yPercent: 10, opacity: 0, duration: 1, ease: 'power3.out', delay: .25, scrollTrigger: arrive });
 
@@ -225,7 +226,6 @@ function sky() {
       scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true },
     });
   });
-  G.fromTo('.lanes', { scaleY: 0 }, { scaleY: 1, ease: 'none', scrollTrigger: { trigger: 'main', start: 'top top', end: 'bottom bottom', scrub: true } });
 }
 
 /* ---------- 2. the four: a deck that stacks as you scroll ---------- */
@@ -515,6 +515,8 @@ if (MOTION) {
   sectionReveals();
   pointerLife(G);
   sky(); // last: its triggers sit below every pinned chapter, so they must be measured after the pins
+  threads(G, ST, addAmbient);
+  liveWords(G, addAmbient);
   // Photos load lazily; re-measure once they arrive so pinned lengths stay right.
   if (document.readyState === 'complete') ST.refresh(); else addEventListener('load', () => ST.refresh());
 }

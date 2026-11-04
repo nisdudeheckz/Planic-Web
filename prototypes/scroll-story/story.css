@@ -82,15 +82,12 @@ h2 { font-size: clamp(2.3rem, 1.4rem + 3.6vw, 4.6rem); }
 html.motion .sky { display: block; }
 html.motion .ch { background: transparent !important; }
 
-.lanes { position: fixed; left: 10px; top: 0; height: 100vh; width: 20px; z-index: 40; pointer-events: none; display: none; }
-html.motion .lanes { display: block; }
-.lane { stroke: var(--tone); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linecap: round; }
-.lane[data-who="a"] { --tone: var(--coral); }
-.lane[data-who="r"] { --tone: var(--lav); }
-.lane[data-who="m"] { --tone: var(--sun); }
-.lane[data-who="k"] { --tone: var(--mint); }
-.lanes { transform-origin: top; }
-@media (max-width: 899px) { .lanes { display: none !important; } }
+/* four threads, one per friend, in the left margin (drawn by alive.js) */
+.threads { position: fixed; left: 0; top: 0; height: 100vh; z-index: 40; pointer-events: none; opacity: 0; overflow: visible; }
+.thread { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.thread--one { stroke: var(--on-dark); stroke-width: 1.5; }
+.thread__knot { fill: none; stroke: var(--on-dark); stroke-width: 2; opacity: 0; }
+@media (max-width: 899px) { .thread { stroke-width: 2; } }
 
 .nav {
   position: absolute; top: 0; left: 0; right: 0; z-index: 50; height: var(--navh);
@@ -531,8 +528,8 @@ html.fine.motion body[data-ink="light"] .glow { opacity: 1; }
 
 /* hover: something always answers */
 @media (hover: hover) and (pointer: fine) {
-  .open__title .w { transition: translate .35s var(--ease-out), rotate .35s var(--ease-out), color .3s; }
-  .open__title .w:hover { translate: 0 -.08em; rotate: -2deg; color: var(--plan); }
+  .open__title .w { transition: color .3s; }
+  .open__title .w:hover { color: var(--plan); }
   .b p { transition: translate .3s var(--ease-out), rotate .3s var(--ease-out), box-shadow .3s; }
   .b:hover p { translate: 0 -2px; rotate: -1deg; box-shadow: 0 10px 20px -12px color-mix(in srgb, var(--tone) 90%, black); }
   .ticker__row span { transition: scale .3s var(--ease-out), rotate .3s var(--ease-out); }
@@ -556,8 +553,11 @@ html.fine.motion body[data-ink="light"] .glow { opacity: 1; }
 @keyframes ripple { to { transform: scale(7); opacity: 0; } }
 .btn:active, .me:active, .ask span:active, .nav__cta:active { scale: .96; }
 
-/* headings rise out of their own lines */
-.split { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
+/* headings drop in word by word; the big words then float, sway and can be flicked (alive.js) */
+.split { display: inline-block; vertical-align: top; }
+html.fine .alive { cursor: grab; }
+html.fine .alive.is-held { cursor: grabbing; position: relative; z-index: 30; }
+html.holding, html.holding * { user-select: none; -webkit-user-select: none; cursor: grabbing !important; }
 .split > span { display: inline-block; }
 .decode__rows li.is-me .decode__role::after { content: " · you"; opacity: .6; }
 
