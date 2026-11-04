@@ -671,3 +671,7 @@ html.js .foot { padding-bottom: 76px; }
 /* The confirmation is spoken to screen readers; on screen the button and the four dots say it, so the layout never grows. */
 .plan__note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 899px) { .plan__acts { gap: 6px; } .plan__acts .act { padding: 6px 12px; font-size: .875rem; } }
+
+/* Photo credits read as text, not as bright default links. */
+.foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.foot a:hover { color: var(--on-dark); }

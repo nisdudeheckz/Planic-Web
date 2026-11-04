@@ -27,12 +27,12 @@ function photo(id, alt, label) {
 const r = evaluate(DEFAULT_ASKS);
 const ORDER = ['rooftop', 'cafe', 'board', 'brunch', 'crawl', 'kebab'];
 const OPT_PHOTO = {
-  rooftop: ['A rooftop lounge at night with the city lit up behind it', 'rooftop at night'],
-  cafe: ['Two familiar mugs on the corner table of a neighbourhood café', 'the usual café'],
-  board: ['Board games spread across a café table under warm lamps', 'board-game café'],
-  brunch: ['A sunny brunch table with pancakes and juice', 'brunch in daylight'],
-  crawl: ['A chaat stall lit by a single bulb, plates being handed over', 'street-food stalls'],
-  kebab: ['Kebabs on a grill with a guitarist blurred in the background', 'kebabs and a live set'],
+  rooftop: ['A rooftop restaurant at night, warm lamps over low tables and the city lights behind', 'rooftop at night'],
+  cafe: ['Three glasses of cutting chai and a samosa on a small table', 'the usual chai spot'],
+  board: ['A board game seen from above on a wooden table, cards, dice and a bowl of chips', 'board-game café'],
+  brunch: ['Brunch bowls with pancakes and berries on a pink table', 'brunch in daylight'],
+  crawl: ['A hand holding a foil bowl of aloo chaat with a toothpick', 'aloo chaat on the street'],
+  kebab: ['Chicken skewers on a charcoal grill, people standing around it', 'kebabs on the grill'],
 };
 const opts = ORDER.map((id, n) => {
   const o = r.board.find((x) => x.id === id);
@@ -53,7 +53,12 @@ let html = read('index.src.html')
   .replace('{{THEN}}', esc(r.plan.then))
   .replaceAll('{{WHY}}', whyRowsHTML(r))
   .replaceAll('{{TRADE}}', tradeHTML(r.plan));
-html = html.replace('{{PHOTO_NOTE}}', photos ? 'The photos are generated stand-ins, not real places or people.' : 'Photo slots are placeholders.');
+const credits = existsSync(new URL('img/CREDITS.json', here)) ? JSON.parse(read('img/CREDITS.json')) : null;
+const byPerson = credits ? [...new Map(Object.values(credits).map((c) => [c.username, c])).values()] : [];
+const creditLine = byPerson.map((c) => `<a href="https://unsplash.com/@${esc(c.username)}?utm_source=planic&amp;utm_medium=referral">${esc(c.photographer)}</a>`).join(', ');
+html = html.replace('{{PHOTO_NOTE}}', !photos ? 'Photo slots are placeholders.'
+  : credits ? `Photos from <a href="https://unsplash.com/?utm_source=planic&amp;utm_medium=referral">Unsplash</a> by ${creditLine}. They show real places, but not the venues in the example.`
+  : 'The photos are generated stand-ins, not real places or people.');
 
 writeFileSync(new URL('index.html', here), html
   .replace('{{STYLE}}', '<link rel="stylesheet" href="story.css" />')

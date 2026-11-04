@@ -33,7 +33,7 @@ With a mouse, a follower changes over things: it takes a person's colour over an
 
 ## Photos
 
-Generated with Figma AI (gpt-image-2.5) in the file "Planic scroll story photos", as stand-ins: places, food and hands, no identifiable faces. The footer says so. Real Delhi photography should replace them before launch.
+Real photos from Unsplash (Unsplash License), chosen through the official API with no recognisable faces. Photographers and photo pages are listed in `img/CREDITS.json` and credited in the footer, which also says the photos show real places but not the venues in the example. Each photo was registered with Unsplash's download endpoint. Unsplash's API guidelines prefer hotlinking from images.unsplash.com; these are self-hosted, cropped copies, which the licence allows.
 
 ## Run it
 
