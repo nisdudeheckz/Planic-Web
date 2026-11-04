@@ -302,7 +302,9 @@
     <section class="ch ch--join" id="early-access" data-sky="#111216" data-ink="light" data-day="Sat" data-time="11:05 AM" aria-labelledby="join-title">
       <h2 id="join-title">Be there for the first plan.</h2>
       <p>Planic is currently being built. Join the early-access list and be among the first people to try it.</p>
-      <form class="join__form" novalidate>
+      <form class="join__form" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company" novalidate>
+        <input type="hidden" name="form-name" value="early-access" />
+        <p class="sr-only" aria-hidden="true"><label>Leave this empty <input name="company" tabindex="-1" autocomplete="off" /></label></p>
         <label for="email">Email address</label>
         <div class="join__row">
           <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />

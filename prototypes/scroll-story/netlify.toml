@@ -1,0 +1,26 @@
+# Staging site for the scroll story (a separate Netlify site with base directory prototypes/scroll-story).
+# It serves site.html, the hosted build. The live site keeps using the netlify.toml at the repo root.
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/site.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+
+[[headers]]
+  for = "/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/film/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

@@ -92,4 +92,16 @@ writeFileSync(new URL('dist/artifact.html', here), html
   .replace(/\s*<meta charset="utf-8" \/>/, '')
   .replace(/\s*<meta name="viewport"[^>]*>/, ''));
 
-console.log(`built index.html and dist/ (${photos} photos, ${ORDER.length} options)`);
+// The hosted page (site.html, served at / by netlify.toml in this folder): the bundled page plus the real address
+// for link previews, the flag that makes the signup form save, and Umami's cookie-free counter when configured.
+const SITE = JSON.parse(read('site.config.json'));
+const umami = SITE.umamiWebsiteId
+  ? `<script defer src="https://cloud.umami.is/script.js" data-website-id="${esc(SITE.umamiWebsiteId)}"></script>`
+  : '';
+const privacy = `Signups are kept in Planic’s list on Netlify and used only to email you about Planic.${SITE.umamiWebsiteId ? ' Visits and a few clicks are counted with Umami, without cookies.' : ''}`;
+writeFileSync(new URL('site.html', here), single
+  .replace('<meta property="og:image" content="og.jpg" />', `<meta property="og:image" content="${SITE.url}/og.jpg" />\n  <meta property="og:url" content="${SITE.url}/" />`)
+  .replace('</title>', `</title>\n  <meta name="planic:site" content="${esc(SITE.url)}" />\n  <link rel="canonical" href="${SITE.url}/" />${umami ? `\n  ${umami}` : ''}`)
+  .replace('<span>Prototype on a review branch, not the live site</span>', `<span>${privacy}</span>`));
+
+console.log(`built index.html, site.html and dist/ (${photos} photos, ${ORDER.length} options)`);

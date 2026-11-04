@@ -1695,7 +1695,19 @@ showRealTime();
 const navBg = document.querySelector('.nav__bg');
 let filmST = null; // the film's pin, so the sky can follow it
 let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
+// On the hosted page (not the preview or a local file) signups are saved and a few moments are counted.
+// SITE is set by the hosted build; track() only does anything when Umami's script is on the page. No cookies.
+const SITE = document.querySelector('meta[name="planic:site"]')?.content || '';
+const counted = new Set();
+function track(event, data, once = true) {
+  if (once && counted.has(event)) return;
+  counted.add(event);
+  try { window.umami?.track(event, data); } catch { /* counting never breaks the page */ }
+}
+
 function enterChapter(sec) {
+  if (sec.id === 'four') track('reached-the-four');
+  if (sec.id === 'share') track('reached-share');
   document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
   document.body.dataset.ch = sec.id;
   if (sec.id !== 'try') $('.twist.on')?.classList.remove('on'); // Meera's note leaves with her chapter
@@ -2033,7 +2045,7 @@ function pickMe(who, btn) {
   me = me === who ? null : who;
   if (me) document.body.dataset.me = me; else delete document.body.dataset.me;
   $('.night__you').textContent = me ? FOR_YOU[me] : '';
-  if (me && btn) celebrate(btn, me);
+  if (me && btn) { celebrate(btn, me); track('picked', { who: ROLE[me] }, false); }
   $$('.me').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === me)));
   $$('.decode__rows input').forEach((inp) => {
     const w = inp.closest('li').dataset.who;
@@ -2043,11 +2055,13 @@ function pickMe(who, btn) {
   updateShare();
 }
 $$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who, b)));
+$('#send-wa').addEventListener('click', () => track('sent', { how: 'whatsapp' }, false));
 
 function readInvite() {
   const names = Object.fromEntries(Object.keys(PEOPLE).map((w) => [w, clean(params.get(w))]));
   const from = params.get('me');
   if (!Object.values(names).some(Boolean)) return;
+  track('invite-opened', { from: ROLE[from] || 'unknown' });
   const sender = from && names[from] && !isMe(names[from]) ? names[from] : null;
   const invite = $('.invite');
   invite.textContent = sender
@@ -2148,11 +2162,12 @@ $('.decode').addEventListener('submit', (e) => e.preventDefault());
 const shareBtn = $('#send-share');
 if (navigator.share) {
   shareBtn.hidden = false;
-  shareBtn.addEventListener('click', () => { const { text, link } = updateShare(); navigator.share({ text, url: link }).catch(() => {}); });
+  shareBtn.addEventListener('click', () => { track('sent', { how: 'share' }, false); const { text, link } = updateShare(); navigator.share({ text, url: link }).catch(() => {}); });
 }
 $('#send-copy').addEventListener('click', async (e) => {
   const btn = e.currentTarget; // currentTarget is gone after the await
   const { text, link } = updateShare();
+  track('sent', { how: 'copy' }, false);
   try { await navigator.clipboard.writeText(`${text} ${link}`); btn.textContent = 'Copied'; }
   catch { btn.textContent = 'Couldn’t copy'; }
   setTimeout(() => { btn.textContent = 'Copy link'; }, 2200);
@@ -2233,6 +2248,7 @@ if (HTMLCanvasElement.prototype.toBlob && CanvasRenderingContext2D.prototype.rou
   cardBtn.hidden = false;
   cardBtn.addEventListener('click', async (e) => {
     const btn = e.currentTarget;
+    track('sent', { how: 'image' }, false);
     btn.textContent = 'Making it…';
     try {
       const blob = await drawCard();
@@ -2291,7 +2307,8 @@ function renderAnswer(r, text) {
   peek.classList.toggle('is-none', !r.plan);
   if (MOTION) G.fromTo([...card.children], { y: 14, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: .05, duration: .45, ease: 'power2.out', overwrite: true });
 }
-asksForm.addEventListener('change', () => {
+asksForm.addEventListener('change', (e) => {
+  if (e.isTrusted) track('talked-back');
   const prev = asks;
   asks = readAsks();
   const ex = explainChange(prev, asks);
@@ -2334,6 +2351,7 @@ function twist() {
       const meera = $('.ask[data-who="m"]');
       meera.classList.add('is-twist');
       setTimeout(() => meera.classList.remove('is-twist'), 2400);
+      track('twist-seen');
       writeAsks({ budget: 400 });
       asksForm.dispatchEvent(new Event('change'));
     }, MOTION ? 900 : 300);
@@ -2342,17 +2360,39 @@ function twist() {
 }
 twist();
 
-/* ---------- 8. join (prototype: validates, never submits) ---------- */
+/* ---------- 8. join: saved by Netlify Forms on the hosted page; the preview only checks the address ---------- */
 const join = $('.join__form');
-join.addEventListener('submit', (e) => {
+join.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = $('#email');
+  const msg = $('.join__msg');
+  const btn = $('button[type="submit"]', join);
   const ok = email.checkValidity() && email.value.trim();
   join.classList.toggle('is-bad', !ok);
-  $('.join__msg').textContent = ok
-    ? 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.'
-    : 'That email doesn’t look right. Check it and try again.';
-  if (ok) welcome();
+  if (!ok) { msg.textContent = 'That email doesn’t look right. Check it and try again.'; return; }
+  if (!SITE) {
+    msg.textContent = 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.';
+    welcome();
+    return;
+  }
+  btn.disabled = true;
+  msg.textContent = 'Saving…';
+  try {
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(join)).toString(),
+    });
+    if (!res.ok) throw new Error(res.status);
+    msg.textContent = 'You’re on the list. We’ll email you when the first plans open.';
+    email.value = '';
+    track('signed-up', { me: me ? ROLE[me] : 'not picked' });
+    welcome();
+  } catch {
+    msg.textContent = 'That didn’t save. Check your connection and try again.';
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 // A small hello from the group when you join (decoration only; the message above says what really happened).
@@ -2729,7 +2769,9 @@ if (MOTION) {
     <section class="ch ch--join" id="early-access" data-sky="#111216" data-ink="light" data-day="Sat" data-time="11:05 AM" aria-labelledby="join-title">
       <h2 id="join-title">Be there for the first plan.</h2>
       <p>Planic is currently being built. Join the early-access list and be among the first people to try it.</p>
-      <form class="join__form" novalidate>
+      <form class="join__form" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company" novalidate>
+        <input type="hidden" name="form-name" value="early-access" />
+        <p class="sr-only" aria-hidden="true"><label>Leave this empty <input name="company" tabindex="-1" autocomplete="off" /></label></p>
         <label for="email">Email address</label>
         <div class="join__row">
           <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
