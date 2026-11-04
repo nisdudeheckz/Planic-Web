@@ -3,10 +3,19 @@
 [build]
   publish = "."
 
+# force: index.html (the local development page) also exists here, and Netlify would serve it instead
+# of the rewrite. It loads modules from outside this folder, so on Netlify it ran with no motion.
 [[redirects]]
   from = "/"
   to = "/site.html"
   status = 200
+  force = true
+
+[[redirects]]
+  from = "/index.html"
+  to = "/site.html"
+  status = 200
+  force = true
 
 [[headers]]
   for = "/*"
