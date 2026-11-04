@@ -760,3 +760,8 @@ html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0
 .join__hello:empty { display: none; }
 .hello { padding: 8px 14px; border-radius: 16px 16px 16px 6px; background: var(--tone); color: var(--ink); font-size: .9375rem; max-width: 100%; }
 .hello b { display: block; font-size: .75rem; opacity: .7; }
+
+/* the clock flips when it goes from your time to the story's time */
+.clock.is-flip > span { display: inline-block; animation: clock-flip .5s var(--ease-out); }
+.clock.is-flip > .clock__time { animation-delay: .06s; }
+@keyframes clock-flip { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: none; opacity: 1; } }

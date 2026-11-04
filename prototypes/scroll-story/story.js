@@ -26,12 +26,33 @@ function setClock(day, time) {
   if (clockDay.textContent !== day) clockDay.textContent = day;
   if (clockTime.textContent !== time) clockTime.textContent = time;
 }
+// During the opening film the clock shows your own time. When the chat starts it flips back to
+// Wednesday afternoon: from there on it is the story's clock, and your scroll moves it.
+const clockEl = $('.clock');
+let realTime = true;
+function showRealTime() {
+  const d = new Date();
+  setClock(d.toLocaleDateString('en-US', { weekday: 'short' }), d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
+}
+function useStoryTime(on, day, time) {
+  if (on === !realTime) return;
+  realTime = !on;
+  clockEl.classList.remove('is-flip');
+  void clockEl.offsetWidth; // restart the flip
+  clockEl.classList.add('is-flip');
+  clockEl.title = on ? 'The group chat’s time in the story. Scrolling moves it.' : 'Your time';
+  if (on) setClock(day, time); else showRealTime();
+}
+setInterval(() => { if (realTime) showRealTime(); }, 20000);
+showRealTime();
 const navBg = document.querySelector('.nav__bg');
 let filmST = null; // the film's pin, so the sky can follow it
 let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
 function enterChapter(sec) {
   document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
   if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
+  if (sec.id === 'film') { if (!filmClosed) useStoryTime(false); return; }
+  useStoryTime(true, sec.dataset.day, sec.dataset.time);
   if (sec.id !== 'top') setClock(sec.dataset.day, sec.dataset.time);
 }
 const chapterIO = new IntersectionObserver((entries) => {
@@ -117,7 +138,11 @@ function filmMotion() {
       trigger: sec, start: 'top top', end: () => `+=${innerHeight * .8}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate(self) {
         const closed = self.progress > .55;
-        if (closed !== filmClosed) { filmClosed = closed; document.body.dataset.ink = closed ? 'dark' : 'light'; }
+        if (closed !== filmClosed) {
+          filmClosed = closed;
+          document.body.dataset.ink = closed ? 'dark' : 'light';
+          useStoryTime(closed, 'Wed', '4:11 PM');
+        }
       },
     },
   });
