@@ -8,6 +8,7 @@ It lives outside `public/`, so it is not part of the Netlify site and nothing he
 
 | # | Chapter | Scroll behaviour | Always running |
 |---|---|---|---|
+| 0 | The film (opening) | Pinned briefly. The words lift away, the film closes into a rounded card and the page turns to daylight as the chat arrives | A 17-second film loop of phones lighting up and Delhi going out; the group's messages pop up as notifications in time with the shots |
 | 1 | The chat (hook) | Pinned. Messages arrive, the unread count climbs, the clock runs Wed 4:12 PM → Thu 11:49 PM, then "47 messages · 4 asks · 0 plans" | Someone is always typing; two bubble-clipped photos bob |
 | – | Ticker | – | The group's lines scroll forever and speed up with your scroll |
 | 2 | The four | Sticky card deck; each card shrinks and darkens as the next lands; photo parallax | Photos drift slowly |
@@ -34,6 +35,10 @@ With a mouse, a follower changes over things: it takes a person's colour over an
 ## Photos
 
 Real photos from Unsplash (Unsplash License), chosen through the official API with no recognisable faces. Photographers and photo pages are listed in `img/CREDITS.json` and credited in the footer, which also says the photos show real places but not the venues in the example. Each photo was registered with Unsplash's download endpoint. Unsplash's API guidelines prefer hotlinking from images.unsplash.com; these are self-hosted, cropped copies, which the licence allows.
+
+## Opening film
+
+`film/open-wide.mp4` (1280×720) and `film/open-tall.mp4` (720×1280, picked for portrait screens), each about 1.8 MB, H.264, no sound, 17.2 s loop. Cut with ffmpeg from free Pexels clips (Pexels License): seven shots, cross-faded, chosen so no face is recognisable (crowd shots are from behind or far away). The footer says the film shows other people and places. `film/poster-*.webp` is the still frame shown before it plays, with reduced motion, without JavaScript, or when a browser refuses to autoplay. The film plays only while on screen and stops with Pause motion.
 
 ## Run it
 

@@ -26,8 +26,9 @@ function setClock(day, time) {
   if (clockTime.textContent !== time) clockTime.textContent = time;
 }
 const navBg = document.querySelector('.nav__bg');
+let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
 function enterChapter(sec) {
-  document.body.dataset.ink = sec.dataset.ink;
+  document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
   if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
   if (sec.id !== 'top') setClock(sec.dataset.day, sec.dataset.time);
 }
@@ -53,6 +54,80 @@ function addAmbient(el, tween) {
   a.tweens.push(tween);
 }
 
+/* ---------- 0. the film: phones lighting up, until the chat takes over ---------- */
+function filmMotion() {
+  const sec = $('.ch--film');
+  const film = $('.film');
+  const video = $('.film__video');
+  const toasts = $$('.toast');
+  const at = toasts.map((t) => Number(t.dataset.at));
+  let shown = -2;
+  function show(n) {
+    if (n === shown) return;
+    shown = n;
+    toasts.forEach((t, i) => {
+      const age = n - i;
+      t.style.setProperty('--age', String(Math.max(0, age)));
+      t.classList.toggle('on', age >= 0 && age < 3);
+      t.classList.toggle('gone', age >= 3);
+    });
+  }
+  // The notifications follow the film's own clock, so they land on the right shot every loop.
+  let raf = 0;
+  const sync = () => {
+    const ct = video.currentTime;
+    let n = -1;
+    at.forEach((a, i) => { if (ct >= a) n = i; });
+    show(n);
+    raf = requestAnimationFrame(sync);
+  };
+  video.addEventListener('playing', () => { cancelAnimationFrame(raf); sync(); });
+  video.addEventListener('pause', () => cancelAnimationFrame(raf));
+  // A portrait cut for portrait screens.
+  let tall = null;
+  function pick() {
+    const t = innerWidth / innerHeight < .8;
+    if (t === tall) return;
+    const time = video.currentTime || 0;
+    const wasPlaying = !video.paused;
+    tall = t;
+    video.poster = t ? video.dataset.posterTall : video.dataset.posterWide;
+    video.src = t ? video.dataset.tall : video.dataset.wide;
+    if (time) video.currentTime = time;
+    if (wasPlaying) video.play().catch(() => {});
+  }
+  pick();
+  addEventListener('resize', pick);
+  video.preload = 'auto';
+  addAmbient(sec, {
+    play() {
+      const p = video.play();
+      // If the browser won't autoplay (data saver, low power), the poster stays and the first three messages sit still.
+      if (p) p.catch(() => show(2));
+    },
+    pause() { video.pause(); },
+  });
+
+  // Scrolling on: the words lift away and the film closes down into a card as the chat arrives.
+  const tl = G.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * .8}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1,
+      onUpdate(self) {
+        const closed = self.progress > .55;
+        if (closed !== filmClosed) { filmClosed = closed; document.body.dataset.ink = closed ? 'dark' : 'light'; }
+      },
+    },
+  });
+  tl.to('.film__copy', { y: -70, opacity: 0, duration: .45 }, 0)
+    .to('.toasts', { y: -50, opacity: 0, duration: .45 }, .08)
+    .fromTo(film, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: () => (innerWidth < 900 ? 'inset(7% 4% 7% 4% round 24px)' : 'inset(9% 6% 9% 6% round 32px)'), duration: 1 }, 0)
+    .to(video, { scale: 1.08, duration: 1 }, 0)
+    .to('.film__shade', { opacity: .6, duration: 1 }, 0)
+    // the day comes up around the film as it closes, so the chat arrives in daylight
+    .fromTo([$('.sky'), navBg], { backgroundColor: sec.dataset.sky }, { backgroundColor: $('.ch--chat').dataset.sky, duration: .55, immediateRender: false }, .3);
+}
+
 /* ---------- 1. the chat ---------- */
 const TIMES = ['Wed 4:12 PM', 'Wed 4:12 PM', 'Wed 4:14 PM', 'Wed 4:15 PM', 'Wed 4:31 PM', 'Wed 4:33 PM', 'Wed 6:02 PM', 'Wed 9:47 PM', 'Thu 11:48 PM', 'Thu 11:48 PM', 'Thu 11:49 PM'];
 
@@ -72,8 +147,11 @@ function chatMotion() {
   G.set(items.slice(FIRST), { autoAlpha: 0, y: 26 });
   G.set('.tally', { visibility: 'visible' });
   G.set('.tally span', { autoAlpha: 0, y: 20 });
-  G.from('.open__title .w', { yPercent: 60, autoAlpha: 0, duration: .9, stagger: .07, ease: 'power3.out', delay: .1 });
-  G.from([thread], { y: 60, autoAlpha: 0, duration: 1, ease: 'power3.out', delay: .35 });
+  // The headline and chat arrive as the film hands over to them.
+  const arrive = { trigger: sec, start: 'top 70%', toggleActions: 'play none none none' };
+  G.from('.open__title .w', { yPercent: 60, autoAlpha: 0, duration: .9, stagger: .07, ease: 'power3.out', scrollTrigger: arrive });
+  // yPercent and opacity, so it never fights the pinned timeline below, which moves the thread by y
+  G.from([thread], { yPercent: 10, opacity: 0, duration: 1, ease: 'power3.out', delay: .25, scrollTrigger: arrive });
 
   const tl = G.timeline({
     defaults: { ease: 'none' },
@@ -107,7 +185,7 @@ function chatMotion() {
     tl.to(f, { y: i ? 140 : -160, autoAlpha: 0, rotation: i ? 14 : -14, duration: 2 }, .2);
     addAmbient(sec, G.to($('.ph', f), { y: i ? -10 : 12, rotation: i ? -3 : 3, duration: 3 + i, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
   });
-  G.from('.floater', { scale: .4, autoAlpha: 0, duration: 1, stagger: .15, ease: 'back.out(1.8)', delay: .7 });
+  G.from($$('.floater .ph'), { scale: .4, opacity: 0, duration: 1, stagger: .15, ease: 'back.out(1.8)', delay: .5, scrollTrigger: arrive });
 
   // Ambient: someone is always typing.
   const who = $('.typing__who');
@@ -140,7 +218,9 @@ function sky() {
   const el = [$('.sky'), navBg];
   G.set(el, { backgroundColor: sections[0].dataset.sky });
   sections.slice(1).forEach((sec, i) => {
-    G.fromTo(el, { backgroundColor: sections[i].dataset.sky }, {
+    const prev = sections[i];
+    if (prev.id === 'film') return; // the film turns the day up itself, while it closes
+    G.fromTo(el, { backgroundColor: prev.dataset.sky }, {
       backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false,
       scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true },
     });
@@ -397,7 +477,7 @@ $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
   e.preventDefault();
   // A pinned chapter sits at its pin's end once you've scrolled past it, so aim for its spacer.
   const box = t.parentElement.classList.contains('pin-spacer') ? t.parentElement : t;
-  const y = t.id === 'top' ? 0 : box.getBoundingClientRect().top + scrollY - (t.id === 'four' ? 8 : 0);
+  const y = t.id === 'film' ? 0 : box.getBoundingClientRect().top + scrollY - (t.id === 'four' ? 8 : 0);
   scrollTo({ top: y, behavior: MOTION ? 'smooth' : 'auto' });
   t.setAttribute('tabindex', '-1');
   t.focus({ preventScroll: true });
@@ -406,6 +486,10 @@ $$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
 /* ---------- start ---------- */
 readInvite();
 updateShare();
+{ // the film's still frame, framed for the screen, even when the film itself doesn't play
+  const v = $('.film__video');
+  if (innerWidth / innerHeight < .8) v.poster = v.dataset.posterTall;
+}
 
 if (MOTION) {
   G.registerPlugin(ST);
@@ -419,6 +503,7 @@ if (MOTION) {
     ambient.forEach((a) => a.tweens.forEach((t) => (still || a.el.classList.contains('off') ? t.pause() : t.play())));
   });
   splitHeads(G);
+  filmMotion();
   chatMotion();
   tickers();
   deckMotion();

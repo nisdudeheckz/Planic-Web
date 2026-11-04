@@ -29,7 +29,7 @@
 
   <header class="nav">
     <span class="nav__bg" aria-hidden="true"></span>
-    <a class="wordmark" href="#top" aria-label="Planic, back to top">
+    <a class="wordmark" href="#film" aria-label="Planic, back to top">
       <svg viewBox="0 0 40 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#7567F8"/><circle cx="28" cy="12" r="10" fill="#FF6B61"/><path d="M20 6a10 10 0 0 1 0 12 10 10 0 0 1 0-12z" fill="#B8AEFF"/></svg>
       <span>Planic</span>
     </a>
@@ -38,6 +38,27 @@
   </header>
 
   <main id="main">
+
+    <!-- 0. The film: phones lighting up, until the chat takes over -->
+    <section class="ch ch--film" id="film" data-sky="#111216" data-ink="light" data-day="Wed" data-time="4:11 PM" aria-label="Opening">
+      <div class="film">
+        <video class="film__video" muted playsinline loop preload="none" poster="film/poster-wide.webp" aria-hidden="true" tabindex="-1" data-wide="film/open-wide.mp4" data-tall="film/open-tall.mp4" data-poster-wide="film/poster-wide.webp" data-poster-tall="film/poster-tall.webp"></video>
+        <div class="film__shade" aria-hidden="true"></div>
+        <ol class="toasts" aria-hidden="true">
+          <li class="toast" data-who="r" data-at="0.5"><i>R</i><span class="toast__top"><b>Rohan</b> · the usual four</span><span class="toast__msg">ok so what are we doing friday?</span></li>
+          <li class="toast" data-who="a" data-at="3.0"><i>A</i><span class="toast__top"><b>Aanya</b> · the usual four</span><span class="toast__msg">food! but veg options pls</span></li>
+          <li class="toast" data-who="r" data-at="5.3"><i>R</i><span class="toast__top"><b>Rohan</b> · the usual four</span><span class="toast__msg">somewhere new, not the usual café</span></li>
+          <li class="toast" data-who="m" data-at="7.7"><i>M</i><span class="toast__top"><b>Meera</b> · the usual four</span><span class="toast__msg">₹600 max. coming from Noida</span></li>
+          <li class="toast" data-who="k" data-at="10.0"><i>K</i><span class="toast__top"><b>Kabir</b> · the usual four</span><span class="toast__msg">anything works, free after 7</span></li>
+          <li class="toast" data-who="a" data-at="12.2"><i>A</i><span class="toast__top"><b>Aanya</b> · the usual four</span><span class="toast__msg">brunch saturday instead?</span></li>
+          <li class="toast" data-who="k" data-at="14.7"><i>K</i><span class="toast__top"><b>Kabir</b> · the usual four</span><span class="toast__msg">so… where?</span></li>
+        </ol>
+        <div class="film__copy">
+          <p class="film__line">It always starts with <span>one message.</span></p>
+          <a class="film__cue" href="#top">Then everyone has an opinion <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+    </section>
 
     <!-- 1. The hook: the group chat goes off -->
     <section class="ch ch--chat" id="top" data-sky="#FBFBFA" data-ink="dark" data-day="Wed" data-time="4:12 PM" aria-labelledby="open-title">
@@ -293,7 +314,7 @@
   <button type="button" class="still" aria-pressed="false" hidden><span class="still__icon" aria-hidden="true"></span><span class="still__label">Pause motion</span></button>
 
   <footer class="foot">
-    <p class="foot__small"><span>The four friends, the chat, the places, prices and plan are an illustrative example, not real people, venues or live results. Photos from <a href="https://unsplash.com/?utm_source=planic&amp;utm_medium=referral">Unsplash</a> by <a href="https://unsplash.com/@2hmedia?utm_source=planic&amp;utm_medium=referral">2H Media</a>, <a href="https://unsplash.com/@brandsandpeople?utm_source=planic&amp;utm_medium=referral">Brands&amp;People</a>, <a href="https://unsplash.com/@imharsh081?utm_source=planic&amp;utm_medium=referral">Harsh Gupta</a>, <a href="https://unsplash.com/@colincyruz?utm_source=planic&amp;utm_medium=referral">Colin Michel</a>, <a href="https://unsplash.com/@zoshuacolah?utm_source=planic&amp;utm_medium=referral">Zoshua Colah</a>, <a href="https://unsplash.com/@roshaan?utm_source=planic&amp;utm_medium=referral">Hamid Roshaan</a>, <a href="https://unsplash.com/@siyiwind?utm_source=planic&amp;utm_medium=referral">Siyi</a>, <a href="https://unsplash.com/@ravinepz?utm_source=planic&amp;utm_medium=referral">Ravi Sharma</a>, <a href="https://unsplash.com/@atharvad_jpeg?utm_source=planic&amp;utm_medium=referral">Atharva Dixit</a>, <a href="https://unsplash.com/@jonasleupe?utm_source=planic&amp;utm_medium=referral">Jonas Leupe</a>, <a href="https://unsplash.com/@jhc?utm_source=planic&amp;utm_medium=referral">James Coleman</a>, <a href="https://unsplash.com/@zegarr?utm_source=planic&amp;utm_medium=referral">Ezequiel Garrido</a>, <a href="https://unsplash.com/@artosuraj?utm_source=planic&amp;utm_medium=referral">ARTO SURAJ</a>, <a href="https://unsplash.com/@mayank_k01?utm_source=planic&amp;utm_medium=referral">Mayank Kapoor</a>. They show real places, but not the venues in the example.</span></p>
+    <p class="foot__small"><span>The four friends, the chat, the places, prices and plan are an illustrative example, not real people, venues or live results. Photos from <a href="https://unsplash.com/?utm_source=planic&amp;utm_medium=referral">Unsplash</a> by <a href="https://unsplash.com/@2hmedia?utm_source=planic&amp;utm_medium=referral">2H Media</a>, <a href="https://unsplash.com/@brandsandpeople?utm_source=planic&amp;utm_medium=referral">Brands&amp;People</a>, <a href="https://unsplash.com/@imharsh081?utm_source=planic&amp;utm_medium=referral">Harsh Gupta</a>, <a href="https://unsplash.com/@colincyruz?utm_source=planic&amp;utm_medium=referral">Colin Michel</a>, <a href="https://unsplash.com/@zoshuacolah?utm_source=planic&amp;utm_medium=referral">Zoshua Colah</a>, <a href="https://unsplash.com/@roshaan?utm_source=planic&amp;utm_medium=referral">Hamid Roshaan</a>, <a href="https://unsplash.com/@siyiwind?utm_source=planic&amp;utm_medium=referral">Siyi</a>, <a href="https://unsplash.com/@ravinepz?utm_source=planic&amp;utm_medium=referral">Ravi Sharma</a>, <a href="https://unsplash.com/@atharvad_jpeg?utm_source=planic&amp;utm_medium=referral">Atharva Dixit</a>, <a href="https://unsplash.com/@jonasleupe?utm_source=planic&amp;utm_medium=referral">Jonas Leupe</a>, <a href="https://unsplash.com/@jhc?utm_source=planic&amp;utm_medium=referral">James Coleman</a>, <a href="https://unsplash.com/@zegarr?utm_source=planic&amp;utm_medium=referral">Ezequiel Garrido</a>, <a href="https://unsplash.com/@artosuraj?utm_source=planic&amp;utm_medium=referral">ARTO SURAJ</a>, <a href="https://unsplash.com/@mayank_k01?utm_source=planic&amp;utm_medium=referral">Mayank Kapoor</a>. They show real places, but not the venues in the example. The opening film is cut from free <a href="https://www.pexels.com/">Pexels</a> clips of other people and places.</span></p>
     <p class="foot__small"><span>© 2026 Planic</span><span>Made in New Delhi</span><span>Prototype on a review branch, not the live site</span></p>
   </footer>
 </body>

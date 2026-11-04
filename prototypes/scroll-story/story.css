@@ -479,6 +479,7 @@ html.motion .decode__rows li:nth-child(4) i { animation-delay: 1.95s; }
   border: 0; background: rgba(17,18,22,.78); color: var(--day); font-size: .8125rem; font-weight: 600;
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
+.still[hidden] { display: none; } /* only there when there is motion to pause */
 .still__icon { width: 10px; height: 12px; border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
 .still[aria-pressed="true"] .still__icon { border: 0; width: 0; height: 0; border-left: 10px solid currentColor; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
 
@@ -675,3 +676,39 @@ html.js .foot { padding-bottom: 76px; }
 /* Photo credits read as text, not as bright default links. */
 .foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .foot a:hover { color: var(--on-dark); }
+
+/* ---------- 0. the opening film ---------- */
+.ch--film { padding: 0; background: var(--ink); color: var(--on-dark); }
+.film { position: relative; min-height: 100svh; overflow: hidden; display: grid; grid-template-rows: 1fr auto; padding: calc(var(--navh) + 20px) var(--g) clamp(28px, 6vh, 64px); isolation: isolate; }
+.film__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; background: var(--ink); }
+.film__shade { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to top, rgba(17,18,22,.86) 0%, rgba(17,18,22,.35) 38%, rgba(17,18,22,0) 62%), linear-gradient(to bottom, rgba(17,18,22,.55), rgba(17,18,22,0) 22%); }
+.film__copy { grid-row: 2; }
+.film__line { font-family: var(--display); font-weight: 760; letter-spacing: -.035em; line-height: .96; font-size: clamp(2.5rem, 7.2vw, 6.25rem); text-wrap: balance; max-width: 12ch; }
+.film__line span { color: var(--coral); }
+.film__cue { display: inline-flex; gap: 8px; align-items: center; margin-top: 18px; color: var(--on-dark-soft); text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
+.film__cue:hover { color: var(--on-dark); }
+.film__cue span { display: inline-block; }
+html.motion .film__cue span { animation: film-cue 1.6s ease-in-out infinite; }
+@keyframes film-cue { 50% { translate: 0 5px; } }
+
+/* notifications from the group, in each person's colour; without motion the first three sit still */
+.toasts { grid-row: 1; list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; justify-self: end; width: min(360px, 100%); }
+.toast { display: grid; grid-template-columns: 34px 1fr; column-gap: 12px; align-items: center; height: 64px; padding: 0 16px 0 12px; border-radius: 18px;
+  background: rgba(30, 31, 38, .62); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(251,251,250,.12); box-shadow: 0 10px 30px rgba(0,0,0,.25); color: var(--on-dark); }
+.toast:nth-child(n+4) { display: none; }
+.toast i { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: var(--tone); color: var(--ink); font-style: normal; font-weight: 700; display: grid; place-items: center; }
+.toast__top { font-size: .75rem; color: var(--on-dark-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toast__top b { color: var(--on-dark); font-weight: 600; }
+.toast__msg { font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.motion .toasts { position: relative; display: block; height: calc(3 * 64px + 2 * 8px); }
+html.motion .toast { display: grid; position: absolute; inset: 0 0 auto; opacity: 0; transform: translateY(-18px) scale(.94); transform-origin: 50% 0;
+  transition: transform .55s var(--ease-out), opacity .4s; }
+html.motion .toast.on { opacity: calc(1 - var(--age) * .28); transform: translateY(calc(var(--age) * 72px)) scale(calc(1 - var(--age) * .04)); }
+html.motion .toast.gone { opacity: 0; transform: translateY(calc(3 * 72px)) scale(.88); }
+html.motion .ch--film .film { height: 100svh; min-height: 0; padding-bottom: 92px; will-change: clip-path; } /* room for Pause motion */
+@media (max-width: 899px) {
+  .toasts { justify-self: stretch; width: auto; }
+  .film__line { font-size: clamp(2.4rem, 11vw, 4rem); }
+}
