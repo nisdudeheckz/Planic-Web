@@ -40,6 +40,18 @@ Real photos from Unsplash (Unsplash License), chosen through the official API wi
 
 `film/open-wide.mp4` (1280×720) and `film/open-tall.mp4` (720×1280, picked for portrait screens), each about 1.8 MB, H.264, no sound, 17.2 s loop. Cut with ffmpeg from free Pexels clips (Pexels License): seven shots, cross-faded, chosen so no face is recognisable (crowd shots are from behind or far away). The footer says the film shows other people and places. `film/poster-*.webp` is the still frame shown before it plays, with reduced motion, without JavaScript, or when a browser refuses to autoplay. The film plays only while on screen and stops with the pause icon.
 
+## Alive
+
+- **Threads** (`alive.js`, `threads()`): four coloured threads in the left margin, one per friend. They tangle through the chat, run in neat lanes for the four people, cross while the options are weighed, braid into one white line as the plan lands (with a small knot pulse), part for Friday night and end as one line at the join. Drawn every frame from the scroll position; positions come from the chapters after each ScrollTrigger refresh.
+- **Living headlines** (`alive.js`, `liveWords()`): headline words drop in under gravity, float a little, lag and catch up with your scroll, lean away from the pointer, and can be grabbed and flung (a tap makes them hop on touch). Each word is a spring that always returns home. Paragraphs, the plan details and anything you read closely never move this way.
+- **Your pick follows you**: after "That's me", `body[data-me]` marks your thread, bubbles, ask, chips and plan row as "you", the night chapter adds a line for you, and the button bursts in your colour (with a short vibration on phones that allow it).
+- **Story card**: "Save as image" draws a 1080x1920 "Our group chat, decoded" picture with the names typed in, and opens the share sheet where files can be shared, otherwise downloads it.
+- All of it stops with the pause icon and is absent with reduced motion.
+
+## Link preview
+
+`og.jpg` (1200x630, made from `og-source.html` with a headless browser) is the picture WhatsApp and others show when the link is pasted. `og:image` is a relative path here; on the live site it must be the full https URL, because most apps ignore relative preview images. Invite links with names in them show the same preview; a personalised preview would need a server.
+
 ## Run it
 
 ```sh
