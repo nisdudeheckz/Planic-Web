@@ -323,8 +323,37 @@ const params = new URLSearchParams(location.search);
 const clean = (v) => (v || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 18);
 const isMe = (v) => /^(me|myself|i)$/i.test(v || '');
 
-function pickMe(who) {
+// Once you've said which one you are, the rest of the page knows: your thread, your ask, your row in the plan.
+const FOR_YOU = {
+  a: 'For you, Aanya: a veg menu, and nobody had to ask twice.',
+  r: 'For you, Rohan: somewhere none of you had been.',
+  m: 'For you, Meera: about ₹550, and home on the last metro.',
+  k: 'For you, Kabir: it started after 7, like you said.',
+};
+function celebrate(btn, who) {
+  if (navigator.vibrate) try { navigator.vibrate(12); } catch { /* not allowed here */ }
+  if (!MOTION) return;
+  const r = btn.getBoundingClientRect();
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('i');
+    d.className = 'burst';
+    d.dataset.who = who;
+    d.style.left = `${r.left + r.width / 2}px`;
+    d.style.top = `${r.top + r.height / 2}px`;
+    document.body.append(d);
+    const a = (i / 10) * Math.PI * 2 + Math.random() * .4;
+    const dist = 50 + Math.random() * 40;
+    G.fromTo(d, { x: 0, y: 0, scale: 1, opacity: 1 }, {
+      x: Math.cos(a) * dist, y: Math.sin(a) * dist + 20, scale: .3, opacity: 0, duration: .8, ease: 'power3.out',
+      onComplete: () => d.remove(),
+    });
+  }
+}
+function pickMe(who, btn) {
   me = me === who ? null : who;
+  if (me) document.body.dataset.me = me; else delete document.body.dataset.me;
+  $('.night__you').textContent = me ? FOR_YOU[me] : '';
+  if (me && btn) celebrate(btn, me);
   $$('.me').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === me)));
   $$('.decode__rows input').forEach((inp) => {
     const w = inp.closest('li').dataset.who;
@@ -333,7 +362,7 @@ function pickMe(who) {
   });
   updateShare();
 }
-$$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who)));
+$$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who, b)));
 
 function readInvite() {
   const names = Object.fromEntries(Object.keys(PEOPLE).map((w) => [w, clean(params.get(w))]));

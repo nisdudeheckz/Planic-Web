@@ -716,6 +716,32 @@ html.motion .ch--film .film { height: 100svh; min-height: 0; will-change: clip-p
   .toasts { justify-self: stretch; width: auto; }
   .film__line { font-size: clamp(2.4rem, 11vw, 4rem); }
 }
+
+/* ---------- you, once you've picked (body[data-me]) ---------- */
+.night__you { margin-top: 14px; font-family: var(--display); font-weight: 650; font-size: clamp(1.1rem, .9rem + .8vw, 1.5rem); color: var(--tone, var(--on-dark)); }
+.night__you:empty { display: none; }
+body[data-me="a"] .night__you { --tone: var(--coral); }
+body[data-me="r"] .night__you { --tone: var(--lav); }
+body[data-me="m"] .night__you { --tone: var(--sun); }
+body[data-me="k"] .night__you { --tone: var(--mint); }
+.burst { position: fixed; z-index: 70; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--tone); pointer-events: none; }
+/* your thread stands out, the other three step back */
+body[data-me] .thread:not(.thread--one) { opacity: .45; transition: opacity .4s, stroke-width .4s; }
+body[data-me="a"] .thread[data-who="a"], body[data-me="r"] .thread[data-who="r"],
+body[data-me="m"] .thread[data-who="m"], body[data-me="k"] .thread[data-who="k"] { opacity: 1; stroke-width: 4; }
+/* your bubbles, your ask, your row in the plan, your chips */
+body[data-me="a"] .b[data-who="a"] .b__who::after, body[data-me="r"] .b[data-who="r"] .b__who::after,
+body[data-me="m"] .b[data-who="m"] .b__who::after, body[data-me="k"] .b[data-who="k"] .b__who::after,
+body[data-me="a"] .ask[data-who="a"] legend::after, body[data-me="r"] .ask[data-who="r"] legend::after,
+body[data-me="m"] .ask[data-who="m"] legend::after, body[data-me="k"] .ask[data-who="k"] legend::after,
+body[data-me="a"] .why[data-who="a"] .why__who::after, body[data-me="r"] .why[data-who="r"] .why__who::after,
+body[data-me="m"] .why[data-who="m"] .why__who::after, body[data-me="k"] .why[data-who="k"] .why__who::after { content: " · you"; opacity: .7; }
+body[data-me="a"] .why[data-who="a"], body[data-me="r"] .why[data-who="r"],
+body[data-me="m"] .why[data-who="m"], body[data-me="k"] .why[data-who="k"] { background: color-mix(in srgb, var(--tone) 22%, transparent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--tone) 22%, transparent); border-radius: 6px; }
+body[data-me="a"] .opt__no[data-who="a"] i, body[data-me="r"] .opt__no[data-who="r"] i,
+body[data-me="m"] .opt__no[data-who="m"] i, body[data-me="k"] .opt__no[data-who="k"] i { box-shadow: 0 0 0 2px var(--ink); }
+body[data-me="a"] .ticker [data-who="a"], body[data-me="r"] .ticker [data-who="r"],
+body[data-me="m"] .ticker [data-who="m"], body[data-me="k"] .ticker [data-who="k"] { outline: 2px solid currentColor; outline-offset: 2px; }
 </style>
   <script>document.documentElement.classList.add('js')</script>
   <script>
@@ -1217,6 +1243,7 @@ function threads(G, ST, addAmbient) {
     const p = document.createElementNS(NS, 'path');
     p.setAttribute('class', 'thread');
     p.setAttribute('stroke', TONE[who]);
+    p.dataset.who = who;
     svg.append(p);
     return p;
   });
@@ -1775,8 +1802,37 @@ const params = new URLSearchParams(location.search);
 const clean = (v) => (v || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 18);
 const isMe = (v) => /^(me|myself|i)$/i.test(v || '');
 
-function pickMe(who) {
+// Once you've said which one you are, the rest of the page knows: your thread, your ask, your row in the plan.
+const FOR_YOU = {
+  a: 'For you, Aanya: a veg menu, and nobody had to ask twice.',
+  r: 'For you, Rohan: somewhere none of you had been.',
+  m: 'For you, Meera: about ₹550, and home on the last metro.',
+  k: 'For you, Kabir: it started after 7, like you said.',
+};
+function celebrate(btn, who) {
+  if (navigator.vibrate) try { navigator.vibrate(12); } catch { /* not allowed here */ }
+  if (!MOTION) return;
+  const r = btn.getBoundingClientRect();
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('i');
+    d.className = 'burst';
+    d.dataset.who = who;
+    d.style.left = `${r.left + r.width / 2}px`;
+    d.style.top = `${r.top + r.height / 2}px`;
+    document.body.append(d);
+    const a = (i / 10) * Math.PI * 2 + Math.random() * .4;
+    const dist = 50 + Math.random() * 40;
+    G.fromTo(d, { x: 0, y: 0, scale: 1, opacity: 1 }, {
+      x: Math.cos(a) * dist, y: Math.sin(a) * dist + 20, scale: .3, opacity: 0, duration: .8, ease: 'power3.out',
+      onComplete: () => d.remove(),
+    });
+  }
+}
+function pickMe(who, btn) {
   me = me === who ? null : who;
+  if (me) document.body.dataset.me = me; else delete document.body.dataset.me;
+  $('.night__you').textContent = me ? FOR_YOU[me] : '';
+  if (me && btn) celebrate(btn, me);
   $$('.me').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === me)));
   $$('.decode__rows input').forEach((inp) => {
     const w = inp.closest('li').dataset.who;
@@ -1785,7 +1841,7 @@ function pickMe(who) {
   });
   updateShare();
 }
-$$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who)));
+$$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who, b)));
 
 function readInvite() {
   const names = Object.fromEntries(Object.keys(PEOPLE).map((w) => [w, clean(params.get(w))]));
@@ -2213,6 +2269,7 @@ if (MOTION) {
           <p class="kicker">Friday, 9:30 PM.</p>
           <h2 id="night-title" class="night__title"><span class="l">Less deciding.</span> <span class="l">More going.</span></h2>
           <p class="night__lede">Nobody had to be the planner this time. That’s the whole idea.</p>
+          <p class="night__you"></p>
         </div>
       </div>
     </section>

@@ -21,6 +21,7 @@ export function threads(G, ST, addAmbient) {
     const p = document.createElementNS(NS, 'path');
     p.setAttribute('class', 'thread');
     p.setAttribute('stroke', TONE[who]);
+    p.dataset.who = who;
     svg.append(p);
     return p;
   });

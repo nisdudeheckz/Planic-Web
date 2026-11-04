@@ -704,3 +704,29 @@ html.motion .ch--film .film { height: 100svh; min-height: 0; will-change: clip-p
   .toasts { justify-self: stretch; width: auto; }
   .film__line { font-size: clamp(2.4rem, 11vw, 4rem); }
 }
+
+/* ---------- you, once you've picked (body[data-me]) ---------- */
+.night__you { margin-top: 14px; font-family: var(--display); font-weight: 650; font-size: clamp(1.1rem, .9rem + .8vw, 1.5rem); color: var(--tone, var(--on-dark)); }
+.night__you:empty { display: none; }
+body[data-me="a"] .night__you { --tone: var(--coral); }
+body[data-me="r"] .night__you { --tone: var(--lav); }
+body[data-me="m"] .night__you { --tone: var(--sun); }
+body[data-me="k"] .night__you { --tone: var(--mint); }
+.burst { position: fixed; z-index: 70; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--tone); pointer-events: none; }
+/* your thread stands out, the other three step back */
+body[data-me] .thread:not(.thread--one) { opacity: .45; transition: opacity .4s, stroke-width .4s; }
+body[data-me="a"] .thread[data-who="a"], body[data-me="r"] .thread[data-who="r"],
+body[data-me="m"] .thread[data-who="m"], body[data-me="k"] .thread[data-who="k"] { opacity: 1; stroke-width: 4; }
+/* your bubbles, your ask, your row in the plan, your chips */
+body[data-me="a"] .b[data-who="a"] .b__who::after, body[data-me="r"] .b[data-who="r"] .b__who::after,
+body[data-me="m"] .b[data-who="m"] .b__who::after, body[data-me="k"] .b[data-who="k"] .b__who::after,
+body[data-me="a"] .ask[data-who="a"] legend::after, body[data-me="r"] .ask[data-who="r"] legend::after,
+body[data-me="m"] .ask[data-who="m"] legend::after, body[data-me="k"] .ask[data-who="k"] legend::after,
+body[data-me="a"] .why[data-who="a"] .why__who::after, body[data-me="r"] .why[data-who="r"] .why__who::after,
+body[data-me="m"] .why[data-who="m"] .why__who::after, body[data-me="k"] .why[data-who="k"] .why__who::after { content: " · you"; opacity: .7; }
+body[data-me="a"] .why[data-who="a"], body[data-me="r"] .why[data-who="r"],
+body[data-me="m"] .why[data-who="m"], body[data-me="k"] .why[data-who="k"] { background: color-mix(in srgb, var(--tone) 22%, transparent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--tone) 22%, transparent); border-radius: 6px; }
+body[data-me="a"] .opt__no[data-who="a"] i, body[data-me="r"] .opt__no[data-who="r"] i,
+body[data-me="m"] .opt__no[data-who="m"] i, body[data-me="k"] .opt__no[data-who="k"] i { box-shadow: 0 0 0 2px var(--ink); }
+body[data-me="a"] .ticker [data-who="a"], body[data-me="r"] .ticker [data-who="r"],
+body[data-me="m"] .ticker [data-who="m"], body[data-me="k"] .ticker [data-who="k"] { outline: 2px solid currentColor; outline-offset: 2px; }
