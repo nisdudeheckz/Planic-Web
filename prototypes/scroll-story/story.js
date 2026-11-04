@@ -13,6 +13,10 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const G = window.gsap;
 const ST = window.ScrollTrigger;
 const MOTION = !reduce && !!G && !!ST;
+// On touch screens the finger and the phone's own momentum already make scrolling smooth. Extra scrub smoothing
+// on top makes the page keep moving after you stop, which feels like drag, so there it follows the scroll exactly.
+const TOUCH = matchMedia('(pointer: coarse)').matches;
+const SMOOTH = TOUCH ? true : .6;
 if (MOTION) root.classList.add('motion');
 
 const sections = $$('main > .ch');
@@ -73,6 +77,8 @@ const offIO = new IntersectionObserver((entries) => {
     if (a) a.tweens.forEach((t) => (e.isIntersecting && !still ? t.play() : t.pause()));
   }
 }, { rootMargin: '10% 0px' });
+// Every chapter's CSS loops (photo drift, pings, the striped "four") pause while that chapter is off screen.
+document.querySelectorAll('main .ch').forEach((el) => offIO.observe(el));
 function addAmbient(el, tween) {
   let a = ambient.find((x) => x.el === el);
   if (!a) { a = { el, tweens: [] }; ambient.push(a); offIO.observe(el); }
@@ -137,7 +143,7 @@ function filmMotion() {
   const tl = G.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: {
-      trigger: sec, start: 'top top', end: () => `+=${innerHeight * .8}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1,
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * .8}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate(self) {
         const closed = self.progress > .55;
         if (closed !== filmClosed) {
@@ -185,7 +191,7 @@ function chatMotion() {
     defaults: { ease: 'none' },
     scrollTrigger: {
       trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 1.6 : 1.3)}`,
-      pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1,
+      pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate(self) {
         const shown = Math.min(items.length - 1, FIRST - 1 + Math.floor(self.progress * 1.18 * (items.length - FIRST + 1)));
         setClock(...TIMES[Math.max(0, shown)].split(/ (.+)/));
@@ -231,11 +237,14 @@ function tickers() {
     const dir = Number(tk.dataset.dir) || -1;
     const loop = G.fromTo(row, { xPercent: dir < 0 ? 0 : -50 }, { xPercent: dir < 0 ? -50 : 0, duration: 38, ease: 'none', repeat: -1 });
     addAmbient(tk, loop);
+    let lastV = 1;
     ST.create({
       trigger: tk, start: 'top bottom', end: 'bottom top',
       onUpdate(self) {
         const v = Math.min(6, 1 + Math.abs(self.getVelocity()) / 400);
-        G.to(loop, { timeScale: v, duration: .2, overwrite: true, onComplete: () => G.to(loop, { timeScale: 1, duration: 1.2 }) });
+        if (Math.abs(v - lastV) < .3) return; // no new tween on every scroll event
+        lastV = v;
+        G.to(loop, { timeScale: v, duration: .2, overwrite: true, onComplete: () => { lastV = 1; G.to(loop, { timeScale: 1, duration: 1.2 }); } });
       },
     });
   });
@@ -287,12 +296,12 @@ function weighMotion() {
   G.set($$('.opt__no, .opt__yes'), { autoAlpha: 0 });
   // The heading and the six options arrive while the chapter scrolls in, so there is never an empty screen;
   // the pin then holds them while the reasons are stamped on.
-  const enter = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 5%', scrub: .5, invalidateOnRefresh: true } });
+  const enter = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 5%', scrub: TOUCH ? true : .5, invalidateOnRefresh: true } });
   enter.from('.ch--weigh .ch__head > *', { y: 40, opacity: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 0);
   enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.3}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.3}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   let t = .1;
   out.forEach((o) => {
@@ -317,7 +326,7 @@ function planMotion() {
   G.set(reveal, { '--scrim': 0 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.5}`, pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1 },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * 1.5}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
   tl.to(reveal, { '--scrim': 1, duration: .4 }, .45);

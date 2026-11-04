@@ -481,7 +481,7 @@ html.motion .reveal::after { opacity: var(--scrim, 1); }
 }
 html:not(.motion) .ticker__row { flex-wrap: wrap; width: auto; white-space: normal; padding: 0 var(--g); }
 
-.w--four { animation: four 6s linear infinite; background-size: 200% .12em; background-image: linear-gradient(90deg, var(--coral) 0 12.5%, var(--lav) 12.5% 25%, var(--sun) 25% 37.5%, var(--mint) 37.5% 50%, var(--coral) 50% 62.5%, var(--lav) 62.5% 75%, var(--sun) 75% 87.5%, var(--mint) 87.5%); }
+.w--four { animation: four 6s linear 3; background-size: 200% .12em; background-image: linear-gradient(90deg, var(--coral) 0 12.5%, var(--lav) 12.5% 25%, var(--sun) 25% 37.5%, var(--mint) 37.5% 50%, var(--coral) 50% 62.5%, var(--lav) 62.5% 75%, var(--sun) 75% 87.5%, var(--mint) 87.5%); }
 @keyframes four { to { background-position: -200% 92%; } }
 
 html.motion .card .ph img, html.motion .opt .ph img, html.motion .reveal .ph img { animation: drift 16s ease-in-out infinite alternate; transform-origin: 60% 40%; }
@@ -501,7 +501,7 @@ html.motion .decode__rows li:nth-child(3) i { animation-delay: 1.3s; }
 html.motion .decode__rows li:nth-child(4) i { animation-delay: 1.95s; }
 @keyframes breathe { to { transform: scale(1.35); } }
 
-.off *, .off::before, .off::after, html.still *, html.still *::before, html.still *::after { animation-play-state: paused !important; }
+.off *, .off *::before, .off *::after, html.still *, html.still *::before, html.still *::after { animation-play-state: paused !important; }
 
 /* Pause: a small icon beside the clock (WCAG 2.2.2), the clock's own size and outline */
 .nav__mid { display: flex; align-items: center; gap: 6px; }
@@ -796,3 +796,8 @@ html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0
 /* On the coral share chapter the coral Join button and the coral "!!" would vanish into the sky. */
 body[data-ch="share"] .nav__cta { background: var(--ink); color: var(--day); }
 body[data-ch="share"] .wordmark__name b { color: var(--ink); }
+
+/* Phones: the slow photo drift is barely visible while you scroll and costs every frame, so it stays still there. */
+@media (pointer: coarse) {
+  html.motion .card .ph img, html.motion .opt .ph img, html.motion .reveal .ph img { animation: none; }
+}

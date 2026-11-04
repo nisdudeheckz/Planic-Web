@@ -86,7 +86,7 @@ export function threads(G, ST, addAmbient) {
     return [k[1], k[2]];
   }
 
-  const N = 36;
+  const N = matchMedia('(pointer: coarse)').matches ? 24 : 36; // fewer points on phones: same curve, less work
   let time = 0;
   let wasOne = false;
   function draw() {
@@ -127,7 +127,13 @@ export function threads(G, ST, addAmbient) {
   }
 
   let running = false;
-  const tick = (_, dt) => { time += Math.min(dt, 50) / 1000; draw(); };
+  // On touch screens the threads only move with the page, and are only redrawn when it moved: less work per frame.
+  const touch = matchMedia('(pointer: coarse)').matches;
+  let drawnAt = -1;
+  const tick = (_, dt) => {
+    if (touch) { if (scrollY === drawnAt) return; drawnAt = scrollY; } else time += Math.min(dt, 50) / 1000;
+    draw();
+  };
   addAmbient(document.querySelector('main'), {
     play() { if (!running) { running = true; G.ticker.add(tick); } },
     pause() { running = false; G.ticker.remove(tick); draw(); },
@@ -224,7 +230,7 @@ export function liveWords(G, addAmbient) {
       let ay = (hy - w.y) * 140 - w.vy * 11;
       let ar = (0 - w.r) * 120 - w.vr * 10;
       // your scroll makes them sway, staggered so the line ripples
-      ay += sv * (.9 + (w.i % 3) * .25); // they lag behind the page a moment, then catch up
+      if (fine) ay += sv * (.9 + (w.i % 3) * .25); // they lag behind the page a moment, then catch up (not on touch: it reads as drag)
       // the pointer pushes them aside
       if (fine && ptr.on) {
         const dx = w.cx + w.x - ptr.x;
