@@ -409,6 +409,55 @@ function readInvite() {
     const inp = $(`#n-${w}`);
     if (!isMe(name)) inp.value = name;
   }
+  retell(names);
+}
+
+// An invite link retells the whole story with your group's names: the chat, the cards, the plan,
+// the night out. Everything that names someone is rewritten, including text the page writes later
+// (the plan's reasons, talk back, the typing line), so a MutationObserver keeps it going.
+// The roles stay as they are ("the Aanya"), because that is what the page is about.
+const KEEP = '.invite, .ticker, .me__on, .card__tag, .share, .foot, script, style, noscript';
+const PRONOUNS = [
+  [/\bon her way\b/g, 'on their way'], [/\bfor her\b/g, 'for them'], [/\bher limit\b/g, 'their limit'],
+  [/\bunder her\b/g, 'under their'], [/\bhe saw\b/g, 'they saw'], [/\bhe’s\b/g, 'they’re'],
+];
+function retell(names) {
+  const swap = {};
+  for (const w of Object.keys(PEOPLE)) if (names[w] && !isMe(names[w])) swap[PEOPLE[w].name] = names[w];
+  if (!Object.keys(swap).length) return;
+  const re = new RegExp(`\\b(${Object.keys(swap).join('|')})\\b`, 'g');
+  const done = new WeakMap(); // text node -> what we wrote, so a name is never swapped twice
+  const fix = (node) => {
+    if (done.get(node) === node.data) return;
+    const el = node.parentElement;
+    if (!el || el.closest(KEEP)) return;
+    let t = node.data.replace(re, (m) => swap[m]);
+    for (const [p, q] of PRONOUNS) t = t.replace(p, q);
+    if (t !== node.data) node.data = t;
+    done.set(node, node.data);
+  };
+  const walk = (root) => {
+    if (root.nodeType === 3) return fix(root);
+    if (root.nodeType !== 1) return;
+    const it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n = it.nextNode(); n; n = it.nextNode()) fix(n);
+  };
+  const main = $('main');
+  walk(main);
+  for (const w of Object.keys(PEOPLE)) {
+    const n = names[w];
+    if (!n || isMe(n)) continue;
+    const ini = [...n][0].toUpperCase(); // their initial in every avatar
+    $$(`.toast[data-who="${w}"] > i, .thread__faces i[data-who="${w}"]`).forEach((i) => { i.textContent = ini; });
+    document.body.style.setProperty(`--ini-${w}`, JSON.stringify(ini));
+  }
+  new MutationObserver((list) => list.forEach((m) => {
+    if (m.type === 'characterData') fix(m.target); else m.addedNodes.forEach(walk);
+  })).observe(main, { childList: true, subtree: true, characterData: true });
+  // Keep the disclosure honest: the names are theirs, the words are still the example.
+  const note = document.createElement('span');
+  note.textContent = 'Your group’s names come from the link you were sent; what they “say” here is still the example, not their messages.';
+  $('.foot__small span').after(' ', note);
 }
 
 /* ---------- 7. share ---------- */

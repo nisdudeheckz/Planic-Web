@@ -211,10 +211,10 @@ html:not(.motion) .thread__win { height: auto; }
 .day { align-self: center; font-size: .75rem; font-weight: 600; color: var(--ink-soft); background: var(--neutral); padding: 3px 10px; border-radius: 999px; margin: 6px 0; }
 .b { position: relative; padding-left: 36px; max-width: 92%; }
 .b::before { content: attr(data-initial); position: absolute; left: 0; bottom: 0; }
-.b[data-who="a"]::before { content: "A"; }
-.b[data-who="r"]::before { content: "R"; }
-.b[data-who="m"]::before { content: "M"; }
-.b[data-who="k"]::before { content: "K"; }
+.b[data-who="a"]::before { content: var(--ini-a, "A"); }
+.b[data-who="r"]::before { content: var(--ini-r, "R"); }
+.b[data-who="m"]::before { content: var(--ini-m, "M"); }
+.b[data-who="k"]::before { content: var(--ini-k, "K"); }
 .b__who { display: block; font-size: .75rem; font-weight: 600; color: var(--ink-soft); margin: 0 0 2px 12px; }
 .b p { display: inline-block; background: color-mix(in srgb, var(--tone) 28%, white); padding: 9px 14px; border-radius: 18px 18px 18px 5px; font-size: 1rem; line-height: 1.35; }
 .b mark { box-shadow: inset 0 -.45em color-mix(in srgb, var(--tone) 75%, white); border-radius: 2px; }
