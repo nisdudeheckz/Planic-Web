@@ -61,6 +61,7 @@ Real photos from Unsplash (Unsplash License), chosen through the official API wi
 
 `node build.mjs` also writes `site.html`, the page for a real address. A separate Netlify site with base directory `prototypes/scroll-story` serves it at `/` (see `netlify.toml` in this folder); the live site and the repo-root `netlify.toml` are untouched.
 
+- Staging today is the pull-request preview on the separate `planic-story-staging` Netlify project: https://deploy-preview-5--planic-story-staging.netlify.app (it rebuilds on every push to the branch; production deploys on that Netlify team were paused on 2026-11-04).
 - `site.config.json` holds the address (used for link previews and `og:image`) and an optional Umami website ID.
 - Signups post to Netlify Forms (form `early-access`, with a honeypot). Form detection must be on for that site. The preview and local builds still only check the address.
 - `track()` counts a few moments when Umami is configured, without cookies: `reached-the-four`, `picked`, `talked-back`, `twist-seen`, `reached-share`, `sent` (whatsapp, share, copy, image), `invite-opened`, `signed-up`.
