@@ -101,8 +101,22 @@ html.js .nav::before {
   transition: opacity .4s;
 }
 body[data-ink="light"] .nav { color: var(--on-dark); --nav-bg: rgba(17,18,22,.55); }
-.wordmark { display: flex; align-items: center; gap: 8px; text-decoration: none; font-family: var(--display); font-weight: 700; font-size: 1.25rem; }
-.wordmark svg { width: 34px; height: 21px; }
+.wordmark { display: flex; align-items: center; gap: 8px; text-decoration: none; font-family: var(--display); font-weight: 800; font-size: 1.375rem; letter-spacing: -.04em; line-height: 1; }
+.wordmark .mark { width: 30px; height: 30px; overflow: visible; }
+.wordmark__name b { color: var(--coral); letter-spacing: -.08em; margin-left: .03em; }
+/* the mark: on hover the four step apart, then come back to one point */
+.mark__seg { transition: translate .5s cubic-bezier(.34, 1.8, .64, 1); }
+.mark__dot { transform-box: fill-box; transform-origin: center; transition: scale .4s cubic-bezier(.34, 1.8, .64, 1); }
+.wordmark:hover .mark__seg { translate: var(--off); }
+.wordmark:hover .mark__dot { scale: 1.35; }
+.wordmark__name b { display: inline-block; transition: rotate .3s var(--ease-out), translate .3s var(--ease-out); transform-origin: 50% 90%; }
+.wordmark:hover .wordmark__name b { rotate: 8deg; translate: 0 -2px; }
+html.motion .mark__seg { stroke-dasharray: 40; stroke-dashoffset: 40; animation: mark-draw .9s var(--ease-out) forwards; }
+html.motion .mark__seg:nth-child(2) { animation-delay: .08s; } html.motion .mark__seg:nth-child(3) { animation-delay: .16s; } html.motion .mark__seg:nth-child(4) { animation-delay: .24s; }
+html.motion .mark__dot { animation: mark-dot .5s .55s cubic-bezier(.34, 1.8, .64, 1) backwards; }
+@keyframes mark-draw { to { stroke-dashoffset: 0; } }
+@keyframes mark-dot { from { scale: 0; } }
+.nav__cta-short { display: none; }
 .nav__cta { font-weight: 600; text-decoration: none; padding: 9px 16px; border-radius: 999px; background: var(--coral); color: var(--ink); font-size: .9375rem; white-space: nowrap; }
 .clock {
   display: none; font-variant-numeric: tabular-nums; font-weight: 600; font-size: .9375rem;
@@ -111,7 +125,10 @@ body[data-ink="light"] .nav { color: var(--on-dark); --nav-bg: rgba(17,18,22,.55
 html.js .clock { display: inline-flex; gap: 6px; }
 .clock__day { opacity: .6; }
 @media (max-width: 520px) {
-  .wordmark span { display: none; }
+  .wordmark { font-size: 1.2rem; gap: 6px; }
+  .wordmark .mark { width: 26px; height: 26px; }
+  .nav__cta-long { display: none; }
+  .nav__cta-short { display: inline; }
   .clock { font-size: .8125rem; padding: 6px 11px; }
   .nav__cta { font-size: .875rem; padding: 8px 13px; }
 }

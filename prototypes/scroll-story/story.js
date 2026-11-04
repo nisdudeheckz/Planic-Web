@@ -456,10 +456,18 @@ async function drawCard() {
     }
     x.stroke();
   });
-  // mark
-  x.fillStyle = '#7567F8'; x.beginPath(); x.arc(130, 140, 22, 0, 7); x.fill();
-  x.fillStyle = '#FF6B61'; x.beginPath(); x.arc(162, 140, 22, 0, 7); x.fill();
-  x.fillStyle = '#FBFBFA'; x.font = `700 44px ${D}`; x.textBaseline = 'middle'; x.fillText('Planic', 200, 142);
+  // mark: the chat bubble that is also a pin (same paths as favicon.svg), then planic!!
+  x.save(); x.translate(110, 108); x.scale(2.1, 2.1);
+  x.lineWidth = 3; x.lineCap = 'round'; x.lineJoin = 'round';
+  [['a', 'M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12'], ['r', 'M3 9 A 7 7 0 0 1 10 2 H 14.5'],
+    ['m', 'M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12'], ['k', 'M29 15 V 16.5 A 7 7 0 0 1 22 23.5 H 19.4 L 16 29.5']].forEach(([w, d]) => {
+    x.strokeStyle = TONES[w]; x.stroke(new Path2D(d));
+  });
+  x.fillStyle = '#FBFBFA'; x.beginPath(); x.arc(16, 12.8, 3.6, 0, 7); x.fill();
+  x.restore();
+  x.fillStyle = '#FBFBFA'; x.font = `800 50px ${D}`; x.textBaseline = 'middle';
+  x.fillText('planic', 192, 142);
+  x.fillStyle = '#FF6B61'; x.fillText('!!', 192 + x.measureText('planic').width + 2, 142);
   // title
   x.textBaseline = 'alphabetic';
   x.font = `800 124px ${D}`; x.fillStyle = '#FBFBFA';
