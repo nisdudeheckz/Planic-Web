@@ -765,3 +765,15 @@ html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0
 .clock.is-flip > span { display: inline-block; animation: clock-flip .5s var(--ease-out); }
 .clock.is-flip > .clock__time { animation-delay: .06s; }
 @keyframes clock-flip { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+/* the twist: Meera's message drops in like the ones in the opening film */
+.twist { position: fixed; z-index: 30; top: calc(var(--navh) + 10px); right: max(16px, env(safe-area-inset-right)); width: min(360px, calc(100vw - 32px));
+  display: grid; grid-template-columns: 34px 1fr; column-gap: 12px; align-items: center; height: 64px; padding: 0 16px 0 12px; border-radius: 18px;
+  background: rgba(30, 31, 38, .78); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(251,251,250,.14); box-shadow: 0 18px 40px rgba(0,0,0,.35); color: var(--on-dark);
+  opacity: 0; transform: translateY(-24px) scale(.94); transition: transform .55s var(--ease-out), opacity .35s; pointer-events: none; }
+.twist.on { opacity: 1; transform: none; }
+.twist i { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: var(--tone); color: var(--ink); font-style: normal; font-weight: 700; display: grid; place-items: center; }
+.ask.is-twist { animation: twist-nudge .9s var(--ease-out); }
+@keyframes twist-nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px) rotate(-1deg); } 45% { transform: translateX(5px) rotate(.8deg); } 70% { transform: translateX(-2px); } }
+@media (prefers-reduced-motion: reduce) { .twist { transition: opacity .2s; transform: none; } .ask.is-twist { animation: none; } }

@@ -48,6 +48,11 @@ Real photos from Unsplash (Unsplash License), chosen through the official API wi
 - **Story card**: "Save as image" draws a 1080x1920 "Our group chat, decoded" picture with the names typed in, and opens the share sheet where files can be shared, otherwise downloads it.
 - All of it stops with the pause icon and is absent with reduced motion.
 
+## Story beats
+
+- **Invite links retell the page.** A link like `?a=Isha&r=Dev&m=Mona&k=Kunal&me=m` puts those names everywhere the page names the four: the opening messages, the chat, the cards, the plan's reasons, talk back, the night out. Text written later is renamed too (a MutationObserver on `main`). Pronouns become neutral, avatars use their initials, and the roles keep the story's names ("the Meera"). The footer adds that the names come from the link and the words are still the example.
+- **The twist.** The first time the visitor reaches "Now you be the group" without having changed anything, Meera's budget drops to ₹400 in a message that slides in like the film's. Planic answers that nothing fits all four and what each option would need, so the visitor's first move is fixing a broken plan. It fires once, never after the visitor has touched the asks, and "Put it back" restores the original. It adds no scroll length.
+
 ## Link preview
 
 `og.jpg` (1200x630, made from `og-source.html` with a headless browser) is the picture WhatsApp and others show when the link is pasted. `og:image` is a relative path here; on the live site it must be the full https URL, because most apps ignore relative preview images. Invite links with names in them show the same preview; a personalised preview would need a server.

@@ -783,6 +783,18 @@ html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0
 .clock.is-flip > span { display: inline-block; animation: clock-flip .5s var(--ease-out); }
 .clock.is-flip > .clock__time { animation-delay: .06s; }
 @keyframes clock-flip { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+/* the twist: Meera's message drops in like the ones in the opening film */
+.twist { position: fixed; z-index: 30; top: calc(var(--navh) + 10px); right: max(16px, env(safe-area-inset-right)); width: min(360px, calc(100vw - 32px));
+  display: grid; grid-template-columns: 34px 1fr; column-gap: 12px; align-items: center; height: 64px; padding: 0 16px 0 12px; border-radius: 18px;
+  background: rgba(30, 31, 38, .78); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(251,251,250,.14); box-shadow: 0 18px 40px rgba(0,0,0,.35); color: var(--on-dark);
+  opacity: 0; transform: translateY(-24px) scale(.94); transition: transform .55s var(--ease-out), opacity .35s; pointer-events: none; }
+.twist.on { opacity: 1; transform: none; }
+.twist i { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: var(--tone); color: var(--ink); font-style: normal; font-weight: 700; display: grid; place-items: center; }
+.ask.is-twist { animation: twist-nudge .9s var(--ease-out); }
+@keyframes twist-nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px) rotate(-1deg); } 45% { transform: translateX(5px) rotate(.8deg); } 70% { transform: translateX(-2px); } }
+@media (prefers-reduced-motion: reduce) { .twist { transition: opacity .2s; transform: none; } .ask.is-twist { animation: none; } }
 </style>
   <script>document.documentElement.classList.add('js')</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
@@ -2022,6 +2034,7 @@ const PRONOUNS = [
   [/\bon her way\b/g, 'on their way'], [/\bfor her\b/g, 'for them'], [/\bher limit\b/g, 'their limit'],
   [/\bunder her\b/g, 'under their'], [/\bhe saw\b/g, 'they saw'], [/\bhe’s\b/g, 'they’re'],
 ];
+let renamed = (t) => t; // the same swap, for text written outside main
 function retell(names) {
   const swap = {};
   for (const w of Object.keys(PEOPLE)) if (names[w] && !isMe(names[w])) swap[PEOPLE[w].name] = names[w];
@@ -2043,6 +2056,7 @@ function retell(names) {
     const it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     for (let n = it.nextNode(); n; n = it.nextNode()) fix(n);
   };
+  renamed = (t) => t.replace(re, (m) => swap[m]);
   const main = $('main');
   walk(main);
   for (const w of Object.keys(PEOPLE)) {
@@ -2248,6 +2262,42 @@ resetBtn.addEventListener('click', () => {
   writeAsks(asks);
   renderAnswer(evaluate(asks), explainChange(prev, asks, { reset: true }).text);
 });
+
+// The twist. The first time you reach your turn, before you've touched anything, Meera's budget
+// drops, the way a real group's plan breaks on Friday. Planic won't guess: it says nothing fits
+// and what would. The note comes in like the messages in the opening film did.
+function twist() {
+  const ans = $('.answer');
+  let done = false;
+  const io = new IntersectionObserver(([e]) => {
+    if (!e.isIntersecting || done) return;
+    done = true;
+    io.disconnect();
+    if (!sameAsks(asks, DEFAULT_ASKS)) return; // they're already talking back
+    setTimeout(() => {
+      if (!sameAsks(asks, DEFAULT_ASKS)) return;
+      const name = renamed('Meera');
+      const note = document.createElement('div');
+      note.className = 'twist';
+      note.dataset.who = 'm';
+      note.setAttribute('aria-hidden', 'true'); // the answer line below says it out loud
+      note.innerHTML = '<i></i><span class="toast__top"><b></b> · the usual four · now</span><span class="toast__msg">sorry guys, ₹400 max this week 🙈</span>';
+      $('i', note).textContent = [...name][0].toUpperCase();
+      $('b', note).textContent = name;
+      document.body.append(note);
+      requestAnimationFrame(() => note.classList.add('on'));
+      setTimeout(() => { note.classList.remove('on'); setTimeout(() => note.remove(), 600); }, 5200);
+      if (navigator.vibrate) try { navigator.vibrate([10, 60, 10]); } catch { /* not allowed here */ }
+      const meera = $('.ask[data-who="m"]');
+      meera.classList.add('is-twist');
+      setTimeout(() => meera.classList.remove('is-twist'), 2400);
+      writeAsks({ budget: 400 });
+      asksForm.dispatchEvent(new Event('change'));
+    }, MOTION ? 900 : 300);
+  }, { threshold: .55 });
+  io.observe(ans);
+}
+twist();
 
 /* ---------- 8. join (prototype: validates, never submits) ---------- */
 const join = $('.join__form');
