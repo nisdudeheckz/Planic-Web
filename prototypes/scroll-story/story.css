@@ -792,3 +792,7 @@ html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0
 .ask.is-twist { animation: twist-nudge .9s var(--ease-out); }
 @keyframes twist-nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px) rotate(-1deg); } 45% { transform: translateX(5px) rotate(.8deg); } 70% { transform: translateX(-2px); } }
 @media (prefers-reduced-motion: reduce) { .twist { transition: opacity .2s; transform: none; } .ask.is-twist { animation: none; } }
+
+/* On the coral share chapter the coral Join button and the coral "!!" would vanish into the sky. */
+body[data-ch="share"] .nav__cta { background: var(--ink); color: var(--day); }
+body[data-ch="share"] .wordmark__name b { color: var(--ink); }

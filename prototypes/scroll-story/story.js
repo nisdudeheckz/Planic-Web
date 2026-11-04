@@ -50,6 +50,8 @@ let filmST = null; // the film's pin, so the sky can follow it
 let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
 function enterChapter(sec) {
   document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
+  document.body.dataset.ch = sec.id;
+  if (sec.id !== 'try') $('.twist.on')?.classList.remove('on'); // Meera's note leaves with her chapter
   if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
   if (sec.id === 'film') { if (!filmClosed) useStoryTime(false); return; }
   useStoryTime(true, sec.dataset.day, sec.dataset.time);
@@ -656,13 +658,15 @@ resetBtn.addEventListener('click', () => {
 function twist() {
   const ans = $('.answer');
   let done = false;
+  let seen = false; // only while the answer is on screen; scrolling straight past saves it for later
   const io = new IntersectionObserver(([e]) => {
-    if (!e.isIntersecting || done) return;
-    done = true;
-    io.disconnect();
-    if (!sameAsks(asks, DEFAULT_ASKS)) return; // they're already talking back
+    seen = e.isIntersecting;
+    if (!seen || done) return;
+    if (!sameAsks(asks, DEFAULT_ASKS)) { done = true; io.disconnect(); return; } // they're already talking back
     setTimeout(() => {
-      if (!sameAsks(asks, DEFAULT_ASKS)) return;
+      if (done || !seen || !sameAsks(asks, DEFAULT_ASKS)) return;
+      done = true;
+      io.disconnect();
       const name = renamed('Meera');
       const note = document.createElement('div');
       note.className = 'twist';
