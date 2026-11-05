@@ -15,7 +15,7 @@
   --plan-deep: #2A2290;
   --night: #15131F;
   --on-dark: #FBFBFA;
-  --on-dark-soft: rgba(251, 251, 250, .74);
+  --on-dark-soft: rgba(251, 251, 250, .84);
   --peri: #7567F8;
   --coral: #FF6B61;
   --lav: #B8AEFF;
@@ -501,7 +501,8 @@ html.motion .decode__rows li:nth-child(3) i { animation-delay: 1.3s; }
 html.motion .decode__rows li:nth-child(4) i { animation-delay: 1.95s; }
 @keyframes breathe { to { transform: scale(1.35); } }
 
-.off *, .off *::before, .off *::after, html.still *, html.still *::before, html.still *::after { animation-play-state: paused !important; }
+.off *, .off *::before, .off *::after, html.still *, html.still *::before, html.still *::after,
+html.scrolling *, html.scrolling *::before, html.scrolling *::after { animation-play-state: paused !important; }
 
 /* Pause: a small icon beside the clock (WCAG 2.2.2), the clock's own size and outline */
 .nav__mid { display: flex; align-items: center; gap: 6px; }
@@ -794,8 +795,8 @@ html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0
 @media (prefers-reduced-motion: reduce) { .twist { transition: opacity .2s; transform: none; } .ask.is-twist { animation: none; } }
 
 /* On the coral share chapter the coral Join button and the coral "!!" would vanish into the sky. */
-body[data-ch="share"] .nav__cta { background: var(--ink); color: var(--day); }
-body[data-ch="share"] .wordmark__name b { color: var(--ink); }
+body[data-under="share"] .nav__cta { background: var(--ink); color: var(--day); }
+body[data-under="share"] .wordmark__name b { color: var(--ink); }
 
 /* Phones: the slow photo drift is barely visible while you scroll and costs every frame, so it stays still there. */
 @media (pointer: coarse) {
@@ -977,3 +978,32 @@ html:not(.motion) .film__one { display: none; }
 
 /* the glimpse: Planic arrives as a link the planner sends, not as a member of the chat */
 .gp__link { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(251,251,250,.18); font-size: .75rem; font-weight: 600; color: var(--on-dark-soft); }
+
+/* Big moving layers get their own compositor layer, so scrolling moves them without repainting. */
+html.motion .reveal, html.motion .reveal .ph, html.motion .snap { will-change: transform; }
+
+/* chapters where the text flips between dark and light arrive on their own solid colour (see sky() in story.js) */
+html.motion .ch.ch--solid { background: var(--solid) !important; }
+.tally .count--zero { color: #D9443A; }
+
+/* night, on phones: the photos drift behind the words, and the words keep a soft dark halo so they always read */
+@media (max-width: 899px) {
+  .snap, .snap[data-depth="1.4"], .snap[data-depth="1.1"] { z-index: 1; }
+  .night__words { z-index: 2; }
+  .night__words .night__title, .night__words .night__lede, .night__words .kicker { text-shadow: 0 2px 22px rgba(21,19,31,.95), 0 0 6px rgba(21,19,31,.8); }
+}
+.night__lede { color: rgba(251,251,250,.86); }
+@media (max-width: 899px) {
+  .snap { width: 25vw; }
+  .snap:nth-child(1) { left: -7vw; } .snap:nth-child(2) { right: -8vw; }
+  .snap:nth-child(3) { left: -7vw; } .snap:nth-child(4) { right: -8vw; }
+  .night__words { max-width: 80vw; }
+}
+@media (max-width: 899px) { .allin { width: 100%; } }
+
+/* phones: the metro card is small, so it names the two ends and shows the change as a dot */
+@media (max-width: 899px) { .stops span:nth-child(2) { display: none; } }
+/* narrow laptops: Meera's message drops in on the left, so it doesn't cover the plan's answer on the right */
+@media (min-width: 900px) and (max-width: 1279px) { .twist { right: auto; left: max(16px, env(safe-area-inset-left)); } }
+@media (max-width: 899px) { .snap { width: min(25vw, 150px); } }
+@media (max-width: 899px) { .night__lede { max-width: 68vw; margin-inline: auto; } }

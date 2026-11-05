@@ -65,7 +65,6 @@ function track(event, data, once = true) {
 function enterChapter(sec) {
   if (sec.id === 'four') track('reached-the-four');
   if (sec.id === 'share') track('reached-share');
-  document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
   document.body.dataset.ch = sec.id;
   if (sec.id !== 'try') $('.twist.on')?.classList.remove('on'); // Meera's note leaves with her chapter
   if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
@@ -77,6 +76,17 @@ const chapterIO = new IntersectionObserver((entries) => {
   for (const e of entries) if (e.isIntersecting) enterChapter(e.target);
 }, { rootMargin: '-50% 0px -50% 0px' });
 sections.forEach((s) => chapterIO.observe(s));
+// The nav's ink follows the chapter that is under the nav itself (its background is the same sky), not the one
+// mid-screen, so it never shows light text on a light sky or dark on dark while a chapter's edge comes up.
+const navIO = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const sec = e.target;
+    document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
+    document.body.dataset.under = sec.id;
+  }
+}, { rootMargin: '0px 0px -99% 0px' });
+sections.forEach((s) => navIO.observe(s));
 
 /* ---------- ambient motion: runs only while its chapter is on screen ---------- */
 const ambient = []; // [{ el, tweens: [] }]
@@ -96,6 +106,22 @@ function addAmbient(el, tween) {
   if (!a) { a = { el, tweens: [] }; ambient.push(a); offIO.observe(el); }
   a.tweens.push(tween);
 }
+
+// While you scroll, the small loops (typing dots, pings, bobbing photos) hold still, so every frame goes to the scroll.
+// The film keeps playing. They pick up again a moment after you stop.
+let moving = 0;
+addEventListener('scroll', () => {
+  if (!moving) {
+    root.classList.add('scrolling');
+    ambient.forEach((a) => a.tweens.forEach((t) => t.keep || t.pause()));
+  }
+  clearTimeout(moving);
+  moving = setTimeout(() => {
+    moving = 0;
+    root.classList.remove('scrolling');
+    if (!still) ambient.forEach((a) => { if (!a.el.classList.contains('off')) a.tweens.forEach((t) => t.keep || t.play()); });
+  }, 180);
+}, { passive: true });
 
 /* ---------- 0. the film: phones lighting up, until the chat takes over ---------- */
 function filmMotion() {
@@ -143,6 +169,7 @@ function filmMotion() {
   addEventListener('resize', pick);
   video.preload = 'auto';
   addAmbient(sec, {
+    keep: true,
     play() {
       const p = video.play();
       // If the browser won't autoplay (data saver, low power), the poster stays and the first three messages sit still.
@@ -271,9 +298,14 @@ function sky() {
     const prev = sections[i];
     // The day comes up around the film while it closes, so the chat arrives in daylight. Unsmoothed (scrub: true)
     // like every other sky change, so a jump down the page can't let it land last and paint the night white.
+    // Where the text flips between dark and light, a slow blend leaves a muddy middle where neither reads.
+    // There the new chapter brings its own solid colour up with a hard edge, and the sky changes under it.
+    const flips = prev.id !== 'film' && prev.dataset.ink !== sec.dataset.ink;
+    if (flips) { sec.classList.add('ch--solid'); sec.style.setProperty('--solid', sec.dataset.sky); }
     const st = prev.id === 'film' && filmST
       ? { start: () => filmST.start + innerHeight * .24, end: () => filmST.start + innerHeight * .68, scrub: true }
-      : { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true };
+      : flips ? { trigger: sec, start: 'top 1%', end: 'top top', scrub: true }
+        : { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true };
     G.fromTo(el, { backgroundColor: prev.dataset.sky }, { backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false, scrollTrigger: st });
   });
 }
@@ -336,15 +368,16 @@ function planMotion() {
   const proxy = { s: .16 };
   const apply = () => { G.set(reveal, { scale: proxy.s }); G.set(ph, { scale: 1 / proxy.s }); };
   apply();
-  G.set(reveal, { '--scrim': 0 });
+  G.set(reveal, { '--scrim': .7 });
   const tl = G.timeline({
     defaults: { ease: 'none' },
     scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
   });
   tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
-  tl.to(reveal, { '--scrim': 1, duration: .35 }, .25);
-  tl.from($$('.plan__label, .plan__title, .plan__meta, .plan__then', plan), { y: 40, autoAlpha: 0, stagger: .07, duration: .3, ease: 'power2.out' }, .32);
-  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .07, duration: .28, ease: 'power2.out' }, .58);
+  tl.to(reveal, { '--scrim': 1, duration: .3 }, 0);
+  tl.from($$('.plan__meta, .plan__then', plan), { y: 30, autoAlpha: 0, duration: .3, ease: 'power2.out' }, .2);
+  tl.from($('.plan__why', plan), { autoAlpha: 0, duration: .2 }, .4);
+  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .07, duration: .28, ease: 'power2.out' }, .42);
   tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
   tl.to({}, { duration: .6 }); // a beat to read the plan
 }
