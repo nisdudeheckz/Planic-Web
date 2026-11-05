@@ -1,0 +1,3182 @@
+
+  <title>Planic scroll story</title>
+  <meta name="claude:viewport-fit-sides" content="cover" />
+  <meta name="description" content="Prototype: a scroll story about four friends, one group chat and one Friday plan. Find out which one you are, then send it to your group." />
+  <meta name="robots" content="noindex" />
+  <meta property="og:title" content="Every group chat has these four. Which one are you?" />
+  <meta property="og:description" content="A one-minute scroll about four friends, one group chat and one Friday plan. Planic, early access." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Every group chat has these four: four chat bubbles, veg options pls, somewhere new, ₹600 max, anything works, then so… where?" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&display=swap" />
+  <style>
+/* Planic scroll story: "Every group chat has these four".
+   Scroll is the clock, from Wednesday afternoon to Saturday morning. One fixed sky layer changes colour
+   as each chapter arrives, so sections flow into each other instead of stacking as blocks.
+   Four people are four coloured lines (carried over from Talk back). Animate transform and opacity only.
+   Without JS, or with reduced motion, every chapter is laid out in its finished state on its own colour. */
+
+:root {
+  --day: #FBFBFA;
+  --paper: #F7F4EE;
+  --gold: #F6E7CF;
+  --ink: #111216;
+  --text: #17171A;
+  --ink-soft: #4F4D58;
+  --plan: #3A2FC0;
+  --plan-deep: #2A2290;
+  --night: #15131F;
+  --on-dark: #FBFBFA;
+  --on-dark-soft: rgba(251, 251, 250, .84);
+  --peri: #7567F8;
+  --coral: #FF6B61;
+  --lav: #B8AEFF;
+  --sun: #F5C76B;
+  --mint: #9ED9B8;
+  --neutral: #E9E5DE;
+
+  --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --body: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --g: max(16px, env(safe-area-inset-left, 0px), 4.5vw);
+  --navh: 64px;
+  color-scheme: light;
+}
+[data-who="a"] { --tone: var(--coral); }
+[data-who="r"] { --tone: var(--lav); }
+[data-who="m"] { --tone: var(--sun); }
+[data-who="k"] { --tone: var(--mint); }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--day);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+p, h1, h2, h3, ul, ol, fieldset, figure { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+fieldset { border: 0; min-width: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+a { color: inherit; }
+mark { background: none; color: inherit; }
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 12px; top: -60px; z-index: 60; background: var(--ink); color: var(--day); padding: 10px 14px; }
+.skip:focus { top: 12px; }
+:focus-visible { outline: 3px solid var(--peri); outline-offset: 3px; }
+
+h1, h2 { font-family: var(--display); font-weight: 760; letter-spacing: -.035em; line-height: .96; text-wrap: balance; }
+h2 { font-size: clamp(2.3rem, 1.4rem + 3.6vw, 4.6rem); }
+.kicker { font-size: .9375rem; font-weight: 560; opacity: .8; margin-bottom: 14px; }
+.soft { opacity: .55; }
+.ch__head { max-width: 40rem; }
+.ch__lede { margin-top: 16px; max-width: 34rem; font-size: 1.0625rem; opacity: .85; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 12px 22px;
+  border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid transparent;
+  transition: translate .2s var(--ease-out), scale .15s, background-color .2s;
+}
+.btn:hover { translate: 0 -2px; }
+.btn--coral { background: var(--coral); color: var(--ink); }
+.btn--ghost { border-color: currentColor; }
+.btn--ink { background: var(--ink); color: var(--day); }
+.btn--ghost-ink { background: transparent; border-color: var(--ink); color: var(--ink); }
+
+/* ---------- the sky, the lanes, the nav ---------- */
+.sky { position: fixed; inset: 0; z-index: -1; background: var(--day); display: none; }
+html.motion .sky { display: block; }
+html.motion .ch { background: transparent !important; }
+
+/* four threads, one per friend, in the left margin (drawn by alive.js) */
+.threads { position: fixed; left: 0; top: 0; height: 100vh; z-index: 40; pointer-events: none; opacity: 0; overflow: visible; }
+.thread { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.thread--one { stroke: var(--on-dark); stroke-width: 1.5; }
+.thread__knot { fill: none; stroke: var(--on-dark); stroke-width: 2; opacity: 0; }
+@media (max-width: 899px) { .thread { stroke-width: 2; } }
+
+.nav {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 50; height: var(--navh);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 var(--g); color: var(--text); transition: color .4s;
+}
+html.js .nav { position: fixed; }
+html.js .nav::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to bottom, var(--nav-bg, rgba(251,251,250,.92)), transparent);
+  transition: opacity .4s;
+}
+body[data-ink="light"] .nav { color: var(--on-dark); --nav-bg: rgba(17,18,22,.55); }
+.wordmark { display: flex; align-items: center; gap: 8px; text-decoration: none; font-family: var(--display); font-weight: 800; font-size: 1.375rem; letter-spacing: -.04em; line-height: 1; }
+.wordmark .mark { width: 30px; height: 30px; overflow: visible; }
+.wordmark__name b { color: var(--coral); letter-spacing: -.08em; margin-left: .03em; }
+/* the mark: on hover the four step apart, then come back to one point */
+.mark__seg { transition: translate .5s cubic-bezier(.34, 1.8, .64, 1); }
+.mark__dot { transform-box: fill-box; transform-origin: center; transition: scale .4s cubic-bezier(.34, 1.8, .64, 1); }
+.wordmark:hover .mark__seg { translate: var(--off); }
+.wordmark:hover .mark__dot { scale: 1.35; }
+.wordmark__name b { display: inline-block; transition: rotate .3s var(--ease-out), translate .3s var(--ease-out); transform-origin: 50% 90%; }
+.wordmark:hover .wordmark__name b { rotate: 8deg; translate: 0 -2px; }
+html.motion .mark__seg { stroke-dasharray: 40; stroke-dashoffset: 40; animation: mark-draw .9s var(--ease-out) forwards; }
+html.motion .mark__seg:nth-child(2) { animation-delay: .08s; } html.motion .mark__seg:nth-child(3) { animation-delay: .16s; } html.motion .mark__seg:nth-child(4) { animation-delay: .24s; }
+html.motion .mark__dot { animation: mark-dot .5s .55s cubic-bezier(.34, 1.8, .64, 1) backwards; }
+@keyframes mark-draw { to { stroke-dashoffset: 0; } }
+@keyframes mark-dot { from { scale: 0; } }
+.nav__cta-short { display: none; }
+.nav__cta { font-weight: 600; text-decoration: none; padding: 9px 16px; border-radius: 999px; background: var(--coral); color: var(--ink); font-size: .9375rem; white-space: nowrap; }
+.clock {
+  display: none; font-variant-numeric: tabular-nums; font-weight: 600; font-size: .9375rem;
+  padding: 7px 14px; border-radius: 999px; border: 1.5px solid currentColor; white-space: nowrap;
+}
+html.js .clock { display: inline-flex; gap: 6px; }
+.clock__day { opacity: .6; }
+@media (max-width: 520px) {
+  .wordmark { font-size: 1.2rem; gap: 6px; }
+  .wordmark .mark { width: 26px; height: 26px; }
+  .nav__cta-long { display: none; }
+  .nav__cta-short { display: inline; }
+  .clock { font-size: .8125rem; padding: 6px 11px; }
+  .nav__cta { font-size: .875rem; padding: 8px 13px; }
+}
+
+/* ---------- chapters ---------- */
+.ch { position: relative; padding: calc(var(--navh) + 48px) var(--g) 96px; }
+.ch[data-ink="light"] { color: var(--on-dark); }
+.ch--chat { background: var(--day); }
+.ch--four { background: var(--paper); }
+.ch--weigh { background: var(--gold); }
+.ch--plan { background: var(--plan); }
+.ch--try { background: var(--plan-deep); }
+.ch--night { background: var(--night); }
+.ch--share { background: var(--coral); }
+.ch--join { background: var(--ink); }
+
+/* ---------- photos ---------- */
+.ph { position: relative; overflow: hidden; background: #ddd; }
+.ph img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ph--empty {
+  background:
+    radial-gradient(120% 90% at 20% 15%, color-mix(in srgb, var(--tone, var(--lav)) 70%, white) 0%, transparent 60%),
+    radial-gradient(90% 90% at 85% 90%, color-mix(in srgb, var(--plan) 55%, transparent) 0%, transparent 70%),
+    linear-gradient(160deg, #2b2547, #15131F);
+}
+.ph--empty::after {
+  content: ""; position: absolute; inset: 0; opacity: .22; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.ph__label {
+  position: absolute; left: 10px; bottom: 10px; z-index: 1; font-size: .75rem; font-weight: 600;
+  color: var(--on-dark); background: rgba(17,18,22,.45); padding: 3px 8px; border-radius: 6px;
+}
+
+/* =========================================================
+   1. The chat
+   ========================================================= */
+.ch--chat { padding-top: var(--navh); padding-bottom: 0; }
+.chat-stage {
+  min-height: 100svh; display: grid; gap: 28px 5vw; align-content: center;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 440px);
+  grid-template-areas: "open thread" "tally thread";
+  padding: 32px 0 56px;
+}
+.open { grid-area: open; align-self: end; }
+.invite[hidden] { display: none; }
+.invite {
+  display: inline-block; margin-bottom: 18px; padding: 10px 16px; border-radius: 14px 14px 14px 4px;
+  background: var(--ink); color: var(--day); font-weight: 560; max-width: 32rem;
+}
+.open__title { font-size: clamp(2.4rem, min(1.2rem + 6.4vw, 12.5svh), 7.4rem); } /* short laptop screens shrink it too */
+.open__title .w { display: inline-block; }
+.w--four {
+  background: linear-gradient(90deg, var(--coral) 0 25%, var(--lav) 25% 50%, var(--sun) 50% 75%, var(--mint) 75%) left 92% / 100% .12em no-repeat;
+  padding-bottom: .04em;
+}
+.lede { margin-top: 20px; font-size: clamp(1.0625rem, 1rem + .3vw, 1.25rem); max-width: 31rem; color: var(--ink-soft); }
+.open__cta { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+.tally { grid-area: tally; align-self: start; display: flex; gap: 28px; flex-wrap: wrap; font-weight: 560; color: var(--ink-soft); }
+.tally b { display: block; font-family: var(--display); font-size: clamp(2.6rem, 2rem + 2vw, 4rem); line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.tally .count--zero { color: var(--coral); }
+
+.thread {
+  grid-area: thread; align-self: center; border-radius: 28px; background: #fff;
+  box-shadow: 0 30px 80px -30px rgba(17,18,22,.35), 0 0 0 1px rgba(17,18,22,.06);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.thread__head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--neutral); font-weight: 600; }
+.thread__faces { display: flex; }
+.thread__faces i, .b::before {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal;
+  font-size: .75rem; font-weight: 700; color: var(--ink); background: var(--tone); border: 2px solid #fff;
+}
+.thread__faces i + i { margin-left: -8px; }
+.thread__unread { margin-left: auto; font-size: .8125rem; color: #fff; background: var(--coral); color: var(--ink); padding: 3px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.thread__win { position: relative; height: min(64svh, 560px); overflow: hidden; }
+.thread__list { padding: 16px 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+html:not(.motion) .thread__win { height: auto; }
+.day { align-self: center; font-size: .75rem; font-weight: 600; color: var(--ink-soft); background: var(--neutral); padding: 3px 10px; border-radius: 999px; margin: 6px 0; }
+.b { position: relative; padding-left: 36px; max-width: 92%; }
+.b::before { content: attr(data-initial); position: absolute; left: 0; bottom: 0; }
+.b[data-who="a"]::before { content: var(--ini-a, "A"); }
+.b[data-who="r"]::before { content: var(--ini-r, "R"); }
+.b[data-who="m"]::before { content: var(--ini-m, "M"); }
+.b[data-who="k"]::before { content: var(--ini-k, "K"); }
+.b__who { display: block; font-size: .75rem; font-weight: 600; color: var(--ink-soft); margin: 0 0 2px 12px; }
+.b p { display: inline-block; background: color-mix(in srgb, var(--tone) 28%, white); padding: 9px 14px; border-radius: 18px 18px 18px 5px; font-size: 1rem; line-height: 1.35; }
+.b mark { box-shadow: inset 0 -.45em color-mix(in srgb, var(--tone) 75%, white); border-radius: 2px; }
+.b--photo .ph { width: 220px; aspect-ratio: 4 / 3; border-radius: 18px 18px 18px 5px; margin-bottom: 6px; }
+.b--last p { font-family: var(--display); font-weight: 700; font-size: 1.6rem; background: var(--ink); color: var(--day); padding: 10px 18px; }
+
+/* Short laptop screens: the chat is pinned at the screen's height, so everything on the left has to fit in it. */
+@media (min-width: 900px) and (max-height: 780px) {
+  .chat-stage { padding: 8px 0 16px; row-gap: 14px; }
+  .invite { margin-bottom: 10px; }
+  .lede { margin-top: 12px; }
+  .open__cta { margin-top: 16px; }
+  .tally b { font-size: clamp(2rem, 6.5svh, 3.4rem); }
+  .open__title { font-size: clamp(2.4rem, min(1.2rem + 6.4vw, 10.5svh), 7.4rem); }
+}
+/* Narrow laptop windows: the left column is thin, so the title wraps more. Give it more room and a smaller size. */
+@media (min-width: 900px) and (max-width: 1180px) {
+  .chat-stage { grid-template-columns: minmax(0, 1fr) clamp(290px, 34vw, 380px); column-gap: 4vw; }
+  .open__title { font-size: clamp(2.4rem, min(1.2rem + 6.4vw, 9svh), 6rem); }
+  .open__cta .btn { padding-inline: 18px; }
+}
+
+@media (max-width: 899px) {
+  .chat-stage { grid-template-columns: 1fr; grid-template-areas: "open" "thread" "tally"; align-content: start; gap: 24px; padding-top: 20px; }
+  .thread__win { height: 56svh; }
+  .open { align-self: start; }
+}
+
+/* =========================================================
+   2. The four
+   ========================================================= */
+.ch--four .ch__head { margin-bottom: 40px; }
+.deck { display: grid; gap: 8svh; }
+.card {
+  position: sticky; top: calc(var(--navh) + 16px + var(--i) * 14px);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: min(56svh, 540px);
+  border-radius: 32px; overflow: hidden; background: var(--tone); color: var(--ink);
+  box-shadow: 0 -18px 40px -24px rgba(17,18,22,.35);
+  transform-origin: 50% 0;
+}
+.card .ph { height: 100%; min-height: 260px; border-radius: 0; }
+.card__body { padding: clamp(24px, 4vw, 56px); display: flex; flex-direction: column; gap: 10px; align-self: center; }
+.card__role { font-weight: 600; font-size: .9375rem; }
+.card__name { font-family: var(--display); font-weight: 760; font-size: clamp(3rem, 2rem + 4vw, 6rem); letter-spacing: -.04em; line-height: .9; }
+.card__said { font-family: var(--display); font-weight: 600; font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2.2rem); line-height: 1.1; letter-spacing: -.02em; }
+.card__note { max-width: 26rem; color: rgba(17,18,22,.78); }
+.card__tag { font-weight: 600; background: rgba(17,18,22,.1); padding: 6px 12px; border-radius: 10px; align-self: start; }
+.card__shade { position: absolute; inset: 0; background: var(--ink); opacity: 0; pointer-events: none; }
+.me {
+  align-self: start; margin-top: 10px; min-height: 48px; padding: 10px 20px; border-radius: 999px;
+  border: 2px solid var(--ink); background: transparent; font-weight: 650;
+  transition: background-color .2s, color .2s, translate .2s var(--ease-out), scale .15s;
+}
+.me:hover { translate: 0 -2px; }
+.me[aria-pressed="true"] { background: var(--ink); color: var(--tone); }
+.me__on { display: none; }
+.me[aria-pressed="true"] .me__on { display: inline; }
+.me[aria-pressed="true"] .me__off { display: none; }
+@media (max-width: 899px) {
+  .card { grid-template-columns: 1fr; grid-template-rows: 27svh auto; min-height: 0; top: calc(var(--navh) + 8px + var(--i) * 10px); border-radius: 26px; }
+  .card .ph { min-height: 0; }
+  .card__body { align-self: start; padding: 20px 22px 26px; gap: 6px; }
+  .card__name { font-size: 3rem; }
+}
+
+/* =========================================================
+   3. Weigh
+   ========================================================= */
+.weigh-stage {
+  min-height: calc(100svh - var(--navh) - 48px); display: grid; gap: 24px 4vw; align-content: center;
+  grid-template-columns: minmax(240px, .8fr) minmax(0, 2fr); align-items: center;
+}
+.opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.opt { position: relative; border-radius: 22px; background: var(--day); padding: 8px 8px 14px; box-shadow: 0 16px 30px -22px rgba(17,18,22,.45); }
+.opt .ph { aspect-ratio: 16 / 11; border-radius: 16px; }
+.opt__name { font-weight: 650; margin: 10px 6px 0; line-height: 1.2; }
+.opt__price { margin: 0 6px; font-size: .875rem; color: var(--ink-soft); }
+.opt__no, .opt__yes {
+  position: absolute; left: 16px; right: 16px; top: 16px; z-index: 2;
+  font-size: .875rem; font-weight: 650; line-height: 1.25; padding: 7px 10px; border-radius: 10px;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.opt__no { background: var(--tone); color: var(--ink); transform: rotate(-2deg); }
+.opt__no i { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: .6875rem; background: var(--ink); color: var(--tone); text-decoration: line-through; }
+.opt__yes { background: var(--plan); color: var(--on-dark); }
+.opt:not(.is-pick) .ph::after { content: ""; position: absolute; inset: 0; background: var(--gold); opacity: .55; }
+html.motion .opt:not(.is-pick) .ph::after { opacity: var(--dim, 0); }
+.opt.is-pick { box-shadow: 0 0 0 3px var(--plan), 0 24px 40px -24px rgba(58,47,192,.8); }
+@media (max-width: 899px) {
+  .weigh-stage { grid-template-columns: 1fr; align-content: start; gap: 18px; }
+  .ch--weigh h2 { font-size: 2.1rem; }
+  .ch--weigh .ch__lede { font-size: .9375rem; margin-top: 8px; }
+  .opts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .opt { padding: 6px 6px 10px; border-radius: 18px; }
+  .opt .ph { aspect-ratio: 16 / 10; border-radius: 13px; }
+  .opt__name { font-size: .875rem; margin-top: 6px; }
+  .opt__price { font-size: .75rem; }
+  .opt__no, .opt__yes { font-size: .6875rem; left: 10px; right: 10px; top: 10px; padding: 5px 7px; gap: 5px; }
+  .opt__no i { width: 16px; height: 16px; font-size: .5625rem; }
+}
+
+/* =========================================================
+   4. The plan
+   ========================================================= */
+.ch--plan { padding: 0; overflow: clip; }
+.plan-stage { position: relative; min-height: 100svh; display: grid; align-items: center; padding: calc(var(--navh) + 32px) var(--g) 56px; }
+.reveal { position: absolute; inset: 0; overflow: hidden; }
+.reveal .ph { position: absolute; inset: 0; border-radius: 0; }
+.reveal::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(42,34,144,.92) 0%, rgba(58,47,192,.55) 55%, rgba(58,47,192,.15) 100%); }
+html.motion .reveal { inset: auto; left: 50%; top: 50%; width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax; border-radius: 50%; }
+html.motion .reveal .ph { inset: 25vmax; }
+html.motion .reveal::after { opacity: var(--scrim, 1); }
+.plan { position: relative; z-index: 1; max-width: 640px; }
+.plan__label { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; color: var(--on-dark-soft); }
+.badge { font-size: .8125rem; padding: 3px 10px; border-radius: 999px; border: 1.5px solid currentColor; }
+.plan__title { font-size: min(clamp(3rem, 1.6rem + 5.4vw, 6.4rem), 10.5svh); margin: 14px 0 12px; }
+.plan__meta { font-size: clamp(1.15rem, 1rem + .6vw, 1.5rem); font-weight: 600; }
+.plan__then { color: var(--on-dark-soft); margin-top: 4px; }
+.plan__why, .answer__why { margin-top: 26px; border-top: 1px solid rgba(251,251,250,.2); }
+.why { display: grid; grid-template-columns: 14px 5.5rem 1fr; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(251,251,250,.2); }
+.why__dot { width: 12px; height: 12px; border-radius: 50%; background: var(--tone); transform: translateY(1px); }
+.why__who { color: var(--on-dark-soft); font-size: .9375rem; }
+.why__text { font-weight: 600; }
+.trade { margin-top: 16px; color: var(--on-dark-soft); }
+.trade b { color: var(--ink); background: var(--sun); padding: 2px 8px; border-radius: 6px; font-size: .8125rem; margin-right: 6px; }
+.plan__acts { display: flex; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+.plan__acts .act { padding: 8px 16px; border-radius: 999px; border: 1.5px solid rgba(251,251,250,.5); font-weight: 600; font-size: .9375rem; }
+.plan__acts .act--send { background: var(--coral); border-color: var(--coral); color: var(--ink); }
+@media (max-width: 899px) {
+  .reveal::after { background: linear-gradient(180deg, rgba(58,47,192,.35) 0%, rgba(42,34,144,.92) 45%); }
+  .plan { align-self: end; }
+  .plan__title { font-size: 2.9rem; margin: 12px 0 10px; }
+  .plan__why { margin-top: 16px; }
+  .why { grid-template-columns: 12px 4.4rem 1fr; padding: 8px 0; gap: 10px; font-size: .9375rem; }
+}
+
+/* =========================================================
+   5. Your turn
+   ========================================================= */
+.try { margin-top: 44px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 32px 5vw; align-items: start; }
+.asks { display: grid; gap: 22px; }
+.ask legend { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-bottom: 10px; color: var(--on-dark-soft); }
+.ask legend i { width: 12px; height: 12px; border-radius: 50%; background: var(--tone); }
+.ask { display: flex; flex-wrap: wrap; gap: 8px; }
+.ask label { position: relative; }
+.ask input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.ask span {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 9px 16px; border-radius: 999px;
+  border: 1.5px solid rgba(251,251,250,.35); font-weight: 600; transition: background-color .2s, color .2s, border-color .2s;
+}
+.ask input:checked + span { background: var(--tone); border-color: var(--tone); color: var(--ink); }
+.ask input:focus-visible + span { outline: 3px solid var(--on-dark); outline-offset: 3px; }
+.ask label:hover span { border-color: var(--tone); }
+.answer { position: sticky; top: calc(var(--navh) + 20px); }
+.answer__said { min-height: 3.2em; font-weight: 600; font-size: 1.0625rem; }
+.answer__card { margin-top: 12px; padding: clamp(22px, 3vw, 36px); border-radius: 28px; background: var(--plan); box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); }
+.answer__card.is-none { background: var(--night); }
+.answer__title { font-family: var(--display); font-weight: 760; letter-spacing: -.035em; line-height: 1; font-size: clamp(2.2rem, 1.6rem + 2.4vw, 3.6rem); }
+.answer__meta { margin-top: 10px; font-weight: 600; }
+.reset { margin-top: 14px; background: none; border: 0; text-decoration: underline; text-underline-offset: 4px; font-weight: 600; color: var(--on-dark); padding: 8px 0; }
+@media (max-width: 899px) {
+  .try { grid-template-columns: 1fr; }
+  .answer { position: static; order: -1; }
+}
+
+/* =========================================================
+   6. Night
+   ========================================================= */
+.ch--night { padding-bottom: 0; }
+.night-stage { position: relative; min-height: 145svh; overflow-x: clip; }
+.night__words { position: sticky; top: 28svh; z-index: 2; text-align: center; max-width: 52rem; margin: 0 auto; padding: 6svh 0 22svh; }
+.night__title { font-size: clamp(3.2rem, 1.4rem + 7vw, 8.4rem); }
+.night__title .l { display: block; }
+.night__title .l + .l { color: var(--coral); }
+.night__lede { margin: 22px auto 0; max-width: 30rem; color: var(--on-dark-soft); font-size: 1.125rem; }
+.snaps { position: absolute; inset: 0; } /* no z-index: each snapshot sits in front of or behind the words by depth */
+.snap { z-index: 1; }
+.snap[data-depth="1.4"], .snap[data-depth="1.1"] { z-index: 3; }
+.snap {
+  position: absolute; width: clamp(140px, 15vw, 240px); padding: 10px 10px 14px; background: var(--day); color: var(--ink);
+  border-radius: 6px; transform: rotate(var(--r)); box-shadow: 0 30px 50px -20px rgba(0,0,0,.7);
+  font-weight: 600; font-size: .875rem;
+}
+.snap .ph { aspect-ratio: 4 / 5; border-radius: 3px; margin-bottom: 8px; }
+.snap:nth-child(1) { left: -1vw; top: 6%; }
+.snap:nth-child(2) { right: 3vw; top: 14%; }
+.snap:nth-child(3) { left: 0; top: 52%; }
+.snap:nth-child(4) { right: 6vw; top: 60%; }
+@media (max-width: 899px) {
+  .snap { width: 31vw; padding: 5px 5px 8px; font-size: .6875rem; }
+  .snap:nth-child(1) { left: -4vw; top: 2%; }
+  .snap:nth-child(2) { right: -5vw; top: 12%; }
+  .snap:nth-child(3) { left: -3vw; top: 64%; }
+  .snap:nth-child(4) { right: -4vw; top: 74%; }
+  .night__words { top: 30svh; }
+}
+
+/* =========================================================
+   7. Share
+   ========================================================= */
+.share { margin-top: 40px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); gap: 32px 5vw; align-items: center; }
+.decode {
+  background: var(--ink); color: var(--on-dark); border-radius: 30px; padding: clamp(22px, 3vw, 36px);
+  box-shadow: 0 40px 70px -30px rgba(17,18,22,.65); transform: rotate(-1.5deg);
+}
+.decode__title { font-family: var(--display); font-weight: 760; font-size: clamp(1.8rem, 1.4rem + 1.6vw, 2.6rem); letter-spacing: -.03em; line-height: 1; margin-bottom: 18px; }
+.decode__rows li { display: grid; grid-template-columns: 14px 1fr minmax(7rem, 10rem); gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(251,251,250,.16); }
+.decode__rows i { width: 14px; height: 14px; border-radius: 50%; background: var(--tone); }
+.decode__role { font-weight: 600; line-height: 1.25; }
+.decode input {
+  width: 100%; min-height: 44px; font: inherit; font-weight: 650; color: var(--ink); background: var(--tone);
+  border: 0; border-radius: 12px; padding: 8px 12px;
+}
+.decode input::placeholder { color: rgba(17,18,22,.55); }
+.decode__foot { margin-top: 14px; font-size: .8125rem; color: var(--on-dark-soft); }
+.send__preview { font-family: var(--display); font-weight: 650; font-size: clamp(1.25rem, 1.1rem + .6vw, 1.6rem); line-height: 1.2; letter-spacing: -.015em; }
+.send__btns { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+.send__note { margin-top: 14px; font-size: .9375rem; max-width: 26rem; }
+@media (max-width: 899px) {
+  .share { grid-template-columns: 1fr; }
+  .decode { transform: none; }
+  .decode__rows li { grid-template-columns: 12px 1fr; }
+  .decode__rows input { grid-column: 2; }
+}
+
+/* =========================================================
+   8. Join + footer
+   ========================================================= */
+.ch--join h2 { font-size: clamp(2.6rem, 1.4rem + 5vw, 6rem); max-width: 12ch; }
+.ch--join > p { margin-top: 18px; max-width: 32rem; color: var(--on-dark-soft); }
+.join__form { margin-top: 28px; max-width: 34rem; }
+.join__form label { font-weight: 600; display: block; margin-bottom: 8px; }
+.join__row { display: flex; gap: 10px; flex-wrap: wrap; }
+.join__row input { flex: 1 1 14rem; min-height: 52px; border-radius: 999px; border: 2px solid rgba(251,251,250,.4); background: transparent; color: var(--on-dark); font: inherit; padding: 0 20px; }
+.join__row button { min-height: 52px; border-radius: 999px; border: 0; background: var(--coral); color: var(--ink); font-weight: 650; padding: 0 24px; }
+.join__msg { margin-top: 12px; color: var(--on-dark-soft); font-size: .9375rem; }
+.join__form.is-bad input { border-color: var(--coral); }
+.foot { background: var(--ink); color: var(--on-dark-soft); padding: 0 var(--g) 40px; display: grid; gap: 10px; font-size: .875rem; }
+.foot__small { display: flex; flex-wrap: wrap; gap: 6px 18px; max-width: 60rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* =========================================================
+   Ambient motion: always running while its chapter is on screen.
+   Only decoration moves this way, never text you are reading. Paused offscreen (.off),
+   by the small pause button beside the clock (html.still), and absent with reduced motion.
+   ========================================================= */
+.thread__typing { display: flex; align-items: center; gap: 6px; padding: 10px 18px 14px; font-size: .8125rem; font-weight: 600; color: var(--ink-soft); border-top: 1px solid var(--neutral); }
+.typing__who { color: var(--text); }
+.dots { display: inline-flex; gap: 3px; margin-left: 2px; }
+.dots i { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: dot 1.2s infinite ease-in-out; }
+.dots i:nth-child(2) { animation-delay: .15s; }
+.dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+.ticker { overflow: hidden; padding: 18px 0; background: var(--paper); }
+.ticker--night { background: var(--night); }
+.ticker__row { display: flex; gap: 12px; width: max-content; white-space: nowrap; will-change: transform; }
+.ticker__row span {
+  font-family: var(--display); font-weight: 650; font-size: clamp(1.1rem, .9rem + 1vw, 1.75rem); letter-spacing: -.02em;
+  padding: 8px 18px; border-radius: 999px 999px 999px 6px; background: var(--tone); color: var(--ink);
+}
+html:not(.motion) .ticker__row { flex-wrap: wrap; width: auto; white-space: normal; padding: 0 var(--g); }
+
+.w--four { animation: four 6s linear 3; background-size: 200% .12em; background-image: linear-gradient(90deg, var(--coral) 0 12.5%, var(--lav) 12.5% 25%, var(--sun) 25% 37.5%, var(--mint) 37.5% 50%, var(--coral) 50% 62.5%, var(--lav) 62.5% 75%, var(--sun) 75% 87.5%, var(--mint) 87.5%); }
+@keyframes four { to { background-position: -200% 92%; } }
+
+html.motion .card .ph img, html.motion .opt .ph img, html.motion .reveal .ph img { animation: drift 16s ease-in-out infinite alternate; transform-origin: 60% 40%; }
+html.motion .opt:nth-child(2n) .ph img { animation-duration: 19s; animation-direction: alternate-reverse; }
+@keyframes drift { from { transform: scale(1.02) translate3d(0, 0, 0); } to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); } }
+
+.why__dot { position: relative; }
+html.motion .why__dot::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--tone); opacity: 0; animation: ping 3.2s infinite var(--ease-out); }
+html.motion .why:nth-child(2) .why__dot::after { animation-delay: .8s; }
+html.motion .why:nth-child(3) .why__dot::after { animation-delay: 1.6s; }
+html.motion .why:nth-child(4) .why__dot::after { animation-delay: 2.4s; }
+@keyframes ping { 0% { transform: scale(.6); opacity: .9; } 60%, 100% { transform: scale(1.9); opacity: 0; } }
+
+html.motion .decode__rows i { animation: breathe 2.6s ease-in-out infinite alternate; }
+html.motion .decode__rows li:nth-child(2) i { animation-delay: .65s; }
+html.motion .decode__rows li:nth-child(3) i { animation-delay: 1.3s; }
+html.motion .decode__rows li:nth-child(4) i { animation-delay: 1.95s; }
+@keyframes breathe { to { transform: scale(1.35); } }
+
+.off *, .off *::before, .off *::after, html.still *, html.still *::before, html.still *::after,
+html.scrolling *, html.scrolling *::before, html.scrolling *::after { animation-play-state: paused !important; }
+
+/* Pause: a small icon beside the clock (WCAG 2.2.2), the clock's own size and outline */
+.nav__mid { display: flex; align-items: center; gap: 6px; }
+.pause {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; padding: 0; border-radius: 50%;
+  border: 1.5px solid currentColor; background: transparent; color: inherit; opacity: .55; cursor: pointer;
+  transition: opacity .2s;
+}
+.pause:hover, .pause:focus-visible, .pause[aria-pressed="true"] { opacity: 1; }
+.pause[hidden] { display: none; } /* only there when there is motion to pause */
+.pause__icon { width: 8px; height: 10px; border-left: 2.5px solid currentColor; border-right: 2.5px solid currentColor; }
+.pause[aria-pressed="true"] .pause__icon { border: 0; width: 0; height: 0; margin-left: 2px; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+@media (max-width: 520px) { .pause { width: 30px; height: 30px; } }
+
+/* ---------- pinned chapters with motion ---------- */
+html.motion .ch--chat { padding: 0 var(--g); }
+html.motion .chat-stage { height: 100svh; min-height: 0; padding: calc(var(--navh) + 20px) 0 32px; overflow: hidden; }
+html.motion .thread__win { height: min(56svh, 520px); }
+html.motion .tally { visibility: hidden; }
+@media (max-width: 899px) {
+  html.motion .chat-stage { display: block; position: relative; }
+  html.motion .open { position: relative; z-index: 1; }
+  html.motion .thread { margin-top: 22px; }
+  html.motion .thread__win { height: calc(100svh - var(--navh) - 150px); }
+  html.motion .tally { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 18px var(--g) 24px; margin: 0 calc(var(--g) * -1); background: linear-gradient(to top, var(--day) 70%, transparent); gap: 18px; }
+  html.motion .tally b { font-size: 2.4rem; }
+}
+html.motion .ch--weigh { padding-bottom: 24px; }
+html.motion .ch--plan .plan-stage { height: 100svh; min-height: 0; }
+@media (max-width: 899px) { html.motion .ch--plan .plan-stage { align-items: end; } }
+
+/* =========================================================
+   Pointer and touch reactions
+   ========================================================= */
+.cursor { position: fixed; left: 0; top: 0; z-index: 70; pointer-events: none; display: none; }
+html.fine .cursor { display: block; }
+.cursor__ring {
+  position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+  border: 1.5px solid var(--cur, var(--peri)); background: color-mix(in srgb, var(--cur, var(--peri)) 0%, transparent);
+  display: grid; place-items: center; transition: width .35s var(--ease-out), height .35s var(--ease-out), margin .35s var(--ease-out), background-color .25s, border-color .25s;
+}
+.cursor__dot { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--cur, var(--peri)); transition: transform .25s var(--ease-out), background-color .25s; }
+.cursor__label { font-size: .75rem; font-weight: 650; color: var(--ink); opacity: 0; max-width: 96px; transition: opacity .2s; padding: 0 8px; text-align: center; line-height: 1.15; }
+.cursor.is-who .cursor__ring { width: 30px; height: 30px; margin: -15px 0 0 -15px; background: var(--cur); }
+.cursor.is-who .cursor__dot { transform: scale(0); }
+.cursor.is-act .cursor__ring { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
+.cursor.is-act .cursor__dot { transform: scale(.6); }
+.cursor.is-ph .cursor__ring { width: 112px; height: 112px; margin: -56px 0 0 -56px; background: var(--cur, var(--day)); border-color: transparent; }
+.cursor.is-ph .cursor__label { opacity: 1; }
+.cursor.is-ph .cursor__dot { transform: scale(0); }
+.cursor.is-text .cursor__ring { width: 16px; height: 16px; margin: -8px 0 0 -8px; }
+html.fine.motion body[data-ink="light"] { --cur-default: var(--lav); }
+
+.glow { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s;
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 50%), rgba(184,174,255,.16), transparent 60%); }
+html.fine.motion body[data-ink="light"] .glow { opacity: 1; }
+
+/* hover: something always answers */
+@media (hover: hover) and (pointer: fine) {
+  .open__title .w { transition: color .3s; }
+  .open__title .w:hover { color: var(--plan); }
+  .b p { transition: translate .3s var(--ease-out), rotate .3s var(--ease-out), box-shadow .3s; }
+  .b:hover p { translate: 0 -2px; rotate: -1deg; box-shadow: 0 10px 20px -12px color-mix(in srgb, var(--tone) 90%, black); }
+  .ticker__row span { transition: scale .3s var(--ease-out), rotate .3s var(--ease-out); }
+  .ticker__row span:hover { scale: 1.12; rotate: -3deg; }
+  .why { transition: translate .3s var(--ease-out); }
+  .why:hover { translate: 8px 0; }
+  .why:hover .why__text { color: var(--tone); }
+  .decode__rows li { transition: translate .3s var(--ease-out); }
+  .decode__rows li:hover { translate: 6px 0; }
+  .opt__name { transition: color .2s; }
+  .opt:hover .opt__name { color: var(--plan); }
+  .card__said { transition: translate .4s var(--ease-out); }
+  .card:hover .card__said { translate: 6px 0; }
+  .tally span { transition: translate .3s var(--ease-out); }
+  .tally span:hover { translate: 0 -4px; }
+}
+.ph { transform-style: preserve-3d; }
+
+/* touch: a ripple where you tap, in the colour of whoever is under your finger */
+.ripple { position: fixed; z-index: 70; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; pointer-events: none; background: var(--cur, var(--coral)); opacity: .55; animation: ripple .6s var(--ease-out) forwards; }
+@keyframes ripple { to { transform: scale(7); opacity: 0; } }
+.btn:active, .me:active, .ask span:active, .nav__cta:active { scale: .96; }
+
+/* headings drop in word by word; the big words then float, sway and can be flicked (alive.js) */
+.split { display: inline-block; vertical-align: top; }
+html.fine .alive { cursor: grab; }
+html.fine .alive.is-held { cursor: grabbing; position: relative; z-index: 30; }
+html.holding, html.holding * { user-select: none; -webkit-user-select: none; cursor: grabbing !important; }
+.split > span { display: inline-block; }
+.decode__rows li.is-me .decode__role::after { content: " · you"; opacity: .6; }
+
+/* hero: two photos float beside the chat, clipped like message bubbles */
+.floaters { display: none; }
+@media (min-width: 900px) {
+  .chat-stage { position: relative; }
+  .floaters { display: block; position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .floater { position: absolute; width: clamp(130px, 12vw, 200px); pointer-events: auto; }
+  .floater .ph { aspect-ratio: 1; border-radius: 50% 50% 50% 10px; box-shadow: 0 24px 40px -22px rgba(17,18,22,.55); outline: 4px solid var(--tone); outline-offset: -1px; }
+  .floater--1 { right: calc(min(440px, 34vw) - 70px); top: calc(var(--navh) - 6px); rotate: -6deg; z-index: 2; }
+  .floater--2 { right: -1vw; bottom: 6%; width: clamp(110px, 10vw, 170px); rotate: 5deg; z-index: 2; }
+  .floater--2 .ph { border-radius: 50% 50% 10px 50%; }
+  .thread { position: relative; z-index: 1; }
+}
+html.motion .thread__win { height: min(48svh, 440px); }
+
+/* ---------- polish pass ---------- */
+/* The top bar is solid and takes the sky's colour, so the page never shows through it. */
+html.js .nav::before { display: none; }
+.nav__bg { position: absolute; inset: 0; z-index: -1; background: var(--day); opacity: 1; box-shadow: 0 1px 0 rgba(17,18,22,.06); transition: box-shadow .3s; }
+html:not(.js) .nav__bg { display: none; }
+body[data-ink="light"] .nav__bg { box-shadow: 0 1px 0 rgba(251,251,250,.08); }
+
+/* Less empty scroll between chapters. */
+.ch--four { padding-bottom: 32px; }
+html.motion .ch--weigh { padding-top: calc(var(--navh) + 20px); }
+
+/* Short laptop screens (e.g. 1366x650, 1536x730): pinned chapters must fit in one screen. */
+@media (min-width: 900px) and (max-height: 820px) {
+  .plan-stage { padding-top: calc(var(--navh) + 12px); padding-bottom: 20px; }
+  .plan__meta { font-size: 1.125rem; }
+  .plan__why { margin-top: 14px; }
+  .why { padding: 7px 0; }
+  .trade { margin-top: 10px; font-size: .9375rem; }
+  .plan__acts { margin-top: 14px; }
+  .plan__acts .act { padding: 6px 14px; }
+  .opt .ph { aspect-ratio: 16 / 9; }
+  .opts { gap: 12px; }
+  .ch--weigh h2 { font-size: clamp(2.2rem, 7svh, 4rem); }
+  .weigh-stage { gap: 16px 4vw; }
+  .card { min-height: min(56svh, 520px); }
+  .card__name { font-size: min(clamp(3rem, 2rem + 4vw, 6rem), 11svh); }
+}
+@media (min-width: 900px) and (max-height: 680px) {
+  .plan__then, .plan__label .badge { display: none; }
+  .ch--weigh .ch__lede { display: none; }
+  .opt__name { margin-top: 6px; font-size: .9375rem; }
+}
+
+/* Phone: the answer stays in view while you change what people said. */
+.peek { display: none; }
+@media (max-width: 899px) {
+  .peek:not([hidden]) {
+    display: grid; gap: 2px; text-align: left; position: sticky; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 50px); z-index: 5;
+    margin-top: 8px; padding: 12px 16px; border: 0; border-radius: 18px; background: var(--plan); color: var(--on-dark);
+    box-shadow: 0 18px 30px -12px rgba(0,0,0,.6); outline: 1.5px solid rgba(251,251,250,.25);
+  }
+  .peek.is-none { background: var(--night); }
+  .peek__said { font-size: .8125rem; color: var(--on-dark-soft); }
+  .peek__title { font-family: var(--display); font-size: 1.25rem; letter-spacing: -.02em; }
+  .peek__go { font-size: .75rem; font-weight: 600; color: var(--lav); }
+  .try { padding-bottom: 8px; }
+}
+
+/* Short phones (e.g. 360x640, iPhone SE): pinned chapters still fit in one screen. */
+@media (max-width: 899px) and (max-height: 740px) {
+  html.motion .ch--weigh { padding-top: calc(var(--navh) + 8px); }
+  .weigh-stage { gap: 10px; }
+  .ch--weigh h2 { font-size: 1.75rem; }
+  .ch--weigh .ch__lede { display: none; }
+  .opts { gap: 8px; }
+  .opt { padding: 5px 5px 7px; }
+  .opt .ph { aspect-ratio: 16 / 8; }
+  .opt__name { margin-top: 4px; font-size: .8125rem; }
+  .opt__price { display: none; }
+  .plan-stage { padding-top: calc(var(--navh) + 8px); padding-bottom: 16px; }
+  .plan__title { font-size: 2.3rem; margin: 8px 0 6px; }
+  .plan__meta { font-size: 1rem; }
+  .plan__then, .plan__label .badge { display: none; }
+  .plan__why { margin-top: 10px; }
+  .why { padding: 6px 0; font-size: .875rem; }
+  .trade { margin-top: 8px; font-size: .875rem; }
+  .plan__acts { margin-top: 10px; }
+  .plan__acts .act { padding: 6px 12px; font-size: .875rem; }
+}
+
+/* Start states of animations (stamps sliding in, the card swinging in) must never widen the page on phones. */
+html.js body, .ch--weigh, .ch--share { overflow-x: clip; }
+@media (max-width: 899px) {
+  .peek { transition: opacity .25s, translate .25s; }
+  .peek.is-near { opacity: 0; translate: 0 12px; pointer-events: none; }
+}
+
+/* The plan's actions work: Accept confirms, Tweak and Send jump to their chapters. */
+.plan__acts .act { font: inherit; font-weight: 600; color: var(--on-dark); background: transparent; text-decoration: none; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s, translate .25s var(--ease-out); }
+.plan__acts .act--send { color: var(--ink); }
+.plan__acts .act:hover { translate: 0 -2px; border-color: var(--on-dark); }
+.plan__acts .act--send:hover { background: #ff8a82; border-color: #ff8a82; }
+.plan__acts .act:focus-visible { outline: 2px solid var(--on-dark); outline-offset: 3px; }
+.plan__acts .act--accept[aria-pressed="true"] { background: var(--on-dark); color: var(--plan-deep); border-color: var(--on-dark); }
+.plan__acts .act--send { background: var(--coral); border-color: var(--coral); }
+/* The confirmation is spoken to screen readers; on screen the button and the four dots say it, so the layout never grows. */
+.plan__note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 899px) { .plan__acts { gap: 6px; } .plan__acts .act { padding: 6px 12px; font-size: .875rem; } }
+
+/* Photo credits read as text, not as bright default links. */
+.foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.foot a:hover { color: var(--on-dark); }
+
+/* ---------- 0. the opening film ---------- */
+.ch--film { padding: 0; background: var(--ink); color: var(--on-dark); }
+.film { position: relative; min-height: 100svh; overflow: hidden; display: grid; grid-template-rows: 1fr auto; padding: calc(var(--navh) + 20px) var(--g) clamp(28px, 6vh, 64px); isolation: isolate; }
+.film__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; background: var(--ink); }
+.film__shade { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to top, rgba(17,18,22,.86) 0%, rgba(17,18,22,.35) 38%, rgba(17,18,22,0) 62%), linear-gradient(to bottom, rgba(17,18,22,.55), rgba(17,18,22,0) 22%); }
+.film__copy { grid-row: 2; }
+.film__line { font-family: var(--display); font-weight: 760; letter-spacing: -.035em; line-height: .96; font-size: clamp(2.5rem, 7.2vw, 6.25rem); text-wrap: balance; max-width: 12ch; }
+.film__line span { color: var(--coral); }
+.film__cue { display: inline-flex; gap: 8px; align-items: center; margin-top: 18px; color: var(--on-dark-soft); text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
+.film__cue:hover { color: var(--on-dark); }
+.film__cue span { display: inline-block; }
+html.motion .film__cue span { animation: film-cue 1.6s ease-in-out infinite; }
+@keyframes film-cue { 50% { translate: 0 5px; } }
+
+/* notifications from the group, in each person's colour; without motion the first three sit still */
+.toasts { grid-row: 1; list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; align-content: start; justify-self: end; width: min(360px, 100%); }
+.toast { display: grid; grid-template-columns: 34px 1fr; column-gap: 12px; align-items: center; height: 64px; padding: 0 16px 0 12px; border-radius: 18px;
+  background: rgba(30, 31, 38, .62); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(251,251,250,.12); box-shadow: 0 10px 30px rgba(0,0,0,.25); color: var(--on-dark); }
+.toast:nth-child(n+4) { display: none; }
+.toast i { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: var(--tone); color: var(--ink); font-style: normal; font-weight: 700; display: grid; place-items: center; }
+.toast__top { font-size: .75rem; color: var(--on-dark-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toast__top b { color: var(--on-dark); font-weight: 600; }
+.toast__msg { font-size: .9375rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.motion .toasts { position: relative; display: block; height: calc(3 * 64px + 2 * 8px); }
+html.motion .toast { display: grid; position: absolute; inset: 0 0 auto; opacity: 0; transform: translateY(-18px) scale(.94); transform-origin: 50% 0;
+  transition: transform .55s var(--ease-out), opacity .4s; }
+html.motion .toast.on { opacity: calc(1 - var(--age) * .28); transform: translateY(calc(var(--age) * 72px)) scale(calc(1 - var(--age) * .04)); }
+html.motion .toast.gone { opacity: 0; transform: translateY(calc(3 * 72px)) scale(.88); }
+html.motion .ch--film .film { height: 100svh; min-height: 0; will-change: clip-path; }
+@media (max-width: 899px) {
+  .toasts { justify-self: stretch; width: auto; }
+  .film__line { font-size: clamp(2.4rem, 11vw, 4rem); }
+}
+
+/* ---------- you, once you've picked (body[data-me]) ---------- */
+.night__you { margin-top: 14px; font-family: var(--display); font-weight: 650; font-size: clamp(1.1rem, .9rem + .8vw, 1.5rem); color: var(--tone, var(--on-dark)); }
+.night__you:empty { display: none; }
+body[data-me="a"] .night__you { --tone: var(--coral); }
+body[data-me="r"] .night__you { --tone: var(--lav); }
+body[data-me="m"] .night__you { --tone: var(--sun); }
+body[data-me="k"] .night__you { --tone: var(--mint); }
+.burst { position: fixed; z-index: 70; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: var(--tone); pointer-events: none; }
+/* your thread stands out, the other three step back */
+body[data-me] .thread:not(.thread--one) { opacity: .45; transition: opacity .4s, stroke-width .4s; }
+body[data-me="a"] .thread[data-who="a"], body[data-me="r"] .thread[data-who="r"],
+body[data-me="m"] .thread[data-who="m"], body[data-me="k"] .thread[data-who="k"] { opacity: 1; stroke-width: 4; }
+/* your bubbles, your ask, your row in the plan, your chips */
+body[data-me="a"] .b[data-who="a"] .b__who::after, body[data-me="r"] .b[data-who="r"] .b__who::after,
+body[data-me="m"] .b[data-who="m"] .b__who::after, body[data-me="k"] .b[data-who="k"] .b__who::after,
+body[data-me="a"] .ask[data-who="a"] legend::after, body[data-me="r"] .ask[data-who="r"] legend::after,
+body[data-me="m"] .ask[data-who="m"] legend::after, body[data-me="k"] .ask[data-who="k"] legend::after,
+body[data-me="a"] .why[data-who="a"] .why__who::after, body[data-me="r"] .why[data-who="r"] .why__who::after,
+body[data-me="m"] .why[data-who="m"] .why__who::after, body[data-me="k"] .why[data-who="k"] .why__who::after { content: " · you"; opacity: .7; }
+body[data-me="a"] .why[data-who="a"], body[data-me="r"] .why[data-who="r"],
+body[data-me="m"] .why[data-who="m"], body[data-me="k"] .why[data-who="k"] { background: color-mix(in srgb, var(--tone) 22%, transparent); box-shadow: 0 0 0 5px color-mix(in srgb, var(--tone) 22%, transparent); border-radius: 6px; }
+body[data-me="a"] .opt__no[data-who="a"] i, body[data-me="r"] .opt__no[data-who="r"] i,
+body[data-me="m"] .opt__no[data-who="m"] i, body[data-me="k"] .opt__no[data-who="k"] i { box-shadow: 0 0 0 2px var(--ink); }
+body[data-me="a"] .ticker [data-who="a"], body[data-me="r"] .ticker [data-who="r"],
+body[data-me="m"] .ticker [data-who="m"], body[data-me="k"] .ticker [data-who="k"] { outline: 2px solid currentColor; outline-offset: 2px; }
+
+/* Friday night: throwable photos and the group's reactions (alive.js photoDump) */
+html.fine .snap.is-loose { cursor: grab; }
+html.fine .snap.is-held { cursor: grabbing; box-shadow: 0 45px 70px -24px rgba(0,0,0,.8); }
+.react { position: absolute; z-index: 60; translate: -50% 0; white-space: nowrap; pointer-events: none;
+  padding: 8px 14px; border-radius: 18px 18px 18px 6px; background: var(--tone); color: var(--ink); font-weight: 600; font-size: .9375rem;
+  box-shadow: 0 12px 24px -10px rgba(0,0,0,.6); }
+
+/* join: the group says hello */
+.join__hello { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 14px; }
+.join__hello:empty { display: none; }
+.hello { padding: 8px 14px; border-radius: 16px 16px 16px 6px; background: var(--tone); color: var(--ink); font-size: .9375rem; max-width: 100%; }
+.hello b { display: block; font-size: .75rem; opacity: .7; }
+
+/* the clock flips when it goes from your time to the story's time */
+.clock.is-flip > span { display: inline-block; animation: clock-flip .5s var(--ease-out); }
+.clock.is-flip > .clock__time { animation-delay: .06s; }
+@keyframes clock-flip { 0% { transform: rotateX(90deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+/* the twist: Meera's message drops in like the ones in the opening film */
+.twist { position: fixed; z-index: 30; top: calc(var(--navh) + 10px); right: max(16px, env(safe-area-inset-right)); width: min(360px, calc(100vw - 32px));
+  display: grid; grid-template-columns: 34px 1fr; column-gap: 12px; align-items: center; height: 64px; padding: 0 16px 0 12px; border-radius: 18px;
+  background: rgba(30, 31, 38, .78); -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(251,251,250,.14); box-shadow: 0 18px 40px rgba(0,0,0,.35); color: var(--on-dark);
+  opacity: 0; transform: translateY(-24px) scale(.94); transition: transform .55s var(--ease-out), opacity .35s; pointer-events: none; }
+.twist.on { opacity: 1; transform: none; }
+.twist i { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; background: var(--tone); color: var(--ink); font-style: normal; font-weight: 700; display: grid; place-items: center; }
+.ask.is-twist { animation: twist-nudge .9s var(--ease-out); }
+@keyframes twist-nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px) rotate(-1deg); } 45% { transform: translateX(5px) rotate(.8deg); } 70% { transform: translateX(-2px); } }
+@media (prefers-reduced-motion: reduce) { .twist { transition: opacity .2s; transform: none; } .ask.is-twist { animation: none; } }
+
+/* On the coral share chapter the coral Join button and the coral "!!" would vanish into the sky. */
+body[data-under="share"] .nav__cta { background: var(--ink); color: var(--day); }
+body[data-under="share"] .wordmark__name b { color: var(--ink); }
+
+/* Phones: the slow photo drift is barely visible while you scroll and costs every frame, so it stays still there. */
+@media (pointer: coarse) {
+  html.motion .card .ph img, html.motion .opt .ph img, html.motion .reveal .ph img { animation: none; }
+}
+
+/* The one glimpse of the app: Planic answering in the group chat (an early design, labelled as one). */
+.glimpse { margin: 40px 0 0; max-width: 320px; }
+@media (min-width: 900px) {
+  .ch--join { display: grid; grid-template-columns: minmax(0, 1fr) 320px; column-gap: 6vw; align-items: start; }
+  .ch--join > :not(.glimpse) { grid-column: 1; }
+  .glimpse { grid-column: 2; grid-row: 1 / span 3; margin: 0; align-self: center; }
+}
+.glimpse__phone {
+  border-radius: 34px; padding: 12px; background: #1E1F26; box-shadow: 0 40px 80px -30px rgba(0,0,0,.8), inset 0 0 0 1.5px rgba(251,251,250,.12);
+  rotate: 3deg;
+}
+.glimpse__top { display: flex; align-items: center; gap: 10px; padding: 10px 10px 12px; font-weight: 600; font-size: .9375rem; color: var(--on-dark); border-bottom: 1px solid rgba(251,251,250,.1); }
+.glimpse__top .thread__faces i { border-color: #1E1F26; }
+.glimpse__chat { list-style: none; margin: 0; padding: 14px 4px 6px; display: flex; flex-direction: column; gap: 10px; }
+.gb { align-self: flex-start; max-width: 88%; padding: 8px 12px 9px; border-radius: 16px 16px 16px 5px; background: color-mix(in srgb, var(--tone) 85%, #1E1F26); color: var(--ink); font-size: .9375rem; line-height: 1.3; }
+.gb b { display: flex; align-items: center; gap: 6px; font-size: .6875rem; font-weight: 700; opacity: .75; margin-bottom: 2px; }
+.gb--voice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; font-size: .8125rem; font-weight: 600; }
+.gb--voice b { flex-basis: 100%; margin: 0; }
+.gb__wave { display: inline-flex; align-items: center; gap: 2px; height: 18px; }
+.gb__wave i { width: 3px; border-radius: 2px; background: var(--ink); height: calc(5px + var(--h, 6px)); }
+.gb__wave i:nth-child(3n) { --h: 12px; } .gb__wave i:nth-child(3n+1) { --h: 4px; } .gb__wave i:nth-child(4n) { --h: 9px; }
+.gb--planic { max-width: 100%; align-self: stretch; background: var(--plan); color: var(--on-dark); border-radius: 18px 18px 18px 5px; display: grid; gap: 4px; padding: 10px 14px 12px; }
+.gb--planic b { opacity: .85; }
+.gb__mark svg { width: 16px; height: 16px; display: block; }
+.gp__title { font-family: var(--display); font-weight: 760; font-size: 1.35rem; letter-spacing: -.02em; line-height: 1.05; }
+.gp__meta { font-size: .8125rem; font-weight: 600; }
+.gp__why { font-size: .8125rem; color: var(--on-dark-soft); }
+.gp__in { margin-top: 4px; font-size: .8125rem; font-weight: 600; }
+.gp__in u { text-decoration: none; margin-left: 4px; padding: 3px 10px; border-radius: 999px; background: var(--coral); color: var(--ink); }
+.glimpse figcaption { margin-top: 18px; font-size: .8125rem; color: var(--on-dark-soft); max-width: 30ch; }
+@media (max-width: 899px) { .glimpse { max-width: 260px; margin-top: 28px; } .glimpse__phone { rotate: -2deg; } }
+
+/* =========================================================
+   Familiar things: the one message, the voice note, the poll, and one object per friend
+   ========================================================= */
+/* the film closes down on the one message it started with */
+.film__one { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 1; display: grid; justify-items: start; gap: 8px; width: min(560px, 82vw); pointer-events: none; opacity: 0; }
+.film__one-who { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: .9375rem; color: var(--on-dark-soft); }
+.film__one-who i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: .8125rem; background: var(--tone); color: var(--ink); }
+.film__one-msg { font-family: var(--display); font-weight: 700; letter-spacing: -.025em; line-height: 1.05; font-size: clamp(1.9rem, 1.2rem + 2.8vw, 3.6rem);
+  background: var(--tone); color: var(--ink); padding: .32em .55em .38em; border-radius: 28px 28px 28px 8px; box-shadow: 0 30px 60px -20px rgba(0,0,0,.6); }
+html:not(.motion) .film__one { display: none; }
+
+/* Meera's voice note, with its transcript */
+.b--voice p { display: inline-grid; gap: 6px; }
+.vn { display: flex; align-items: center; gap: 8px; border: 0; padding: 0; background: none; color: var(--ink); font: inherit; cursor: pointer; }
+.vn__play { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); position: relative; }
+.vn__play::after { content: ""; position: absolute; left: 11px; top: 9px; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent var(--day); }
+.vn.is-on .vn__play::after { left: 10px; top: 10px; width: 3px; height: 10px; border: 0; background: var(--day); box-shadow: 6px 0 var(--day); }
+.vn__wave { display: flex; align-items: center; gap: 2px; height: 22px; }
+.vn__wave i { width: 3px; border-radius: 2px; background: rgba(17,18,22,.35); height: var(--h, 8px); transition: background-color .1s; }
+.vn__wave i:nth-child(3n) { --h: 16px; } .vn__wave i:nth-child(4n+1) { --h: 5px; } .vn__wave i:nth-child(5n+2) { --h: 20px; } .vn__wave i:nth-child(7n) { --h: 11px; }
+.vn__wave i.is-past { background: var(--ink); }
+.vn__t { font-size: .75rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.vn__text { font-size: .875rem; line-height: 1.35; color: rgba(17,18,22,.8); }
+
+/* the poll that always ends in a tie */
+.b--poll p { display: block; padding: 12px 14px 10px; min-width: min(250px, 100%); }
+.poll { display: grid; gap: 8px; }
+.poll__q { font-weight: 700; }
+.poll__opt { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 10px; border: 0; overflow: hidden; isolation: isolate;
+  background: rgba(255,255,255,.7); font: inherit; font-size: .9375rem; color: var(--ink); text-align: left; cursor: pointer; }
+.poll__opt::before { content: ""; position: absolute; inset: 0 auto 0 0; z-index: -1; width: calc(var(--share, .5) * 100%); background: color-mix(in srgb, var(--tone) 60%, white); transition: width .5s var(--ease-out); }
+.poll__opt b { font-variant-numeric: tabular-nums; }
+.poll__opt[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); }
+.poll__foot { font-size: .75rem; color: var(--ink-soft); }
+
+.b__seen { display: block; margin: 4px 0 0 12px; font-size: .6875rem; font-weight: 600; color: var(--ink-soft); }
+
+/* one familiar thing per friend, tucked into the corner of their photo */
+.card { position: sticky; }
+.thing { position: absolute; z-index: 2; left: clamp(16px, 2.2vw, 32px); bottom: clamp(16px, 2.2vw, 32px); width: 232px; rotate: -3deg;
+  display: grid; gap: 6px; padding: 14px 14px 12px; border: 0; border-radius: 16px; background: #FFFDF8; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+  box-shadow: 0 24px 40px -18px rgba(17,18,22,.55), 0 0 0 1px rgba(17,18,22,.06); transition: rotate .35s var(--ease-out), translate .35s var(--ease-out); }
+.card:nth-child(even) .thing { rotate: 3deg; }
+.thing:hover { translate: 0 -4px; rotate: 0deg; }
+.thing:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.thing__head { font-size: .6875rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.thing__hint { margin-top: 2px; font-size: .75rem; font-weight: 650; color: var(--ink); }
+.thing__hint .on, .thing[aria-pressed="true"] .thing__hint .off { display: none; }
+.thing[aria-pressed="true"] .thing__hint .on { display: inline; }
+
+/* Aanya: the menu, with the dots everyone in India reads first */
+.dish { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 8px; font-size: .875rem; transition: opacity .3s, filter .3s; }
+.dish b { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.dot { width: 13px; height: 13px; border: 1.5px solid; border-radius: 2px; display: grid; place-items: center; }
+.dot::after { content: ""; }
+.dot--veg { border-color: #1E8E3E; } .dot--veg::after { width: 6px; height: 6px; border-radius: 50%; background: #1E8E3E; }
+.dot--nv { border-color: #8B3A1E; } .dot--nv::after { width: 0; height: 0; border-style: solid; border-width: 0 3.5px 6px; border-color: transparent transparent #8B3A1E; }
+.thing--menu[aria-pressed="true"] .dish--nv { opacity: .28; text-decoration: line-through; filter: grayscale(1); }
+
+/* Rohan: everywhere he's already been */
+.been { display: flex; justify-content: space-between; gap: 10px; font-size: .875rem; transition: opacity .3s; }
+.been b { font-variant-numeric: tabular-nums; font-weight: 700; }
+.been--new { font-weight: 700; padding: 3px 8px; margin: 0 -8px; border-radius: 8px; border: 1.5px dashed rgba(17,18,22,.35); }
+.thing--been[aria-pressed="true"] .been:not(.been--new) { opacity: .3; text-decoration: line-through; }
+.thing--been[aria-pressed="true"] .been--new { background: var(--tone); border-color: var(--ink); }
+
+/* Meera: the ride in */
+.line { position: relative; height: 18px; margin: 4px 6px 0; }
+.seg { position: absolute; top: 7px; height: 4px; border-radius: 2px; }
+.seg--blue { left: 0; width: 34%; background: #2C6BD9; }
+.seg--magenta { left: 34%; right: 0; background: #C2187B; }
+.stop { position: absolute; top: 3px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: #fff; border: 2.5px solid var(--ink); }
+.stop:nth-of-type(3) { left: 0; } .stop--x { left: 34%; } .stop:nth-of-type(5) { left: 100%; }
+.train { position: absolute; top: 1px; left: 0; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--tone); border: 2.5px solid var(--ink); transition: left 2.4s cubic-bezier(.45,.05,.4,1); }
+.thing--metro[aria-pressed="true"] .train { left: 100%; }
+.stops { position: relative; height: 1.3em; margin: 0 6px; font-size: .6875rem; font-weight: 600; color: var(--ink-soft); white-space: nowrap; }
+.stops span { position: absolute; top: 0; }
+.stops span:nth-child(1) { left: -6px; } .stops span:nth-child(2) { left: 34%; translate: -50% 0; } .stops span:nth-child(3) { right: -6px; }
+
+/* Kabir: the phone on his desk */
+.thing--ping { background: rgba(255,253,248,.82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.ping { display: grid; grid-template-columns: 22px 1fr auto; column-gap: 8px; align-items: center; padding: 8px 10px; border-radius: 12px; background: #fff; font-size: .8125rem; box-shadow: 0 1px 0 rgba(17,18,22,.06); }
+.ping i { font-style: normal; grid-row: span 2; font-size: 1rem; }
+.ping b { font-size: .75rem; } .ping em { font-style: normal; font-size: .6875rem; color: var(--ink-soft); }
+.ping > span { grid-column: 2 / -1; line-height: 1.3; }
+.ping--off { display: none; background: var(--tone); }
+.thing--ping[aria-pressed="true"] .ping--off { display: grid; animation: ping-in .45s var(--ease-out); }
+.thing--ping[aria-pressed="true"] .ping:first-of-type { opacity: .4; text-decoration: line-through; }
+@keyframes ping-in { from { transform: translateY(-10px) scale(.94); opacity: 0; } }
+
+@media (max-width: 899px) {
+  .thing { left: auto; right: 12px; bottom: auto; top: 12px; width: 178px; padding: 10px 10px 9px; gap: 4px; border-radius: 13px; transform-origin: 100% 0; scale: .92; }
+  .dish, .been { font-size: .75rem; }
+  .ping { font-size: .6875rem; padding: 6px 8px; } .ping:nth-of-type(2) { display: none; }
+  .thing__hint { font-size: .6875rem; }
+}
+
+/* the finale: each friend's yes draws their stroke, and the group completes the mark */
+.allin { position: relative; width: min(340px, 86vw); height: clamp(120px, 15svh, 150px); margin: 0 auto 18px; }
+.allin__mark { position: absolute; left: 50%; top: 50%; width: clamp(96px, 12svh, 124px); height: auto; translate: -50% -50%; overflow: visible; }
+.allin__s { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.allin__chip { position: absolute; padding: 5px 11px; border-radius: 999px; font-weight: 650; font-size: .875rem; background: var(--tone); color: var(--ink); white-space: nowrap; }
+.allin__chip[data-who="r"] { left: 0; top: 4px; rotate: -4deg; }
+.allin__chip[data-who="m"] { right: 0; top: 4px; rotate: 3deg; }
+.allin__chip[data-who="a"] { left: 0; bottom: 4px; rotate: 3deg; }
+.allin__chip[data-who="k"] { right: 0; bottom: 4px; rotate: -3deg; }
+
+/* after you join: what does your group argue about? */
+.argue { border: 0; padding: 0; margin: 18px 0 0; min-width: 0; }
+.argue legend { font-weight: 600; margin-bottom: 10px; }
+.argue__opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.argue__opts button { min-height: 40px; padding: 7px 14px; border-radius: 999px; border: 1.5px solid rgba(251,251,250,.4); background: transparent; color: var(--on-dark); font: inherit; font-weight: 600; font-size: .9375rem; cursor: pointer; }
+.argue__opts button:hover { border-color: var(--on-dark); }
+.argue__opts button[aria-pressed="true"] { background: var(--coral); border-color: var(--coral); color: var(--ink); }
+.argue__msg { margin-top: 10px; color: var(--on-dark-soft); font-size: .9375rem; }
+.argue__msg:empty { display: none; }
+
+/* Desktop: the thing sits in the card, under what they said, where there was empty space */
+@media (min-width: 900px) {
+  .thing { position: relative; left: auto; bottom: auto; width: min(290px, 100%); margin: 2px 0 0; padding: 13px 15px 11px; gap: 5px; }
+  .dish, .been { font-size: .875rem; }
+  .card__body { gap: 8px; }
+  .me { margin-top: 4px; }
+  .ping { font-size: .875rem; }
+}
+@media (min-width: 900px) and (max-height: 780px) {
+  .thing { padding: 11px 13px 10px; gap: 4px; margin: 2px 0 0; }
+  .dish, .been { font-size: .8125rem; }
+  .card__body { gap: 6px; }
+  .me { margin-top: 4px; }
+}
+.plan__then { display: none; }
+
+/* the finale is the biggest thing on the night screen */
+.allin { width: min(560px, 92vw); height: clamp(170px, 27svh, 260px); margin-bottom: 10px; }
+.allin__mark { width: clamp(130px, 21svh, 210px); }
+.allin__chip { font-size: clamp(.9375rem, .8rem + .5vw, 1.25rem); padding: .4em .85em; }
+.allin__chip[data-who="r"], .allin__chip[data-who="m"] { top: 8%; }
+.allin__chip[data-who="a"], .allin__chip[data-who="k"] { bottom: 8%; }
+@media (max-width: 899px) { .allin { height: 190px; } .allin__mark { width: 128px; } }
+
+/* the glimpse: Planic arrives as a link the planner sends, not as a member of the chat */
+.gp__link { display: flex; align-items: center; gap: 6px; margin-top: 6px; padding-top: 8px; border-top: 1px solid rgba(251,251,250,.18); font-size: .75rem; font-weight: 600; color: var(--on-dark-soft); }
+
+/* Big moving layers get their own compositor layer, so scrolling moves them without repainting. */
+html.motion .reveal, html.motion .reveal .ph, html.motion .snap { will-change: transform; }
+
+/* chapters where the text flips between dark and light arrive on their own solid colour (see sky() in story.js) */
+html.motion .ch.ch--solid { background: var(--solid) !important; }
+.tally .count--zero { color: #D9443A; }
+
+/* night, on phones: the photos drift behind the words, and the words keep a soft dark halo so they always read */
+@media (max-width: 899px) {
+  .snap, .snap[data-depth="1.4"], .snap[data-depth="1.1"] { z-index: 1; }
+  .night__words { z-index: 2; }
+  .night__words .night__title, .night__words .night__lede, .night__words .kicker { text-shadow: 0 2px 22px rgba(21,19,31,.95), 0 0 6px rgba(21,19,31,.8); }
+}
+.night__lede { color: rgba(251,251,250,.86); }
+@media (max-width: 899px) {
+  .snap { width: 25vw; }
+  .snap:nth-child(1) { left: -7vw; } .snap:nth-child(2) { right: -8vw; }
+  .snap:nth-child(3) { left: -7vw; } .snap:nth-child(4) { right: -8vw; }
+  .night__words { max-width: 80vw; }
+}
+@media (max-width: 899px) { .allin { width: 100%; } }
+
+/* phones: the metro card is small, so it names the two ends and shows the change as a dot */
+@media (max-width: 899px) { .stops span:nth-child(2) { display: none; } }
+/* narrow laptops: Meera's message drops in on the left, so it doesn't cover the plan's answer on the right */
+@media (min-width: 900px) and (max-width: 1279px) { .twist { right: auto; left: max(16px, env(safe-area-inset-left)); } }
+@media (max-width: 899px) { .snap { width: min(25vw, 150px); } }
+@media (max-width: 899px) { .night__lede { max-width: 68vw; margin-inline: auto; } }
+</style>
+  <script>document.documentElement.classList.add('js')</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+  <script type="module">
+// engine.js
+// Planic "talk back" demo engine: a small, fixed, explainable model.
+// Pure functions only (no DOM), so the same code renders the no-JS page at build time,
+// drives the live page, and runs under `node --test`.
+
+const PEOPLE = {
+  a: { name: 'Aanya', tone: 'coral' },
+  r: { name: 'Rohan', tone: 'lav' },
+  m: { name: 'Meera', tone: 'sun' },
+  k: { name: 'Kabir', tone: 'mint' },
+};
+
+// What the group actually said (docs/redesign/SCENARIO.md).
+const DEFAULT_ASKS = Object.freeze({ food: 'veg', novelty: 'new', budget: 600, free: 19 * 60 });
+
+const FREE_STOPS = [17 * 60, 19 * 60, 21 * 60];
+const BUDGET = { min: 200, max: 2500, step: 50 };
+const TRIP_BUFFER = 30; // Meera has the longest trip, so the plan starts 30 min after Kabir is free.
+const MIN_STAY = 120;   // An option needs at least two hours before it closes.
+
+// Illustrative options. No real venues; prices and hours are made up for the demo.
+const OPTIONS = [
+  { id: 'board', name: 'Board-game café', area: 'Hauz Khas', short: 'the board-game café', price: 550, veg: true, isNew: true, closes: 23 * 60 + 30 },
+  { id: 'rooftop', name: 'Rooftop lounge', short: 'the rooftop', price: 2000, plus: true, veg: true, isNew: true, closes: 25 * 60 },
+  { id: 'cafe', name: 'Our usual café', short: 'the usual café', price: 450, veg: true, isNew: false, closes: 23 * 60 },
+  { id: 'brunch', name: 'Brunch spot', short: 'the brunch spot', price: 500, veg: true, isNew: true, closes: 18 * 60 },
+  { id: 'crawl', name: 'Street-food crawl', short: 'the street-food crawl', price: 350, veg: true, isNew: true, closes: 21 * 60 },
+  { id: 'kebab', name: 'Kebab place with live music', short: 'the kebab place', price: 400, veg: false, isNew: true, closes: 24 * 60 },
+];
+
+/* ---------- formatting ---------- */
+
+const rupees = (n) => '₹' + n.toLocaleString('en-IN');
+const priceLabel = (o) => rupees(o.price) + (o.plus ? '+' : '');
+
+function clock(m) {
+  const h24 = Math.floor(m / 60) % 24;
+  const mm = m % 60;
+  const h = h24 % 12 || 12;
+  return { h, mm, pm: h24 >= 12 };
+}
+function timeShort(m) {
+  const { h, mm } = clock(m);
+  return mm ? `${h}:${String(mm).padStart(2, '0')}` : `${h}`;
+}
+function timeLong(m) {
+  const { pm } = clock(m);
+  return `${timeShort(m)} ${pm ? 'PM' : 'AM'}`;
+}
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ---------- the asks, as the group would say them ---------- */
+
+function sayFood(v) { return v === 'veg' ? 'veg options pls' : 'I’ll eat anything'; }
+function sayNovelty(v) { return v === 'new' ? 'somewhere new!!' : 'the usual’s fine'; }
+function sayBudget(v) { return `${rupees(v)} max`; }
+function sayFree(v) { return `free after ${timeShort(v)}`; }
+
+/* ---------- evaluation ---------- */
+
+function startOf(asks) { return asks.free + TRIP_BUFFER; }
+
+function failsFor(o, asks) {
+  const start = startOf(asks);
+  const fails = [];
+  if (asks.food === 'veg' && !o.veg) fails.push({ key: 'food', who: 'a', text: 'Few veg options for Aanya' });
+  if (asks.novelty === 'new' && !o.isNew) fails.push({ key: 'novelty', who: 'r', text: 'Not new for Rohan' });
+  if (o.price > asks.budget) fails.push({ key: 'budget', who: 'm', text: `${priceLabel(o)} each, over Meera’s ${rupees(asks.budget)}` });
+  if (start + MIN_STAY > o.closes) {
+    const text = o.closes <= asks.free
+      ? `Closes at ${timeLong(o.closes)}, before Kabir is free`
+      : `Closes at ${timeLong(o.closes)}, too early for a ${timeShort(start)} start`;
+    fails.push({ key: 'time', who: 'k', text });
+  }
+  return fails;
+}
+
+// The smallest change to the asks that would make this option fit everyone, or null if none can.
+function fixFor(o, fails, asks) {
+  const patch = {};
+  const words = [];
+  for (const f of fails) {
+    if (f.key === 'food') { patch.food = 'any'; words.push('Aanya’s fine without a veg menu'); }
+    if (f.key === 'novelty') { patch.novelty = 'usual'; words.push('Rohan’s fine with the usual'); }
+    if (f.key === 'budget') { patch.budget = o.price; words.push(`Meera stretches to ${rupees(o.price)}`); }
+    if (f.key === 'time') {
+      const ok = FREE_STOPS.filter((t) => t + TRIP_BUFFER + MIN_STAY <= o.closes && t < asks.free);
+      if (!ok.length) return null;
+      patch.free = ok[ok.length - 1];
+      words.push(`Kabir’s free by ${timeShort(patch.free)}`);
+    }
+  }
+  return { patch, text: words.join(' and ') };
+}
+
+function rank(a, b) {
+  if (a.isNew !== b.isNew) return a.isNew ? -1 : 1; // prefer somewhere new
+  return a.price - b.price;                          // then the cheaper one
+}
+
+function planFor(o, asks) {
+  const start = startOf(asks);
+  const meta = `Friday at ${timeLong(start)}${o.area ? ` in ${o.area}` : ''}, about ${priceLabel(o)} each.`;
+  let title = o.name;
+  let then = `Meet there at ${timeLong(start)}.`;
+  const trade = [`Meera has the longest trip, so it starts at ${timeShort(start)} rather than ${timeShort(asks.free)}.`];
+
+  if (o.id === 'board') {
+    if (start <= 20 * 60) {
+      title = 'Board games, then momos';
+      then = `Meet near the metro at ${timeLong(start - 10)}. Momos nearby from ${timeLong(start + 120)}.`;
+    } else {
+      title = 'Board games till close';
+      then = `Meet near the metro at ${timeLong(start - 10)}. Play till ${timeLong(o.closes)}.`;
+      trade.push('It starts late, so there’s no time for momos.');
+    }
+  } else if (o.id === 'crawl') {
+    title = 'A street-food crawl';
+    then = `Meet at ${timeLong(start - 10)}. Done by ${timeLong(o.closes)}.`;
+    trade.push(`It’s an early night: the stalls wind down by ${timeShort(o.closes)}.`);
+  } else if (o.id === 'kebab') {
+    title = 'Kebabs and a live set';
+    then = `Meet at ${timeLong(start - 10)}. Music till late.`;
+  } else if (o.id === 'cafe') {
+    title = 'The usual café';
+  } else if (o.id === 'rooftop') {
+    title = 'A rooftop evening';
+  }
+
+  const reasons = [
+    { who: 'a', text: asks.food === 'veg' ? 'Veg menu' : (o.veg ? 'Veg menu anyway' : 'Few veg dishes, and Aanya’s fine with that') },
+    { who: 'r', text: o.isNew ? 'New to all four' : 'The usual, which Rohan’s fine with' },
+    { who: 'm', text: o.price === asks.budget ? `${priceLabel(o)}, right at her limit` : `About ${priceLabel(o)}, under her ${rupees(asks.budget)}` },
+    { who: 'k', text: `Starts ${timeShort(start)}, after he’s free at ${timeShort(asks.free)}` },
+  ];
+  return { id: o.id, title, meta, then, reasons, trade };
+}
+
+// Why the pick beat the other options that also fit (rule 2: new first, then cheaper).
+function pickWhy(o, alsoFit) {
+  if (!alsoFit.length) return 'The only option that works for all four';
+  const parts = [];
+  if (o.isNew && alsoFit.some((x) => !x.isNew)) parts.push('it’s new');
+  if (alsoFit.some((x) => x.isNew === o.isNew)) parts.push(o.isNew ? 'it’s the cheapest new one' : 'it’s the cheapest');
+  return `Works for all four, and ${parts.join(', and ')}`;
+}
+
+function listOf(items) {
+  if (items.length <= 1) return items.join('');
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
+function evaluate(asks) {
+  const rows = OPTIONS.map((o) => {
+    const fails = failsFor(o, asks);
+    return { o, fails, fix: fails.length ? fixFor(o, fails, asks) : null };
+  });
+  const fits = rows.filter((r) => !r.fails.length).sort((x, y) => rank(x.o, y.o));
+  const pick = fits[0] || null;
+
+  // Rows for "why not": everything except the pick, with a plain reason.
+  const others = rows.filter((r) => r !== pick).map((r) => {
+    let why;
+    if (r.fails.length) {
+      why = r.fails.map((f) => f.text).join('; ');
+    } else if (pick.o.isNew && !r.o.isNew) {
+      why = 'Fits everyone, but it isn’t new';
+    } else {
+      why = `Fits everyone, but costs ${rupees(r.o.price - pick.o.price)}${r.o.plus ? '+' : ''} more each`;
+    }
+    const fix = r.fails.length
+      ? (r.fix ? { text: `Fits everyone if ${r.fix.text}.`, patch: r.fix.patch } : { text: 'Can’t fit a Friday evening.', patch: null })
+      : null;
+    return { id: r.o.id, name: r.o.name, price: priceLabel(r.o), fits: !r.fails.length, fails: r.fails, why, fix };
+  });
+
+  let bends = [];
+  if (!pick) {
+    const fixable = rows.filter((r) => r.fix);
+    const least = Math.min(...fixable.map((r) => r.fails.length));
+    bends = fixable
+      .filter((r) => r.fails.length === least)
+      .sort((x, y) => rank(x.o, y.o))
+      .slice(0, 3)
+      .map((r) => ({ id: r.o.id, name: r.o.name, text: `${cap(r.fix.text)}.`, patch: r.fix.patch }));
+  }
+
+  // Every option in a fixed order, with who it works for: the "options board".
+  const board = rows.map((r) => {
+    const row = r === pick ? null : others.find((x) => x.id === r.o.id);
+    return {
+      id: r.o.id, name: r.o.name, price: priceLabel(r.o), picked: r === pick,
+      fits: !r.fails.length,
+      people: Object.fromEntries(Object.keys(PEOPLE).map((w) => [w, r.fails.find((f) => f.who === w) || null])),
+      why: row ? row.why : pickWhy(r.o, fits.filter((f) => f !== r).map((f) => f.o)),
+      fix: row ? row.fix : null,
+    };
+  });
+
+  // What each person's ask rules out, for the "nothing fits" view.
+  const limits = Object.fromEntries(Object.keys(PEOPLE).map((w) => {
+    const out = rows.filter((r) => r.fails.some((f) => f.who === w)).map((r) => r.o.short);
+    return [w, out];
+  }));
+
+  return {
+    asks: { ...asks },
+    start: startOf(asks),
+    board,
+    limits,
+    pick: pick ? pick.o : null,
+    plan: pick ? planFor(pick.o, asks) : null,
+    others,
+    bends,
+  };
+}
+
+/* ---------- explaining a change ---------- */
+
+function changePhrases(prev, next) {
+  const out = [];
+  if (prev.food !== next.food) out.push(next.food === 'veg' ? 'Aanya wants veg options again' : 'Aanya’s open to anything now');
+  if (prev.novelty !== next.novelty) out.push(next.novelty === 'new' ? 'Rohan wants somewhere new again' : 'Rohan’s fine with the usual now');
+  if (prev.budget !== next.budget) out.push(`Meera’s budget is ${rupees(next.budget)} now`);
+  if (prev.free !== next.free) out.push(`Kabir’s free after ${timeShort(next.free)} now`);
+  return out;
+}
+
+function sameAsks(x, y) {
+  return x.food === y.food && x.novelty === y.novelty && x.budget === y.budget && x.free === y.free;
+}
+
+function explainChange(prevAsks, nextAsks, { reset = false } = {}) {
+  const prev = evaluate(prevAsks);
+  const next = evaluate(nextAsks);
+  const phrases = changePhrases(prevAsks, nextAsks);
+  if (!phrases.length) return { kind: 'none', text: '' };
+  const joined = phrases.map((t, i) => (i < phrases.length - 1 ? t.replace(/ now$/, '') : t)).join(' and ');
+  const lead = reset ? 'Back to what they actually said' : cap(joined);
+
+  if (!next.pick) {
+    return { kind: 'none-fits', text: `${lead}. Nothing fits all four, so Planic won’t guess.` };
+  }
+  const name = next.pick.short;
+  if (!prev.pick) {
+    return { kind: 'new', text: `${lead}, so ${name} fits all four.` };
+  }
+  if (prev.pick.id === next.pick.id) {
+    if (prev.start !== next.start) {
+      return { kind: 'hold', text: `${lead}. Still ${name}, now starting at ${timeLong(next.start)}.` };
+    }
+    const newlyFit = next.others.filter((r) => r.fits && !prev.others.find((p) => p.id === r.id && p.fits));
+    if (newlyFit.length) {
+      const r = newlyFit[0];
+      const o = OPTIONS.find((x) => x.id === r.id);
+      const why = next.pick.isNew && !o.isNew ? 'it isn’t new' : 'it costs more';
+      return { kind: 'hold', text: `${lead}. ${cap(o.short)} fits too, but ${why}, so the plan holds.` };
+    }
+    return { kind: 'hold', text: `${lead}. ${cap(name)} still fits everyone, so the plan holds.` };
+  }
+  const prevRow = next.others.find((r) => r.id === prev.pick.id);
+  if (prevRow && !prevRow.fits) {
+    return { kind: 'new', text: `${lead}, so ${prev.pick.short} is out (${prevRow.fails[0].text.charAt(0).toLowerCase() + prevRow.fails[0].text.slice(1)}). ${cap(name)} fits all four.` };
+  }
+  const better = next.pick.isNew && !prev.pick.isNew
+    ? 'it’s somewhere new'
+    : `it’s ${rupees(prev.pick.price - next.pick.price)} cheaper each`;
+  return { kind: 'new', text: `${lead}, so ${name} fits all four, and ${better}.` };
+}
+
+// view.js
+// HTML string builders shared by the build step (no-JS page) and the live page.
+
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// One row per person, beside what they said. With a plan: what the plan does for them.
+// With no plan: what their ask rules out, so the blocking constraints are visible.
+function whyText(result, who) {
+  if (result.plan) return result.plan.reasons.find((r) => r.who === who).text;
+  const out = result.limits[who];
+  const a = result.asks;
+  const said = { a: a.food === 'veg' ? 'Veg options' : null, r: a.novelty === 'new' ? 'Somewhere new' : null, m: sayBudget(a.budget), k: cap(sayFree(a.free)) }[who];
+  if (!said || !out.length) return 'Rules nothing out';
+  return `${said} rules out ${listOf(out)}`;
+}
+
+function whyRowsHTML(result) {
+  return Object.keys(PEOPLE).map((w) =>
+    `<li class="why" data-who="${w}"><i class="why__dot" aria-hidden="true"></i><span class="why__who">${PEOPLE[w].name}</span><span class="why__text">${esc(whyText(result, w))}</span></li>`
+  ).join('');
+}
+
+function tradeHTML(plan) {
+  return plan.trade.map((t, i) => `<p class="trade">${i === 0 ? '<b>Trade-off</b> ' : ''}${esc(t)}</p>`).join('');
+}
+
+function bendsHTML(result, { interactive = true } = {}) {
+  return result.bends.map((b) =>
+    `<li class="bend" data-id="${b.id}"><b class="bend__name">${esc(b.name)}</b> <span class="bend__text">${esc(b.text)}</span>` +
+    (interactive ? ` <button type="button" class="try" data-patch='${esc(JSON.stringify(b.patch))}' data-name="${esc(b.name)}">Try it</button>` : '') +
+    `</li>`
+  ).join('');
+}
+
+// The options board: every option against every person, in a fixed order.
+function boardHTML(result, { interactive = true } = {}) {
+  return result.board.map((o) => {
+    const cells = Object.keys(PEOPLE).map((w) => {
+      const f = o.people[w];
+      const name = PEOPLE[w].name;
+      return `<td class="mk ${f ? 'mk--no' : 'mk--ok'}" data-who="${w}"><i aria-hidden="true">${name[0]}</i>` +
+        `<span class="sr-only">${f ? `No for ${name}: ${esc(f.text)}` : `Works for ${name}`}</span></td>`;
+    }).join('');
+    const fix = o.fix
+      ? `<p class="opt__fix">${esc(o.fix.text)}${o.fix.patch && interactive ? ` <button type="button" class="try" data-patch='${esc(JSON.stringify(o.fix.patch))}' data-name="${esc(o.name)}">Try it</button>` : ''}</p>`
+      : '';
+    const tag = o.picked ? '<span class="opt__tag">Planic’s pick</span>' : (o.fits ? '<span class="opt__tag opt__tag--fits">Fits, not picked</span>' : '');
+    return `<tr class="opt${o.picked ? ' is-picked' : ''}${o.fits ? ' is-fit' : ''}" data-id="${o.id}">` +
+      `<th scope="row"><span class="opt__name">${esc(o.name)}</span> <span class="opt__price">${esc(o.price)}</span>${tag}</th>` +
+      cells +
+      `<td class="opt__why"><p>${esc(o.why)}</p>${fix}</td></tr>`;
+  }).join('');
+}
+
+const NO_PLAN = {
+  title: 'Nothing fits all four yet',
+  meta: 'Planic won’t pick one and pretend it works. Each of these needs one person to give a little:',
+};
+
+// life.js
+// Pointer and touch reactions, and headings that rise out of their own lines.
+// Loaded by story.js only when motion is on.
+
+const TONE = { a: '#FF6B61', r: '#B8AEFF', m: '#F5C76B', k: '#9ED9B8' };
+
+/* Wherever the pointer goes, something answers. On touch: a ripple where you tap. */
+function pointerLife(G) {
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => [...document.querySelectorAll(s)];
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  if (!fine) {
+    addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse') return;
+      const who = e.target.closest('[data-who]');
+      const dot = document.createElement('i');
+      dot.className = 'ripple';
+      dot.style.left = `${e.clientX}px`;
+      dot.style.top = `${e.clientY}px`;
+      if (who) dot.style.setProperty('--cur', TONE[who.dataset.who]);
+      document.body.append(dot);
+      dot.addEventListener('animationend', () => dot.parentNode && dot.parentNode.removeChild(dot));
+    }, { passive: true });
+    return;
+  }
+
+  document.documentElement.classList.add('fine');
+  const cur = $('.cursor');
+  const label = $('.cursor__label');
+  const ring = $('.cursor__ring');
+  const dot = $('.cursor__dot');
+  const xR = G.quickTo(ring, 'x', { duration: .45, ease: 'power3' });
+  const yR = G.quickTo(ring, 'y', { duration: .45, ease: 'power3' });
+  const xD = G.quickTo(dot, 'x', { duration: .08 });
+  const yD = G.quickTo(dot, 'y', { duration: .08 });
+  addEventListener('pointermove', (e) => {
+    xR(e.clientX); yR(e.clientY); xD(e.clientX); yD(e.clientY);
+    document.body.style.setProperty('--mx', `${e.clientX}px`);
+    document.body.style.setProperty('--my', `${e.clientY}px`);
+  }, { passive: true });
+  addEventListener('pointerover', (e) => {
+    const t = e.target;
+    const ph = t.closest('.ph');
+    const act = t.closest('a, button, label, input');
+    const who = t.closest('[data-who]');
+    cur.className = 'cursor';
+    cur.style.removeProperty('--cur');
+    if (who) cur.style.setProperty('--cur', TONE[who.dataset.who]);
+    if (act) cur.classList.add('is-act');
+    else if (ph && ph.dataset.label) { cur.classList.add('is-ph'); label.textContent = ph.dataset.label; }
+    else if (who) cur.classList.add('is-who');
+    else if (t.closest('h1, h2, p')) cur.classList.add('is-text');
+  });
+  document.addEventListener('pointerleave', () => G.to(cur, { autoAlpha: 0, duration: .2 }));
+  document.addEventListener('pointerenter', () => G.to(cur, { autoAlpha: 1, duration: .2 }));
+
+  // Buttons lean toward the pointer.
+  $$('.btn, .nav__cta, .me, .reset').forEach((b) => {
+    const bx = G.quickTo(b, 'x', { duration: .4, ease: 'power3' });
+    const by = G.quickTo(b, 'y', { duration: .4, ease: 'power3' });
+    b.addEventListener('pointermove', (e) => {
+      const r = b.getBoundingClientRect();
+      bx((e.clientX - r.left - r.width / 2) * .25);
+      by((e.clientY - r.top - r.height / 2) * .35);
+    });
+    b.addEventListener('pointerleave', () => { bx(0); by(0); });
+  });
+
+  // Photos tilt toward the pointer, like picking up a print.
+  $$('.card .ph, .opt .ph, .snap .ph, .b--photo .ph').forEach((ph) => {
+    G.set(ph, { transformPerspective: 700 });
+    const rx = G.quickTo(ph, 'rotationX', { duration: .5, ease: 'power3' });
+    const ry = G.quickTo(ph, 'rotationY', { duration: .5, ease: 'power3' });
+    ph.addEventListener('pointermove', (e) => {
+      const r = ph.getBoundingClientRect();
+      ry(((e.clientX - r.left) / r.width - .5) * 10);
+      rx(-((e.clientY - r.top) / r.height - .5) * 8);
+    });
+    ph.addEventListener('pointerleave', () => { rx(0); ry(0); });
+  });
+}
+
+/* Chapter headings: each word drops in under gravity and lands as the chapter arrives. */
+function splitHeads(G) {
+  const heads = [...document.querySelectorAll('main h2:not(.plan__title), .film__line')];
+  heads.forEach((h) => {
+    const walk = (node) => {
+      for (const n of [...node.childNodes]) {
+        if (n.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach((part) => {
+            if (!part) return;
+            if (/^\s+$/.test(part)) { frag.append(part); return; }
+            const outer = document.createElement('span');
+            outer.className = 'split';
+            const inner = document.createElement('span');
+            inner.textContent = part;
+            outer.append(inner);
+            frag.append(outer);
+          });
+          n.replaceWith(frag);
+        } else if (n.nodeType === 1) walk(n);
+      }
+    };
+    walk(h);
+    // the pinned weigh timeline and the scrubbed night line bring their own headings in
+    if (h.closest('.ch--weigh') || h.classList.contains('night__title')) return;
+    G.from([...h.querySelectorAll('.split > span')], {
+      yPercent: -160, rotation: () => G.utils.random(-14, 14), opacity: 0, duration: 1.1, ease: 'bounce.out',
+      stagger: { each: .07, from: 'random' },
+      scrollTrigger: { trigger: h, start: 'top 85%', toggleActions: 'play none none reverse' },
+    });
+  });
+}
+
+// alive.js
+// Two things that make the page feel alive. Loaded by story.js only when motion is on.
+//   threads():   four coloured threads, one per friend, that wander apart through the chat and the options,
+//                braid into one line when the plan lands, and part again for Friday night.
+//   liveWords(): the big words (headlines, the opening line, the night line) float a little, sway with
+//                your scroll, lean away from the pointer and can be flicked; they always spring home.
+//                Reading text (paragraphs, plan details) never moves this way.
+
+const ORDER = ['a', 'r', 'm', 'k'];
+const HUE = { a: '#FF6B61', r: '#B8AEFF', m: '#F5C76B', k: '#9ED9B8' };
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const smooth = (t) => t * t * (3 - 2 * t);
+
+/* ---------- the four threads ---------- */
+function threads(G, ST, addAmbient) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'threads');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const paths = ORDER.map((who) => {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('class', 'thread');
+    p.setAttribute('stroke', HUE[who]);
+    p.dataset.who = who;
+    svg.append(p);
+    return p;
+  });
+  const one = document.createElementNS(NS, 'path');
+  one.setAttribute('class', 'thread thread--one');
+  svg.append(one);
+  const knot = document.createElementNS(NS, 'circle');
+  knot.setAttribute('class', 'thread__knot');
+  knot.setAttribute('r', '5');
+  svg.append(knot);
+  document.body.append(svg);
+
+  // Where each chapter sits on the page, and how far apart the four are there.
+  // spread 1 = four separate people, 0 = one plan. chaos = how much they wander and cross.
+  const PLAN = {
+    'ch--chat': [1, 1], 'ch--four': [1, .15], 'ch--weigh': [.85, .8], 'ch--try': [.3, .35],
+    'ch--night': [1, .55], 'ch--share': [.55, .3], 'ch--join': [0, 0],
+  };
+  let keys = [];
+  let showFrom = 0;
+  let gutter = 60;
+  let H = innerHeight;
+  function measure() {
+    H = innerHeight;
+    gutter = parseFloat(getComputedStyle(document.querySelector('.ch--four')).paddingLeft) || 16;
+    svg.setAttribute('viewBox', `0 0 ${gutter} ${H}`);
+    svg.style.width = `${gutter}px`;
+    const box = (sec) => {
+      const b = sec.parentElement.classList.contains('pin-spacer') ? sec.parentElement : sec;
+      const r = b.getBoundingClientRect();
+      return { top: r.top + scrollY, bottom: r.bottom + scrollY };
+    };
+    keys = [];
+    for (const sec of document.querySelectorAll('main > .ch, main > .pin-spacer > .ch')) {
+      const { top, bottom } = box(sec);
+      if (sec.id === 'film') { showFrom = bottom - H * .3; continue; }
+      if (sec.classList.contains('ch--plan')) {
+        // the braid: they come together while the plan is revealed, and stay one through it
+        keys.push([top, .85, .6], [top + (bottom - top) * .45, 0, 0], [bottom - H * .2, 0, 0]);
+        continue;
+      }
+      const v = Object.entries(PLAN).find(([c]) => sec.classList.contains(c));
+      if (!v) continue;
+      const [s, c] = v[1];
+      const pad = Math.min(H * .35, (bottom - top) * .3);
+      keys.push([top + pad, s, c], [bottom - pad, s, c]);
+    }
+    keys.sort((a, b) => a[0] - b[0]);
+  }
+  function at(P) {
+    if (!keys.length) return [1, 1];
+    if (P <= keys[0][0]) return [keys[0][1], keys[0][2]];
+    for (let i = 1; i < keys.length; i++) {
+      if (P <= keys[i][0]) {
+        const [p0, s0, c0] = keys[i - 1];
+        const [p1, s1, c1] = keys[i];
+        const t = smooth(clamp((P - p0) / Math.max(1, p1 - p0), 0, 1));
+        return [s0 + (s1 - s0) * t, c0 + (c1 - c0) * t];
+      }
+    }
+    const k = keys[keys.length - 1];
+    return [k[1], k[2]];
+  }
+
+  const N = matchMedia('(pointer: coarse)').matches ? 24 : 36; // fewer points on phones: same curve, less work
+  let time = 0;
+  let wasOne = false;
+  function draw() {
+    const y0 = scrollY;
+    const cx = gutter / 2;
+    const gap = Math.max(2.5, gutter * .16);
+    const ds = paths.map(() => []);
+    const dOne = [];
+    let midSpread = 1;
+    for (let j = 0; j <= N; j++) {
+      const y = (j / N) * H;
+      const P = y0 + y;
+      const [spread, chaos] = at(P);
+      if (j === N / 2) midSpread = spread;
+      ORDER.forEach((_, i) => {
+        const lane = (i - 1.5) * gap;
+        const weave = Math.cos(P / 380 + i * 1.7 + time * .25) * chaos; // lanes drift and cross
+        const wander = Math.sin(P / (95 + i * 23) + i * 2.1 + time * (.5 + i * .07)) * gap * 1.1 * chaos;
+        const braid = Math.sin(P / 24 + i * Math.PI / 2 + time * 1.4) * 2.2; // a twisted rope when they're one
+        const x = cx + spread * (lane * (1 - chaos * .6) + lane * weave * .6 + wander) + (1 - spread) * braid;
+        ds[i].push(`${j ? 'L' : 'M'}${clamp(x, 2, gutter - 2).toFixed(1)} ${y.toFixed(1)}`);
+      });
+      dOne.push(`${j ? 'L' : 'M'}${cx.toFixed(1)} ${y.toFixed(1)}`);
+    }
+    paths.forEach((p, i) => p.setAttribute('d', ds[i].join('')));
+    one.setAttribute('d', dOne.join(''));
+    // after the film, the threads draw themselves in
+    const show = clamp((y0 + H - showFrom) / (H * .5), 0, 1);
+    svg.style.opacity = String(show);
+    const oneness = clamp(1 - midSpread / .12, 0, 1);
+    one.style.opacity = String(oneness);
+    knot.setAttribute('cx', String(cx));
+    knot.setAttribute('cy', String(H / 2));
+    // the moment they become one, a small knot pulses where they meet
+    const isOne = midSpread < .03;
+    if (isOne && !wasOne && show > .5) G.fromTo(knot, { attr: { r: 3 }, opacity: 1 }, { attr: { r: 16 }, opacity: 0, duration: .9, ease: 'power2.out' });
+    wasOne = isOne;
+  }
+
+  let running = false;
+  // On touch screens the threads only move with the page, and are only redrawn when it moved: less work per frame.
+  const touch = matchMedia('(pointer: coarse)').matches;
+  let drawnAt = -1;
+  const tick = (_, dt) => {
+    if (touch) { if (scrollY === drawnAt) return; drawnAt = scrollY; } else time += Math.min(dt, 50) / 1000;
+    draw();
+  };
+  addAmbient(document.querySelector('main'), {
+    play() { if (!running) { running = true; G.ticker.add(tick); } },
+    pause() { running = false; G.ticker.remove(tick); draw(); },
+  });
+  ST.addEventListener('refresh', () => { measure(); draw(); });
+  addEventListener('scroll', () => { if (!running) draw(); }, { passive: true });
+  measure();
+  draw();
+}
+
+/* ---------- living words ---------- */
+function liveWords(G, addAmbient) {
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const words = [...document.querySelectorAll('.open__title .w, main h2:not(.plan__title) .split, .film__line .split')]
+    .map((el, i) => ({ el, i, x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, cx: 0, cy: 0, w: 0, drag: null }));
+  if (!words.length) return;
+  words.forEach((w) => w.el.classList.add('alive'));
+
+  // Only words on screen take part.
+  const live = new Set();
+  const heads = new Map();
+  words.forEach((w) => {
+    const h = w.el.closest('h1, h2, p');
+    if (!heads.has(h)) heads.set(h, []);
+    heads.get(h).push(w);
+  });
+  const io = new IntersectionObserver((es) => es.forEach((e) => heads.get(e.target).forEach((w) => {
+    if (e.isIntersecting) live.add(w);
+    else { live.delete(w); Object.assign(w, { x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0 }); paint(w); }
+  })), { rootMargin: '10% 0px' });
+  heads.forEach((_, h) => io.observe(h));
+
+  const ptr = { x: -9999, y: -9999, on: false };
+  addEventListener('pointermove', (e) => { ptr.x = e.clientX; ptr.y = e.clientY; ptr.on = e.pointerType === 'mouse'; }, { passive: true });
+  document.addEventListener('pointerleave', () => { ptr.on = false; });
+
+  // Flick a word with the mouse; tap one on a touch screen and it hops.
+  const pick = (e) => words.find((w) => w.el === e.target.closest('.alive'));
+  addEventListener('pointerdown', (e) => {
+    const w = pick(e);
+    if (!w) return;
+    if (e.pointerType !== 'mouse') {
+      w.vy -= 520; w.vr += (Math.random() - .5) * 260;
+      live.forEach((o) => { if (o !== w && Math.abs(o.i - w.i) === 1) o.vy -= 220; });
+      return;
+    }
+    e.preventDefault();
+    w.drag = { sx: e.clientX - w.x, sy: e.clientY - w.y, lx: e.clientX, ly: e.clientY, lt: performance.now(), vx: 0, vy: 0 };
+    w.el.classList.add('is-held');
+    document.documentElement.classList.add('holding');
+  });
+  addEventListener('pointermove', (e) => {
+    const w = words.find((o) => o.drag);
+    if (!w) return;
+    const d = w.drag;
+    const now = performance.now();
+    const dt = Math.max(8, now - d.lt) / 1000;
+    d.vx = (e.clientX - d.lx) / dt; d.vy = (e.clientY - d.ly) / dt;
+    d.lx = e.clientX; d.ly = e.clientY; d.lt = now;
+    w.x = e.clientX - d.sx; w.y = e.clientY - d.sy;
+    w.r = clamp(w.x * .08, -25, 25);
+  }, { passive: true });
+  addEventListener('pointerup', () => {
+    const w = words.find((o) => o.drag);
+    if (!w) return;
+    w.vx = clamp(w.drag.vx, -3000, 3000); w.vy = clamp(w.drag.vy, -3000, 3000); w.vr = w.vx * .05;
+    w.drag = null;
+    w.el.classList.remove('is-held');
+    document.documentElement.classList.remove('holding');
+  });
+
+  let lastY = scrollY;
+  let t = 0;
+  function paint(w) {
+    w.el.style.translate = w.x || w.y ? `${w.x.toFixed(2)}px ${w.y.toFixed(2)}px` : '';
+    w.el.style.rotate = w.r ? `${w.r.toFixed(2)}deg` : '';
+  }
+  function step(_, dtMs) {
+    const dt = Math.min(dtMs, 40) / 1000;
+    t += dt;
+    const sv = (scrollY - lastY) / Math.max(dt, .001); // scroll speed, px/s
+    lastY = scrollY;
+    // read positions first, then write, so layout is measured once per frame
+    if (fine && ptr.on) live.forEach((w) => {
+      const r = w.el.getBoundingClientRect();
+      w.cx = r.left + r.width / 2 - w.x; w.cy = r.top + r.height / 2 - w.y; w.w = r.width;
+    });
+    live.forEach((w) => {
+      if (w.drag) { paint(w); return; }
+      // home drifts a touch: the words float
+      const hx = 0;
+      const hy = Math.sin(t * 1.25 + w.i * .9) * 1.6;
+      let ax = (hx - w.x) * 140 - w.vx * 11;
+      let ay = (hy - w.y) * 140 - w.vy * 11;
+      let ar = (0 - w.r) * 120 - w.vr * 10;
+      // your scroll makes them sway, staggered so the line ripples
+      if (fine) ay += sv * (.9 + (w.i % 3) * .25); // they lag behind the page a moment, then catch up (not on touch: it reads as drag)
+      // the pointer pushes them aside
+      if (fine && ptr.on) {
+        const dx = w.cx + w.x - ptr.x;
+        const dy = w.cy + w.y - ptr.y;
+        const R = 90 + w.w * .5;
+        const d = Math.hypot(dx, dy);
+        if (d < R && d > .1) {
+          const f = (1 - d / R) ** 2 * 9000;
+          ax += (dx / d) * f; ay += (dy / d) * f; ar += (dx / d) * f * .03;
+        }
+      }
+      w.vx += ax * dt; w.vy += ay * dt; w.vr += ar * dt;
+      w.x = clamp(w.x + w.vx * dt, -220, 220);
+      w.y = clamp(w.y + w.vy * dt, -220, 220);
+      w.r = clamp(w.r + w.vr * dt, -40, 40);
+      paint(w);
+    });
+  }
+
+  let running = false;
+  addAmbient(document.querySelector('main'), {
+    play() { if (!running) { running = true; G.ticker.add(step); } },
+    pause() {
+      running = false; G.ticker.remove(step);
+      words.forEach((w) => { Object.assign(w, { x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, drag: null }); paint(w); });
+    },
+  });
+}
+
+/* ---------- Friday night: a photo dump you can throw around ---------- */
+// Grab a snapshot and throw it; it slides to a stop like a print on a table, and someone in the group reacts.
+// On a touch screen, a tap tosses it a little instead, so the page still scrolls under your finger.
+const REACT = [
+  ['a', 'send pics!!'], ['r', 'who took this 😂'], ['m', 'best friday'], ['k', 'same time next week?'],
+  ['a', 'the momos tho'], ['r', 'I was winning'], ['m', 'made the last metro'], ['k', '10/10'],
+];
+function photoDump(G) {
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const stage = document.querySelector('.night-stage');
+  const snaps = [...document.querySelectorAll('.snap')].map((el) => ({ el, x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0, held: null }));
+  if (!stage || !snaps.length) return;
+  let n = 0;
+  let z = 10;
+  function react(s) {
+    const [who, text] = REACT[n++ % REACT.length];
+    const b = document.createElement('p');
+    b.className = 'react';
+    b.dataset.who = who;
+    b.textContent = text;
+    b.setAttribute('aria-hidden', 'true');
+    const r = s.el.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    b.style.left = `${r.left - sr.left + r.width * .5}px`;
+    b.style.top = `${r.top - sr.top}px`;
+    stage.append(b);
+    G.fromTo(b, { y: 10, scale: .6, opacity: 0 }, { y: -40, scale: 1, opacity: 1, duration: .45, ease: 'back.out(2)' });
+    G.to(b, { y: -90, opacity: 0, duration: .6, delay: 1.4, ease: 'power2.in', onComplete: () => b.remove() });
+  }
+  const paint = (s) => {
+    s.el.style.translate = `${s.x.toFixed(1)}px ${s.y.toFixed(1)}px`;
+    s.el.style.rotate = `${s.r.toFixed(2)}deg`;
+  };
+  let running = false;
+  const glide = (_, dtMs) => {
+    const dt = Math.min(dtMs, 40) / 1000;
+    let moving = false;
+    snaps.forEach((s) => {
+      const out = s.b && (s.x < s.b.minX - 1 || s.x > s.b.maxX + 1 || s.y < s.b.minY - 1 || s.y > s.b.maxY + 1);
+      if (s.held || (!out && Math.abs(s.vx) < 4 && Math.abs(s.vy) < 4 && Math.abs(s.vr) < 2)) return;
+      moving = true;
+      const f = Math.exp(-4 * dt); // friction: a print sliding on a table
+      s.vx *= f; s.vy *= f; s.vr *= f;
+      s.x += s.vx * dt; s.y += s.vy * dt; s.r += s.vr * dt;
+      // stay on the table: past an edge, it eases back in
+      const b = s.b;
+      if (b) {
+        if (s.x < b.minX) s.vx = Math.max(s.vx, (b.minX - s.x) * 5);
+        if (s.x > b.maxX) s.vx = Math.min(s.vx, (b.maxX - s.x) * 5);
+        if (s.y < b.minY) s.vy = Math.max(s.vy, (b.minY - s.y) * 5);
+        if (s.y > b.maxY) s.vy = Math.min(s.vy, (b.maxY - s.y) * 5);
+      }
+      paint(s);
+    });
+    if (!moving) { running = false; G.ticker.remove(glide); }
+  };
+  // how far each print may travel: inside the chapter, a little past the sides
+  function bounds(s) {
+    const r = s.el.getBoundingClientRect();
+    const sr = stage.getBoundingClientRect();
+    s.b = {
+      minX: s.x + (sr.left - r.left) - r.width * .25, maxX: s.x + (sr.right - r.right) + r.width * .25,
+      minY: s.y + (sr.top - r.top), maxY: s.y + (sr.bottom - r.bottom),
+    };
+  }
+  const go = () => { if (!running) { running = true; G.ticker.add(glide); } };
+
+  snaps.forEach((s) => {
+    s.el.classList.add('is-loose');
+    s.el.addEventListener('pointerdown', (e) => {
+      s.el.style.zIndex = String(++z);
+      if (e.pointerType !== 'mouse' || !fine) {
+        const a = Math.random() * Math.PI * 2;
+        s.vx = Math.cos(a) * 520; s.vy = Math.sin(a) * 380; s.vr = (Math.random() - .5) * 120;
+        bounds(s); react(s); go();
+        return;
+      }
+      e.preventDefault();
+      s.held = { lx: e.clientX, ly: e.clientY, lt: performance.now(), vx: 0, vy: 0 };
+      s.el.classList.add('is-held');
+      s.el.setPointerCapture(e.pointerId);
+    });
+    s.el.addEventListener('pointermove', (e) => {
+      const h = s.held;
+      if (!h) return;
+      const now = performance.now();
+      const dt = Math.max(8, now - h.lt) / 1000;
+      h.vx = (e.clientX - h.lx) / dt; h.vy = (e.clientY - h.ly) / dt;
+      s.x += e.clientX - h.lx; s.y += e.clientY - h.ly;
+      s.r += (e.clientX - h.lx) * .04;
+      h.lx = e.clientX; h.ly = e.clientY; h.lt = now;
+      paint(s);
+    });
+    const drop = () => {
+      const h = s.held;
+      if (!h) return;
+      s.held = null;
+      s.el.classList.remove('is-held');
+      s.vx = Math.max(-1800, Math.min(1800, h.vx)); s.vy = Math.max(-1800, Math.min(1800, h.vy)); s.vr = s.vx * .06;
+      if (Math.hypot(s.vx, s.vy) > 250) react(s);
+      bounds(s); go();
+    };
+    s.el.addEventListener('pointerup', drop);
+    s.el.addEventListener('pointercancel', drop);
+  });
+}
+
+// story.js
+// Planic scroll story. Scroll is the clock; every chapter reads in its finished state without this file.
+// Uses GSAP + ScrollTrigger (self-hosted in vendor/) for scroll-linked motion, and the frozen
+// talk-back engine for the "your turn" chapter.
+
+
+
+
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const G = window.gsap;
+const ST = window.ScrollTrigger;
+const MOTION = !reduce && !!G && !!ST;
+// On touch screens the finger and the phone's own momentum already make scrolling smooth. Extra scrub smoothing
+// on top makes the page keep moving after you stop, which feels like drag, so there it follows the scroll exactly.
+const TOUCH = matchMedia('(pointer: coarse)').matches;
+const SMOOTH = TOUCH ? true : .6;
+if (MOTION) root.classList.add('motion');
+
+const sections = $$('main > .ch');
+const ROLE = { a: 'the Aanya', r: 'the Rohan', m: 'the Meera', k: 'the Kabir' };
+const SAID = { a: 'veg options pls', r: 'somewhere new!!', m: '₹600 max, coming from far', k: 'anything works, free after 7' };
+
+/* ---------- clock + nav ink: which chapter are we in ---------- */
+const clockDay = $('.clock__day');
+const clockTime = $('.clock__time');
+function setClock(day, time) {
+  if (clockDay.textContent !== day) clockDay.textContent = day;
+  if (clockTime.textContent !== time) clockTime.textContent = time;
+}
+// During the opening film the clock shows your own time. When the chat starts it flips back to
+// Wednesday afternoon: from there on it is the story's clock, and your scroll moves it.
+const clockEl = $('.clock');
+let realTime = true;
+function showRealTime() {
+  const d = new Date();
+  setClock(d.toLocaleDateString('en-US', { weekday: 'short' }), d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
+}
+function useStoryTime(on, day, time) {
+  if (on === !realTime) return;
+  realTime = !on;
+  clockEl.classList.remove('is-flip');
+  void clockEl.offsetWidth; // restart the flip
+  clockEl.classList.add('is-flip');
+  clockEl.title = on ? 'The group chat’s time in the story. Scrolling moves it.' : 'Your time';
+  if (on) setClock(day, time); else showRealTime();
+}
+setInterval(() => { if (realTime) showRealTime(); }, 20000);
+showRealTime();
+const navBg = document.querySelector('.nav__bg');
+let filmST = null; // the film's pin, so the sky can follow it
+let filmClosed = false; // once the film has closed into a card, the page around it is already daylight
+// On the hosted page (not the preview or a local file) signups are saved and a few moments are counted.
+// SITE is set by the hosted build; track() only does anything when Umami's script is on the page. No cookies.
+const SITE = document.querySelector('meta[name="planic:site"]')?.content || '';
+const counted = new Set();
+function track(event, data, once = true) {
+  if (once && counted.has(event)) return;
+  counted.add(event);
+  try { window.umami?.track(event, data); } catch { /* counting never breaks the page */ }
+}
+
+function enterChapter(sec) {
+  if (sec.id === 'four') track('reached-the-four');
+  if (sec.id === 'share') track('reached-share');
+  document.body.dataset.ch = sec.id;
+  if (sec.id !== 'try') $('.twist.on')?.classList.remove('on'); // Meera's note leaves with her chapter
+  if (!MOTION) navBg.style.backgroundColor = sec.dataset.sky;
+  if (sec.id === 'film') { if (!filmClosed) useStoryTime(false); return; }
+  useStoryTime(true, sec.dataset.day, sec.dataset.time);
+  if (sec.id !== 'top') setClock(sec.dataset.day, sec.dataset.time);
+}
+const chapterIO = new IntersectionObserver((entries) => {
+  for (const e of entries) if (e.isIntersecting) enterChapter(e.target);
+}, { rootMargin: '-50% 0px -50% 0px' });
+sections.forEach((s) => chapterIO.observe(s));
+// The nav's ink follows the chapter that is under the nav itself (its background is the same sky), not the one
+// mid-screen, so it never shows light text on a light sky or dark on dark while a chapter's edge comes up.
+const navIO = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const sec = e.target;
+    document.body.dataset.ink = sec.id === 'film' && filmClosed ? 'dark' : sec.dataset.ink;
+    document.body.dataset.under = sec.id;
+  }
+}, { rootMargin: '0px 0px -99% 0px' });
+sections.forEach((s) => navIO.observe(s));
+
+/* ---------- ambient motion: runs only while its chapter is on screen ---------- */
+const ambient = []; // [{ el, tweens: [] }]
+const pauseBtn = $('.pause');
+let still = false;
+const offIO = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    e.target.classList.toggle('off', !e.isIntersecting);
+    const a = ambient.find((x) => x.el === e.target);
+    if (a) a.tweens.forEach((t) => (e.isIntersecting && !still ? t.play() : t.pause()));
+  }
+}, { rootMargin: '10% 0px' });
+// Every chapter's CSS loops (photo drift, pings, the striped "four") pause while that chapter is off screen.
+document.querySelectorAll('main .ch').forEach((el) => offIO.observe(el));
+function addAmbient(el, tween) {
+  let a = ambient.find((x) => x.el === el);
+  if (!a) { a = { el, tweens: [] }; ambient.push(a); offIO.observe(el); }
+  a.tweens.push(tween);
+}
+
+// While you scroll, the small loops (typing dots, pings, bobbing photos) hold still, so every frame goes to the scroll.
+// The film keeps playing. They pick up again a moment after you stop.
+let moving = 0;
+addEventListener('scroll', () => {
+  if (!moving) {
+    root.classList.add('scrolling');
+    ambient.forEach((a) => a.tweens.forEach((t) => t.keep || t.pause()));
+  }
+  clearTimeout(moving);
+  moving = setTimeout(() => {
+    moving = 0;
+    root.classList.remove('scrolling');
+    if (!still) ambient.forEach((a) => { if (!a.el.classList.contains('off')) a.tweens.forEach((t) => t.keep || t.play()); });
+  }, 180);
+}, { passive: true });
+
+/* ---------- 0. the film: phones lighting up, until the chat takes over ---------- */
+function filmMotion() {
+  const sec = $('.ch--film');
+  const film = $('.film');
+  const video = $('.film__video');
+  const toasts = $$('.toast');
+  const at = toasts.map((t) => Number(t.dataset.at));
+  let shown = -2;
+  function show(n) {
+    if (n === shown) return;
+    shown = n;
+    toasts.forEach((t, i) => {
+      const age = n - i;
+      t.style.setProperty('--age', String(Math.max(0, age)));
+      t.classList.toggle('on', age >= 0 && age < 3);
+      t.classList.toggle('gone', age >= 3);
+    });
+  }
+  // The notifications follow the film's own clock, so they land on the right shot every loop.
+  let raf = 0;
+  const sync = () => {
+    const ct = video.currentTime;
+    let n = -1;
+    at.forEach((a, i) => { if (ct >= a) n = i; });
+    show(n);
+    raf = requestAnimationFrame(sync);
+  };
+  video.addEventListener('playing', () => { cancelAnimationFrame(raf); sync(); });
+  video.addEventListener('pause', () => cancelAnimationFrame(raf));
+  // A portrait cut for portrait screens.
+  let tall = null;
+  function pick() {
+    const t = innerWidth / innerHeight < .8;
+    if (t === tall) return;
+    const time = video.currentTime || 0;
+    const wasPlaying = !video.paused;
+    tall = t;
+    video.poster = t ? video.dataset.posterTall : video.dataset.posterWide;
+    video.src = t ? video.dataset.tall : video.dataset.wide;
+    if (time) video.currentTime = time;
+    if (wasPlaying) video.play().catch(() => {});
+  }
+  pick();
+  addEventListener('resize', pick);
+  video.preload = 'auto';
+  addAmbient(sec, {
+    keep: true,
+    play() {
+      const p = video.play();
+      // If the browser won't autoplay (data saver, low power), the poster stays and the first three messages sit still.
+      if (p) p.catch(() => show(2));
+    },
+    pause() { video.pause(); },
+  });
+
+  // Scrolling on: the words lift away and the film closes down into a card as the chat arrives.
+  const tl = G.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * .8}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1,
+      onUpdate(self) {
+        const closed = self.progress > .55;
+        if (closed !== filmClosed) {
+          filmClosed = closed;
+          document.body.dataset.ink = closed ? 'dark' : 'light';
+          useStoryTime(closed, 'Wed', '4:11 PM');
+        }
+      },
+    },
+  });
+  tl.to('.film__copy', { y: -70, opacity: 0, duration: .45 }, 0)
+    .to('.toasts', { y: -50, opacity: 0, duration: .45 }, .08)
+    .fromTo(film, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }, { clipPath: () => (innerWidth < 900 ? 'inset(7% 4% 7% 4% round 24px)' : 'inset(9% 6% 9% 6% round 32px)'), duration: 1 }, 0)
+    .to(video, { scale: 1.08, duration: 1 }, 0)
+    .to('.film__shade', { opacity: .6, duration: 1 }, 0)
+    .fromTo('.film__one', { opacity: 0, scale: .7, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: .4, ease: 'back.out(1.8)' }, .38);
+  filmST = tl.scrollTrigger;
+}
+
+/* ---------- 1. the chat ---------- */
+const TIMES = ['Wed 4:12 PM', 'Wed 4:12 PM', 'Wed 4:14 PM', 'Wed 4:15 PM', 'Wed 4:31 PM', 'Wed 4:33 PM', 'Wed 6:02 PM', 'Wed 9:47 PM', 'Thu 11:48 PM', 'Thu 11:48 PM', 'Thu 11:49 PM'];
+
+function chatMotion() {
+  const sec = $('.ch--chat');
+  const stage = $('.chat-stage');
+  const open = $('.open');
+  const thread = $('.thread');
+  const win = $('.thread__win');
+  const list = $('.thread__list');
+  const items = [...list.children];
+  const unread = $('.unread');
+  const FIRST = 5; // day label + four messages (one a photo) are there when you arrive
+  const phone = () => innerWidth < 900;
+  const shiftFor = (i) => Math.max(0, items[i].offsetTop + items[i].offsetHeight - win.clientHeight + 18);
+
+  G.set(items.slice(FIRST), { autoAlpha: 0, y: 26 });
+  G.set('.tally', { visibility: 'visible' });
+  G.set('.tally span', { autoAlpha: 0, y: 20 });
+  // The headline and chat arrive as the film hands over to them.
+  const arrive = { trigger: sec, start: 'top 70%', toggleActions: 'play none none none' };
+  G.from('.open__title .w', { yPercent: -140, rotation: () => G.utils.random(-12, 12), autoAlpha: 0, duration: 1.1, stagger: { each: .07, from: 'random' }, ease: 'bounce.out', scrollTrigger: arrive });
+  // yPercent and opacity, so it never fights the pinned timeline below, which moves the thread by y
+  G.from([thread], { yPercent: 10, opacity: 0, duration: 1, ease: 'power3.out', delay: .25, scrollTrigger: arrive });
+
+  const tl = G.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: {
+      trigger: sec, start: 'top top', end: () => `+=${innerHeight * (phone() ? 1.25 : 1)}`,
+      pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1,
+      onUpdate(self) {
+        const shown = Math.min(items.length - 1, FIRST - 1 + Math.floor(self.progress * 1.18 * (items.length - FIRST + 1)));
+        setClock(...TIMES[Math.max(0, shown)].split(/ (.+)/));
+        unread.textContent = String(Math.round(3 + self.progress * 44));
+      },
+    },
+  });
+  // On phones the headline gives the screen to the chat first.
+  tl.to(open, { y: () => (phone() ? -open.offsetHeight - 30 : 0), autoAlpha: () => (phone() ? 0 : 1), duration: () => (phone() ? 1 : .001) }, 0);
+  tl.to(thread, { y: () => (phone() ? -open.offsetHeight - 30 : 0), duration: () => (phone() ? 1 : .001) }, 0);
+  let t = phone() ? .6 : 0;
+  for (let i = FIRST; i < items.length; i++) {
+    const last = i === items.length - 1;
+    tl.to(items[i], { autoAlpha: 1, y: 0, duration: .5, ease: 'power2.out' }, t);
+    tl.to(list, { y: () => -shiftFor(i), duration: .5, ease: 'power1.inOut' }, t);
+    if (last) tl.fromTo(items[i].querySelector('p'), { scale: .6, transformOrigin: '0% 100%' }, { scale: 1, duration: .6, ease: 'back.out(2.2)' }, t);
+    t += .55;
+  }
+  tl.to('.tally span', { autoAlpha: 1, y: 0, stagger: .18, duration: .5, ease: 'power2.out' }, t + .1);
+  tl.from('.count[data-to]', { textContent: 0, snap: { textContent: 1 }, duration: .8, stagger: .15 }, t + .1);
+  tl.to({}, { duration: .2 });
+
+  // The floating photos drift out as the chat takes over, and bob while they wait.
+  $$('.floater').forEach((f, i) => {
+    tl.to(f, { y: i ? 140 : -160, autoAlpha: 0, rotation: i ? 14 : -14, duration: 2 }, .2);
+    addAmbient(sec, G.to($('.ph', f), { y: i ? -10 : 12, rotation: i ? -3 : 3, duration: 3 + i, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+  });
+  G.from($$('.floater .ph'), { scale: .4, opacity: 0, duration: 1, stagger: .15, ease: 'back.out(1.8)', delay: .5, scrollTrigger: arrive });
+
+  // Ambient: someone is always typing.
+  const who = $('.typing__who');
+  const names = ['Meera', 'Rohan', 'Aanya', 'Kabir'];
+  let n = 0;
+  const typing = G.to({}, { duration: 2.6, repeat: -1, onRepeat() { n = (n + 1) % names.length; who.textContent = names[n]; } });
+  addAmbient(sec, typing);
+}
+
+/* ---------- tickers: always moving, faster when you scroll ---------- */
+function tickers() {
+  $$('.ticker').forEach((tk) => {
+    const row = $('.ticker__row', tk);
+    row.innerHTML += row.innerHTML; // two copies, so the loop is seamless
+    const dir = Number(tk.dataset.dir) || -1;
+    const loop = G.fromTo(row, { xPercent: dir < 0 ? 0 : -50 }, { xPercent: dir < 0 ? -50 : 0, duration: 38, ease: 'none', repeat: -1 });
+    addAmbient(tk, loop);
+    let lastV = 1;
+    ST.create({
+      trigger: tk, start: 'top bottom', end: 'bottom top',
+      onUpdate(self) {
+        const v = Math.min(6, 1 + Math.abs(self.getVelocity()) / 400);
+        if (Math.abs(v - lastV) < .3) return; // no new tween on every scroll event
+        lastV = v;
+        G.to(loop, { timeScale: v, duration: .2, overwrite: true, onComplete: () => { lastV = 1; G.to(loop, { timeScale: 1, duration: 1.2 }); } });
+      },
+    });
+  });
+}
+
+/* ---------- the sky: one colour field that turns with the day ---------- */
+function sky() {
+  const el = [$('.sky'), navBg];
+  G.set(el, { backgroundColor: sections[0].dataset.sky });
+  sections.slice(1).forEach((sec, i) => {
+    const prev = sections[i];
+    // The day comes up around the film while it closes, so the chat arrives in daylight. Unsmoothed (scrub: true)
+    // like every other sky change, so a jump down the page can't let it land last and paint the night white.
+    // Where the text flips between dark and light, a slow blend leaves a muddy middle where neither reads.
+    // There the new chapter brings its own solid colour up with a hard edge, and the sky changes under it.
+    const flips = prev.id !== 'film' && prev.dataset.ink !== sec.dataset.ink;
+    if (flips) { sec.classList.add('ch--solid'); sec.style.setProperty('--solid', sec.dataset.sky); }
+    const st = prev.id === 'film' && filmST
+      ? { start: () => filmST.start + innerHeight * .24, end: () => filmST.start + innerHeight * .68, scrub: true }
+      : flips ? { trigger: sec, start: 'top 1%', end: 'top top', scrub: true }
+        : { trigger: sec, start: 'top 85%', end: 'top 35%', scrub: true };
+    G.fromTo(el, { backgroundColor: prev.dataset.sky }, { backgroundColor: sec.dataset.sky, ease: 'none', immediateRender: false, scrollTrigger: st });
+  });
+}
+
+/* ---------- 2. the four: a deck that stacks as you scroll ---------- */
+function deckMotion() {
+  const cards = $$('.card');
+  cards.forEach((card, i) => {
+    const shade = document.createElement('i');
+    shade.className = 'card__shade';
+    shade.setAttribute('aria-hidden', 'true');
+    card.append(shade);
+    const ph = $('.ph', card);
+    G.fromTo(ph, { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: card, start: 'top bottom', end: 'bottom top', scrub: true } });
+    G.from([$('.card__name', card), $('.card__said', card)], {
+      yPercent: 50, autoAlpha: 0, stagger: .08, duration: .8, ease: 'power3.out',
+      scrollTrigger: { trigger: card, start: 'top 70%', toggleActions: 'play none none reverse' },
+    });
+    const next = cards[i + 1];
+    if (!next) return;
+    G.timeline({ scrollTrigger: { trigger: next, start: 'top bottom', end: 'top 30%', scrub: true } })
+      .to(card, { scale: .92, ease: 'none' }, 0)
+      .to(shade, { opacity: .28, ease: 'none' }, 0);
+  });
+}
+
+/* ---------- 3. weigh: every option checked, then set aside with its reason ---------- */
+function weighMotion() {
+  const sec = $('.ch--weigh');
+  const opts = $$('.opt');
+  const pick = $('.opt.is-pick');
+  const out = ['rooftop', 'cafe', 'brunch', 'crawl', 'kebab'].map((id) => $(`.opt[data-id="${id}"]`));
+  G.set($$('.opt__no, .opt__yes'), { autoAlpha: 0 });
+  // The heading and the six options arrive while the chapter scrolls in, so there is never an empty screen;
+  // the pin then holds them while the reasons are stamped on.
+  const enter = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 85%', end: 'top 5%', scrub: TOUCH ? true : .5, invalidateOnRefresh: true } });
+  enter.from('.ch--weigh .ch__head > *', { y: 40, opacity: 0, stagger: .1, duration: .4, ease: 'power2.out' }, 0);
+  enter.from(opts, { y: 90, opacity: 0, rotation: (i) => [-4, 3, -2, 4, -3, 2][i], stagger: .07, duration: .5, ease: 'power2.out' }, .15);
+  const tl = G.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight * .9}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
+  });
+  let t = .1;
+  out.forEach((o) => {
+    tl.fromTo($('.opt__no', o), { autoAlpha: 0, scale: 1.5, rotation: -10 }, { autoAlpha: 1, scale: 1, rotation: -2, duration: .3, ease: 'back.out(2)' }, t);
+    tl.to(o, { '--dim': .62, y: 10, scale: .97, duration: .3 }, t + .1);
+    t += .38;
+  });
+  tl.fromTo($('.opt__yes', pick), { autoAlpha: 0, y: -10 }, { autoAlpha: 1, y: 0, duration: .3, ease: 'power2.out' }, t);
+  tl.to(pick, { scale: 1.06, zIndex: 3, duration: .4, ease: 'power2.out' }, t);
+  tl.to({}, { duration: .55 }); // a beat to read the reasons before the page moves on
+}
+
+/* ---------- 4. the plan: the pick opens up into the whole screen ---------- */
+function planMotion() {
+  const sec = $('.ch--plan');
+  const reveal = $('.reveal');
+  const ph = $('.ph', reveal);
+  const plan = $('.plan');
+  const proxy = { s: .16 };
+  const apply = () => { G.set(reveal, { scale: proxy.s }); G.set(ph, { scale: 1 / proxy.s }); };
+  apply();
+  G.set(reveal, { '--scrim': .7 });
+  const tl = G.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: { trigger: sec, start: 'top top', end: () => `+=${innerHeight}`, pin: true, scrub: SMOOTH, invalidateOnRefresh: true, anticipatePin: 1 },
+  });
+  tl.to(proxy, { s: 1, duration: .8, ease: 'power1.inOut', onUpdate: apply }, 0);
+  tl.to(reveal, { '--scrim': 1, duration: .3 }, 0);
+  tl.from($$('.plan__meta, .plan__then', plan), { y: 30, autoAlpha: 0, duration: .3, ease: 'power2.out' }, .2);
+  tl.from($('.plan__why', plan), { autoAlpha: 0, duration: .2 }, .4);
+  tl.from($$('.why', plan), { x: 40, autoAlpha: 0, stagger: .07, duration: .28, ease: 'power2.out' }, .42);
+  tl.from($$('.plan__trade, .plan__acts', plan), { y: 20, autoAlpha: 0, stagger: .08, duration: .3, ease: 'power2.out' }, .85);
+  tl.to({}, { duration: .6 }); // a beat to read the plan
+}
+
+/* ---------- 6. night: snapshots drift past at different depths ---------- */
+function nightMotion() {
+  const sec = $('.ch--night');
+  $$('.snap').forEach((snap, i) => {
+    const d = Number(snap.dataset.depth) || 1;
+    G.fromTo(snap, { yPercent: 40 * d }, { yPercent: -80 * d, ease: 'none', scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: true } });
+    addAmbient(sec, G.to(snap, { y: -12 - 6 * d, rotation: `+=${i % 2 ? 2.5 : -2.5}`, duration: 2.8 + i * .4, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+  });
+  G.from('.night__title .l', { yPercent: 70, autoAlpha: 0, stagger: .15, ease: 'none', scrollTrigger: { trigger: sec, start: 'top 45%', end: 'top 0%', scrub: true } });
+  // All in: Rohan, Meera, Aanya, Kabir say yes one by one; each yes draws that friend's stroke of the mark.
+  const tl = G.timeline({ scrollTrigger: { trigger: sec, start: 'top 92%', end: 'top 20%', scrub: SMOOTH } });
+  ['r', 'm', 'a', 'k'].forEach((w, i) => {
+    tl.fromTo(`.allin__chip[data-who="${w}"]`, { autoAlpha: 0, scale: .5, y: 14 }, { autoAlpha: 1, scale: 1, y: 0, duration: .3, ease: 'back.out(2.4)' }, i * .45)
+      .fromTo(`.allin__s[data-who="${w}"]`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: .45, ease: 'power1.inOut' }, i * .45 + .05);
+  });
+  tl.fromTo('.allin__pin', { scale: 0, transformOrigin: '50% 50%' }, { scale: 1, duration: .3, ease: 'back.out(3)' }, 1.85)
+    .fromTo('.allin__mark', { rotation: -8 }, { rotation: 0, duration: .5, ease: 'power2.out' }, 1.85);
+}
+
+function sectionReveals() {
+  $$('.ch--try .ch__head > :not(h2), .ch--share .ch__head > :not(h2), .ch--join > :not(h2, .glimpse)').forEach((el) => {
+    G.from(el, { y: 36, opacity: 0, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none reverse' } });
+  });
+  G.from('.decode', { y: 80, rotation: -6, opacity: 0, ease: 'none', scrollTrigger: { trigger: '.share', start: 'top 95%', end: 'top 45%', scrub: true } });
+}
+
+/* ---------- "that's me" + received invitations ---------- */
+let me = null;
+const params = new URLSearchParams(location.search);
+const clean = (v) => (v || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 18);
+const isMe = (v) => /^(me|myself|i)$/i.test(v || '');
+
+// Once you've said which one you are, the rest of the page knows: your thread, your ask, your row in the plan.
+const FOR_YOU = {
+  a: 'For you, Aanya: a veg menu, and nobody had to ask twice.',
+  r: 'For you, Rohan: somewhere none of you had been.',
+  m: 'For you, Meera: about ₹550, and home on the last metro.',
+  k: 'For you, Kabir: it started after 7, like you said.',
+};
+function celebrate(btn, who) {
+  if (navigator.vibrate) try { navigator.vibrate(12); } catch { /* not allowed here */ }
+  if (!MOTION) return;
+  const r = btn.getBoundingClientRect();
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('i');
+    d.className = 'burst';
+    d.dataset.who = who;
+    d.style.left = `${r.left + r.width / 2}px`;
+    d.style.top = `${r.top + r.height / 2}px`;
+    document.body.append(d);
+    const a = (i / 10) * Math.PI * 2 + Math.random() * .4;
+    const dist = 50 + Math.random() * 40;
+    G.fromTo(d, { x: 0, y: 0, scale: 1, opacity: 1 }, {
+      x: Math.cos(a) * dist, y: Math.sin(a) * dist + 20, scale: .3, opacity: 0, duration: .8, ease: 'power3.out',
+      onComplete: () => d.remove(),
+    });
+  }
+}
+function pickMe(who, btn) {
+  me = me === who ? null : who;
+  if (me) document.body.dataset.me = me; else delete document.body.dataset.me;
+  $('.night__you').textContent = me ? FOR_YOU[me] : '';
+  if (me && btn) { celebrate(btn, me); track('picked', { who: ROLE[me] }, false); }
+  $$('.me').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.who === me)));
+  $$('.decode__rows input').forEach((inp) => {
+    const w = inp.closest('li').dataset.who;
+    inp.placeholder = w === me ? 'Your name' : 'Their name';
+    inp.closest('li').classList.toggle('is-me', w === me);
+  });
+  updateShare();
+}
+$$('.me').forEach((b) => b.addEventListener('click', () => pickMe(b.dataset.who, b)));
+
+/* ---------- familiar things: tap them ---------- */
+$$('.thing').forEach((t) => t.addEventListener('click', () => {
+  const on = t.getAttribute('aria-pressed') !== 'true';
+  t.setAttribute('aria-pressed', String(on));
+  if (on) track('touched-thing', { what: t.classList[1].replace('thing--', '') }, false);
+  if (on && navigator.vibrate) try { navigator.vibrate(8); } catch { /* not allowed here */ }
+}));
+
+// The poll: two each, always. Your vote breaks the tie, and it still isn't a plan.
+{
+  const opts = $$('.poll__opt');
+  const foot = $('.poll__foot');
+  const paint = (votes) => {
+    const total = votes.fri + votes.sat;
+    opts.forEach((o) => { $('b', o).textContent = votes[o.dataset.v]; o.style.setProperty('--share', votes[o.dataset.v] / total); });
+    return total;
+  };
+  paint({ fri: 2, sat: 2 });
+  opts.forEach((o) => o.addEventListener('click', () => {
+    const was = o.getAttribute('aria-pressed') === 'true';
+    opts.forEach((x) => x.setAttribute('aria-pressed', String(!was && x === o)));
+    const votes = { fri: 2, sat: 2 };
+    if (!was) votes[o.dataset.v]++;
+    const n = paint(votes);
+    foot.textContent = was ? '4 votes · it’s a tie. Tap to break it.' : `${n} votes · you broke the tie. Still no plan.`;
+  }));
+}
+
+// Meera's voice note: plays as a waveform with its transcript (there's no sound on this page).
+{
+  const vn = $('.vn');
+  const bars = $$('.vn__wave i', vn);
+  const t = $('.vn__t', vn);
+  let timer = 0;
+  vn.addEventListener('click', () => {
+    clearInterval(timer);
+    if (vn.classList.toggle('is-on')) {
+      let n = 0;
+      timer = setInterval(() => {
+        n++;
+        bars.forEach((b, i) => b.classList.toggle('is-past', i < n));
+        t.textContent = `0:0${Math.min(7, Math.floor((n / bars.length) * 7))}`;
+        if (n >= bars.length) { clearInterval(timer); vn.classList.remove('is-on'); t.textContent = '0:07'; }
+      }, 7000 / bars.length / 2.2);
+    } else { bars.forEach((b) => b.classList.remove('is-past')); t.textContent = '0:07'; }
+  });
+}
+$('#send-wa').addEventListener('click', () => track('sent', { how: 'whatsapp' }, false));
+
+function readInvite() {
+  const names = Object.fromEntries(Object.keys(PEOPLE).map((w) => [w, clean(params.get(w))]));
+  const from = params.get('me');
+  if (!Object.values(names).some(Boolean)) return;
+  track('invite-opened', { from: ROLE[from] || 'unknown' });
+  const sender = from && names[from] && !isMe(names[from]) ? names[from] : null;
+  const invite = $('.invite');
+  invite.textContent = sender
+    ? `${sender} sent you this. ${sender} is ${ROLE[from]}. Which one are you?`
+    : `Someone in your group sent you this. Which one are you?`;
+  invite.hidden = false;
+  for (const w of Object.keys(PEOPLE)) {
+    const name = names[w];
+    if (!name) continue;
+    const tag = $(`.card[data-who="${w}"] .card__tag`);
+    tag.textContent = w === from ? (sender ? `${sender} says this is them` : 'The person who sent this says this is them') : `In your group, this is ${isMe(name) ? 'whoever sent it' : name}`;
+    tag.hidden = false;
+    const inp = $(`#n-${w}`);
+    if (!isMe(name)) inp.value = name;
+  }
+  retell(names);
+}
+
+// An invite link retells the whole story with your group's names: the chat, the cards, the plan,
+// the night out. Everything that names someone is rewritten, including text the page writes later
+// (the plan's reasons, talk back, the typing line), so a MutationObserver keeps it going.
+// The roles stay as they are ("the Aanya"), because that is what the page is about.
+const KEEP = '.invite, .ticker, .me__on, .card__tag, .share, .foot, script, style, noscript';
+const PRONOUNS = [
+  [/\bon her way\b/g, 'on their way'], [/\bfor her\b/g, 'for them'], [/\bher limit\b/g, 'their limit'],
+  [/\bunder her\b/g, 'under their'], [/\bhe saw\b/g, 'they saw'], [/\bhe’s\b/g, 'they’re'],
+];
+let renamed = (t) => t; // the same swap, for text written outside main
+function retell(names) {
+  const swap = {};
+  for (const w of Object.keys(PEOPLE)) if (names[w] && !isMe(names[w])) swap[PEOPLE[w].name] = names[w];
+  if (!Object.keys(swap).length) return;
+  const re = new RegExp(`\\b(${Object.keys(swap).join('|')})\\b`, 'g');
+  const done = new WeakMap(); // text node -> what we wrote, so a name is never swapped twice
+  const fix = (node) => {
+    if (done.get(node) === node.data) return;
+    const el = node.parentElement;
+    if (!el || el.closest(KEEP)) return;
+    let t = node.data.replace(re, (m) => swap[m]);
+    for (const [p, q] of PRONOUNS) t = t.replace(p, q);
+    if (t !== node.data) node.data = t;
+    done.set(node, node.data);
+  };
+  const walk = (root) => {
+    if (root.nodeType === 3) return fix(root);
+    if (root.nodeType !== 1) return;
+    const it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n = it.nextNode(); n; n = it.nextNode()) fix(n);
+  };
+  renamed = (t) => t.replace(re, (m) => swap[m]);
+  const main = $('main');
+  walk(main);
+  for (const w of Object.keys(PEOPLE)) {
+    const n = names[w];
+    if (!n || isMe(n)) continue;
+    const ini = [...n][0].toUpperCase(); // their initial in every avatar
+    $$(`.toast[data-who="${w}"] > i, .thread__faces i[data-who="${w}"]`).forEach((i) => { i.textContent = ini; });
+    document.body.style.setProperty(`--ini-${w}`, JSON.stringify(ini));
+  }
+  new MutationObserver((list) => list.forEach((m) => {
+    if (m.type === 'characterData') fix(m.target); else m.addedNodes.forEach(walk);
+  })).observe(main, { childList: true, subtree: true, characterData: true });
+  // Keep the disclosure honest: the names are theirs, the words are still the example.
+  const note = document.createElement('span');
+  note.textContent = 'Your group’s names come from the link you were sent; what they “say” here is still the example, not their messages.';
+  $('.foot__small span').after(' ', note);
+}
+
+/* ---------- 7. share ---------- */
+function shareLink(names) {
+  const base = /^https?:$/.test(location.protocol) ? location.href.split(/[?#]/)[0] : 'https://planic.example/';
+  const q = new URLSearchParams();
+  for (const [w, n] of Object.entries(names)) if (n || w === me) q.set(w, n && !isMe(n) ? n : 'me');
+  if (me) q.set('me', me);
+  const s = q.toString();
+  return s ? `${base}?${s}` : base;
+}
+function shareText(names) {
+  const lines = [];
+  for (const w of Object.keys(PEOPLE)) {
+    const n = names[w];
+    if (w === me) lines.unshift(`${n && !isMe(n) ? `${n} here. ` : ''}I’m ${ROLE[w]} (“${SAID[w]}”).`);
+    else if (n && !isMe(n)) lines.push(`${n} is ${ROLE[w]}.`);
+  }
+  if (!lines.length) return 'Every group chat has these four. Which one are you?';
+  return `Our group chat, decoded. ${lines.join(' ')} Which one are you?`;
+}
+function updateShare() {
+  const names = Object.fromEntries($$('.decode__rows li').map((li) => [li.dataset.who, clean($('input', li).value)]));
+  const text = shareText(names);
+  const link = shareLink(names);
+  $('.send__preview').textContent = text;
+  $('#send-wa').href = `https://wa.me/?text=${encodeURIComponent(`${text} ${link}`)}`;
+  return { text, link };
+}
+$$('.decode__rows input').forEach((inp) => inp.addEventListener('input', updateShare));
+$('.decode').addEventListener('submit', (e) => e.preventDefault());
+const shareBtn = $('#send-share');
+if (navigator.share) {
+  shareBtn.hidden = false;
+  shareBtn.addEventListener('click', () => { track('sent', { how: 'share' }, false); const { text, link } = updateShare(); navigator.share({ text, url: link }).catch(() => {}); });
+}
+$('#send-copy').addEventListener('click', async (e) => {
+  const btn = e.currentTarget; // currentTarget is gone after the await
+  const { text, link } = updateShare();
+  track('sent', { how: 'copy' }, false);
+  try { await navigator.clipboard.writeText(`${text} ${link}`); btn.textContent = 'Copied'; }
+  catch { btn.textContent = 'Couldn’t copy'; }
+  setTimeout(() => { btn.textContent = 'Copy link'; }, 2200);
+});
+
+/* ---------- the decoded card as a story-sized picture (1080 x 1920) ---------- */
+const TONES = { a: '#FF6B61', r: '#B8AEFF', m: '#F5C76B', k: '#9ED9B8' };
+async function drawCard() {
+  const W = 1080, H = 1920;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const D = '"Bricolage Grotesque", system-ui, sans-serif';
+  const B = '"Instrument Sans", system-ui, sans-serif';
+  try { await Promise.all([document.fonts.load(`800 120px ${D}`), document.fonts.load(`500 40px ${B}`)]); } catch { /* system fonts then */ }
+  x.fillStyle = '#111216'; x.fillRect(0, 0, W, H);
+  // four soft lights, one per friend
+  [['a', 120, 260], ['r', 980, 520], ['m', 140, 1500], ['k', 960, 1760]].forEach(([w, cx, cy]) => {
+    const g = x.createRadialGradient(cx, cy, 0, cx, cy, 520);
+    g.addColorStop(0, `${TONES[w]}55`); g.addColorStop(1, `${TONES[w]}00`);
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+  });
+  // the four threads, coming together at the bottom
+  ['a', 'r', 'm', 'k'].forEach((w, i) => {
+    x.strokeStyle = TONES[w]; x.lineWidth = 6; x.lineCap = 'round';
+    x.beginPath();
+    for (let y = 0; y <= H; y += 20) {
+      const s = Math.max(0, 1 - y / (H * .92));
+      const px = 56 + (i - 1.5) * 14 * s + Math.sin(y / 90 + i * 2) * 16 * s;
+      if (y) x.lineTo(px, y); else x.moveTo(px, y);
+    }
+    x.stroke();
+  });
+  // mark: the chat bubble that is also a pin (same paths as favicon.svg), then planic!!
+  x.save(); x.translate(110, 108); x.scale(2.1, 2.1);
+  x.lineWidth = 3; x.lineCap = 'round'; x.lineJoin = 'round';
+  [['a', 'M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12'], ['r', 'M3 9 A 7 7 0 0 1 10 2 H 14.5'],
+    ['m', 'M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12'], ['k', 'M29 15 V 16.5 A 7 7 0 0 1 22 23.5 H 19.4 L 16 29.5']].forEach(([w, d]) => {
+    x.strokeStyle = TONES[w]; x.stroke(new Path2D(d));
+  });
+  x.fillStyle = '#FBFBFA'; x.beginPath(); x.arc(16, 12.8, 3.6, 0, 7); x.fill();
+  x.restore();
+  x.fillStyle = '#FBFBFA'; x.font = `800 50px ${D}`; x.textBaseline = 'middle';
+  x.fillText('planic', 192, 142);
+  x.fillStyle = '#FF6B61'; x.fillText('!!', 192 + x.measureText('planic').width + 2, 142);
+  // title
+  x.textBaseline = 'alphabetic';
+  x.font = `800 124px ${D}`; x.fillStyle = '#FBFBFA';
+  x.fillText('Our group chat,', 110, 400);
+  x.fillStyle = '#FF6B61'; x.fillText('decoded.', 110, 520);
+  // the four
+  const names = Object.fromEntries($$('.decode__rows li').map((li) => [li.dataset.who, clean($('input', li).value)]));
+  ['a', 'r', 'm', 'k'].forEach((w, i) => {
+    const top = 640 + i * 250;
+    x.fillStyle = TONES[w];
+    x.beginPath(); x.roundRect(110, top, 860, 220, 36); x.fill();
+    x.fillStyle = '#111216';
+    x.font = `600 34px ${B}`;
+    x.fillText($(`.decode__rows li[data-who="${w}"] .decode__role`).textContent, 150, top + 62);
+    const n = names[w] && !isMe(names[w]) ? names[w] : (w === me ? 'Me' : '???');
+    const label = n + (w === me && n !== 'Me' ? ' (me)' : '');
+    let size = 92; // long names shrink to fit the card
+    do { x.font = `800 ${size}px ${D}`; size -= 4; } while (x.measureText(label).width > 780 && size > 44);
+    x.fillText(label, 150, top + 156);
+    x.font = `500 30px ${B}`; x.globalAlpha = .7;
+    x.fillText(`“${SAID[w]}”`, 150, top + 198); x.globalAlpha = 1;
+  });
+  x.fillStyle = '#FBFBFA'; x.font = `800 76px ${D}`;
+  x.fillText('Which one are you?', 110, 1720);
+  x.font = `500 34px ${B}`; x.fillStyle = 'rgba(251,251,250,.7)';
+  x.fillText('Planic · plans for the group chat · early access', 110, 1790);
+  return new Promise((res) => c.toBlob(res, 'image/png'));
+}
+const cardBtn = $('#send-card');
+// Only the claude.ai preview has window.claude; on the real site this stays null and the browser saves directly.
+const hostDownloads = window.claude && window.claude.use ? window.claude.use('downloads').catch(() => null) : Promise.resolve(null);
+if (HTMLCanvasElement.prototype.toBlob && CanvasRenderingContext2D.prototype.roundRect) {
+  cardBtn.hidden = false;
+  cardBtn.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    track('sent', { how: 'image' }, false);
+    btn.textContent = 'Making it…';
+    try {
+      const blob = await drawCard();
+      const file = new File([blob], 'our-group-chat-decoded.png', { type: 'image/png' });
+      // Inside a claude.ai preview the page can't download by itself; the viewer's app offers the save instead.
+      const host = await hostDownloads;
+      if (host) {
+        try { await host.save({ filename: file.name, data: blob }); }
+        catch (err) { btn.textContent = err && err.code === 'declined' ? 'Save as image' : 'Couldn’t save it here'; setTimeout(() => { btn.textContent = 'Save as image'; }, 2400); return; }
+      } else if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: updateShare().text }).catch(() => {});
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = file.name;
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      }
+      btn.textContent = 'Saved ✓';
+    } catch { btn.textContent = 'Couldn’t make it'; }
+    setTimeout(() => { btn.textContent = 'Save as image'; }, 2400);
+  });
+}
+
+/* ---------- 5. your turn: talk back ---------- */
+const asksForm = $('.asks');
+const said = $('.answer__said');
+const card = $('.answer__card');
+const resetBtn = $('.reset');
+const peek = $('.peek');
+peek.addEventListener('click', () => card.scrollIntoView({ behavior: MOTION ? 'smooth' : 'auto', block: 'center' }));
+// The peek bar is only for when the answer is off screen; it steps aside once the card itself is in view.
+new IntersectionObserver(([e]) => peek.classList.toggle('is-near', e.isIntersecting), { threshold: .35 }).observe(card);
+let asks = { ...DEFAULT_ASKS };
+function readAsks() {
+  const v = (n) => $(`.asks input[name="${n}"]:checked`).value;
+  return { food: v('food'), novelty: v('novelty'), budget: Number(v('budget')), free: Number(v('free')) };
+}
+function writeAsks(a) {
+  for (const [k, val] of Object.entries(a)) {
+    const inp = $(`.asks input[name="${k}"][value="${val}"]`);
+    if (inp) inp.checked = true;
+  }
+}
+function renderAnswer(r, text) {
+  $('.answer__title', card).textContent = r.plan ? r.plan.title : NO_PLAN.title;
+  $('.answer__meta', card).textContent = r.plan ? r.plan.meta : NO_PLAN.meta;
+  $('.answer__why', card).innerHTML = whyRowsHTML(r);
+  $('.answer__trade', card).innerHTML = r.plan ? tradeHTML(r.plan) : `<ul class="bends">${bendsHTML(r, { interactive: false })}</ul>`;
+  card.classList.toggle('is-none', !r.plan);
+  said.textContent = text;
+  resetBtn.hidden = sameAsks(asks, DEFAULT_ASKS);
+  peek.hidden = false;
+  $('.peek__title', peek).textContent = r.plan ? r.plan.title : NO_PLAN.title;
+  $('.peek__said', peek).textContent = text;
+  peek.classList.toggle('is-none', !r.plan);
+  if (MOTION) G.fromTo([...card.children], { y: 14, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: .05, duration: .45, ease: 'power2.out', overwrite: true });
+}
+asksForm.addEventListener('change', (e) => {
+  if (e.isTrusted) track('talked-back');
+  const prev = asks;
+  asks = readAsks();
+  const ex = explainChange(prev, asks);
+  renderAnswer(evaluate(asks), ex.text || 'Nothing changed.');
+});
+resetBtn.addEventListener('click', () => {
+  const prev = asks;
+  asks = { ...DEFAULT_ASKS };
+  writeAsks(asks);
+  renderAnswer(evaluate(asks), explainChange(prev, asks, { reset: true }).text);
+});
+
+// The twist. The first time you reach your turn, before you've touched anything, Meera's budget
+// drops, the way a real group's plan breaks on Friday. Planic won't guess: it says nothing fits
+// and what would. The note comes in like the messages in the opening film did.
+function twist() {
+  const ans = $('.answer');
+  let done = false;
+  let seen = false; // only while the answer is on screen; scrolling straight past saves it for later
+  const io = new IntersectionObserver(([e]) => {
+    seen = e.isIntersecting;
+    if (!seen || done) return;
+    if (!sameAsks(asks, DEFAULT_ASKS)) { done = true; io.disconnect(); return; } // they're already talking back
+    setTimeout(() => {
+      if (done || !seen || !sameAsks(asks, DEFAULT_ASKS)) return;
+      done = true;
+      io.disconnect();
+      const name = renamed('Meera');
+      const note = document.createElement('div');
+      note.className = 'twist';
+      note.dataset.who = 'm';
+      note.setAttribute('aria-hidden', 'true'); // the answer line below says it out loud
+      note.innerHTML = '<i></i><span class="toast__top"><b></b> · the usual four · now</span><span class="toast__msg">sorry guys, ₹400 max this week 🙈</span>';
+      $('i', note).textContent = [...name][0].toUpperCase();
+      $('b', note).textContent = name;
+      document.body.append(note);
+      requestAnimationFrame(() => note.classList.add('on'));
+      setTimeout(() => { note.classList.remove('on'); setTimeout(() => note.remove(), 600); }, 5200);
+      if (navigator.vibrate) try { navigator.vibrate([10, 60, 10]); } catch { /* not allowed here */ }
+      const meera = $('.ask[data-who="m"]');
+      meera.classList.add('is-twist');
+      setTimeout(() => meera.classList.remove('is-twist'), 2400);
+      track('twist-seen');
+      writeAsks({ budget: 400 });
+      asksForm.dispatchEvent(new Event('change'));
+    }, MOTION ? 900 : 300);
+  }, { threshold: .55 });
+  io.observe(ans);
+}
+twist();
+
+/* ---------- 8. join: saved by Netlify Forms on the hosted page; the preview only checks the address ---------- */
+const join = $('.join__form');
+join.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('#email');
+  const msg = $('.join__msg');
+  const btn = $('button[type="submit"]', join);
+  const ok = email.checkValidity() && email.value.trim();
+  join.classList.toggle('is-bad', !ok);
+  if (!ok) { msg.textContent = 'That email doesn’t look right. Check it and try again.'; return; }
+  if (!SITE) {
+    msg.textContent = 'Prototype only: this form doesn’t send anything yet. On the live site you’d be on the list now.';
+    welcome();
+    ask();
+    return;
+  }
+  btn.disabled = true;
+  msg.textContent = 'Saving…';
+  try {
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(join)).toString(),
+    });
+    if (!res.ok) throw new Error(res.status);
+    msg.textContent = 'You’re on the list. We’ll email you when the first plans open.';
+    email.value = '';
+    track('signed-up', { me: me ? ROLE[me] : 'not picked' });
+    welcome();
+    ask();
+  } catch {
+    msg.textContent = 'That didn’t save. Check your connection and try again.';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// After you join, one optional tap: what does your group argue about? Anonymous, saved as its own form.
+const argue = $('.argue');
+function ask() { argue.hidden = false; }
+$$('button', argue).forEach((b) => b.addEventListener('click', async () => {
+  $$('button', argue).forEach((x) => { x.setAttribute('aria-pressed', String(x === b)); x.disabled = true; });
+  const out = $('.argue__msg', argue);
+  track('argues-about', { what: b.value });
+  if (!SITE) { out.textContent = 'Thanks. (Prototype: not saved.)'; return; }
+  try {
+    const res = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ 'form-name': 'group-argues', argue: b.value, me: me ? ROLE[me] : '' }).toString() });
+    if (!res.ok) throw new Error(res.status);
+    out.textContent = b.value === 'nobody' ? 'Thanks. That’s exactly who Planic is for.' : 'Thanks. That helps us build the right thing first.';
+  } catch {
+    out.textContent = 'That didn’t save. Tap again.';
+    $$('button', argue).forEach((x) => { x.disabled = false; });
+  }
+}));
+
+// A small hello from the group when you join (decoration only; the message above says what really happened).
+function welcome() {
+  const box = $('.join__hello');
+  if (box.childElementCount) return;
+  [['k', 'Kabir', 'welcome to the group 👋'], ['m', 'Meera', 'finally someone else plans'], ['a', 'Aanya', 'is there veg tho']].forEach(([who, name, text], i) => {
+    const b = document.createElement('p');
+    b.className = 'hello';
+    b.dataset.who = who;
+    b.innerHTML = `<b>${name}</b> ${text}`;
+    box.append(b);
+    if (MOTION) G.from(b, { y: 18, scale: .8, opacity: 0, duration: .5, delay: .25 + i * .55, ease: 'back.out(2)' });
+  });
+  if (navigator.vibrate) try { navigator.vibrate([10, 60, 10]); } catch { /* not allowed here */ }
+}
+
+// The glimpse: when it comes into view, Planic's answer arrives in the chat and the fourth friend joins.
+function glimpse() {
+  const fig = $('.glimpse');
+  if (!fig || !MOTION) return;
+  const items = $$('.gb', fig);
+  const count = $('.gp__count', fig);
+  const tl = G.timeline({ paused: true });
+  tl.from(fig, { y: 40, autoAlpha: 0, duration: .7, ease: 'power3.out' })
+    .from(items, { y: 16, scale: .9, autoAlpha: 0, stagger: .45, duration: .5, ease: 'back.out(2)', transformOrigin: '0% 100%' }, .3)
+    .add(() => { count.textContent = '4'; }, '+=.9')
+    .fromTo(count, { scale: 1 }, { scale: 1.6, duration: .18, yoyo: true, repeat: 1, ease: 'power2.out' }, '<');
+  ST.create({ trigger: fig, start: 'top 85%', once: true, onEnter: () => tl.play() });
+}
+
+/* ---------- the tab: when you look away, the group chat keeps going ---------- */
+{
+  const title = document.title;
+  let away = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { away = Math.min(away + 3, 47); document.title = `(${away}) so… where? · Planic`; }
+    else document.title = title;
+  });
+}
+
+/* ---------- 4b. the plan's actions ---------- */
+const acceptBtn = $('.act--accept');
+acceptBtn.addEventListener('click', () => {
+  const on = acceptBtn.getAttribute('aria-pressed') !== 'true';
+  acceptBtn.setAttribute('aria-pressed', String(on));
+  acceptBtn.textContent = on ? 'Accepted ✓' : 'Accept';
+  if (on && navigator.vibrate) try { navigator.vibrate(12); } catch { /* not allowed here */ }
+  $('.plan__note').textContent = on ? 'Accepted. In the app, all four would see you’re in.' : '';
+  // all four dots light up in turn: everyone sees it
+  if (on && MOTION) G.fromTo($$('.plan .why__dot'), { scale: 1 }, { scale: 1.9, duration: .22, yoyo: true, repeat: 1, stagger: .12, ease: 'power2.out' });
+});
+
+/* ---------- in-page links glide instead of jumping ---------- */
+$$('a[href^="#"]').forEach((a) => a.addEventListener('click', (e) => {
+  const href = a.getAttribute('href');
+  if (!/^#[\w-]+$/.test(href)) return; // e.g. the WhatsApp link, whose href is set later
+  const t = document.getElementById(href.slice(1));
+  if (!t) return;
+  e.preventDefault();
+  // A pinned chapter sits at its pin's end once you've scrolled past it, so aim for its spacer.
+  const box = t.parentElement.classList.contains('pin-spacer') ? t.parentElement : t;
+  const y = t.id === 'film' ? 0 : box.getBoundingClientRect().top + scrollY - (t.id === 'four' ? 8 : 0);
+  scrollTo({ top: y, behavior: MOTION ? 'smooth' : 'auto' });
+  t.setAttribute('tabindex', '-1');
+  t.focus({ preventScroll: true });
+}));
+
+/* ---------- start ---------- */
+readInvite();
+updateShare();
+{ // the film's still frame, framed for the screen, even when the film itself doesn't play
+  const v = $('.film__video');
+  if (innerWidth / innerHeight < .8) v.poster = v.dataset.posterTall;
+}
+
+if (MOTION) {
+  G.registerPlugin(ST);
+  ST.config({ ignoreMobileResize: true });
+  pauseBtn.hidden = false;
+  pauseBtn.addEventListener('click', () => {
+    still = !still;
+    root.classList.toggle('still', still);
+    pauseBtn.setAttribute('aria-pressed', String(still));
+    const label = still ? 'Play motion' : 'Pause motion';
+    pauseBtn.setAttribute('aria-label', label);
+    pauseBtn.title = label;
+    ambient.forEach((a) => a.tweens.forEach((t) => (still || a.el.classList.contains('off') ? t.pause() : t.play())));
+  });
+  splitHeads(G);
+  filmMotion();
+  chatMotion();
+  tickers();
+  deckMotion();
+  weighMotion();
+  planMotion();
+  nightMotion();
+  sectionReveals();
+  pointerLife(G);
+  sky(); // last: its triggers sit below every pinned chapter, so they must be measured after the pins
+  threads(G, ST, addAmbient);
+  liveWords(G, addAmbient);
+  photoDump(G);
+  glimpse();
+  // Photos load lazily; re-measure once they arrive so pinned lengths stay right.
+  if (document.readyState === 'complete') ST.refresh(); else addEventListener('load', () => ST.refresh());
+}
+</script>
+<a class="skip" href="#main">Skip to content</a>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__ring"><span class="cursor__label"></span></span><span class="cursor__dot"></span></div>
+
+  <header class="nav">
+    <span class="nav__bg" aria-hidden="true"></span>
+    <a class="wordmark" href="#film" aria-label="Planic, back to top">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path class="mark__seg" d="M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12" stroke="#FF6B61" style="--off:-2px 1px"/><path class="mark__seg" d="M3 9 A 7 7 0 0 1 10 2 H 14.5" stroke="#B8AEFF" style="--off:-2px -2px"/><path class="mark__seg" d="M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12" stroke="#F5C76B" style="--off:2px -2px"/><path class="mark__seg" d="M29 15 V 16.5 A 7 7 0 0 1 22 23.5 H 19.4 L 16 29.5" stroke="#9ED9B8" style="--off:2px 1px"/><circle class="mark__dot" cx="16" cy="12.8" r="3.6" fill="currentColor"/></svg>
+      <span class="wordmark__name">planic<b>!!</b></span>
+    </a>
+    <div class="nav__mid">
+      <p class="clock" aria-hidden="true"><span class="clock__day">Wed</span> <span class="clock__time">4:11 PM</span></p>
+      <button type="button" class="pause" aria-pressed="false" aria-label="Pause motion" title="Pause motion" hidden><span class="pause__icon" aria-hidden="true"></span></button>
+    </div>
+    <a class="nav__cta" href="#early-access"><span class="nav__cta-long">Join early access</span><span class="nav__cta-short">Join</span></a>
+  </header>
+
+  <main id="main">
+
+    <!-- 0. The film: phones lighting up, until the chat takes over -->
+    <section class="ch ch--film" id="film" data-sky="#111216" data-ink="light" data-day="Wed" data-time="4:11 PM" aria-label="Opening">
+      <div class="film">
+        <video class="film__video" muted playsinline loop preload="none" poster="film/poster-wide.webp" aria-hidden="true" tabindex="-1" data-wide="film/open-wide.mp4" data-tall="film/open-tall.mp4" data-poster-wide="film/poster-wide.webp" data-poster-tall="film/poster-tall.webp"></video>
+        <div class="film__shade" aria-hidden="true"></div>
+        <ol class="toasts" aria-hidden="true">
+          <li class="toast" data-who="r" data-at="0.5"><i>R</i><span class="toast__top"><b>Rohan</b> · the usual four</span><span class="toast__msg">ok so what are we doing friday?</span></li>
+          <li class="toast" data-who="a" data-at="3.0"><i>A</i><span class="toast__top"><b>Aanya</b> · the usual four</span><span class="toast__msg">food! but veg options pls</span></li>
+          <li class="toast" data-who="r" data-at="5.3"><i>R</i><span class="toast__top"><b>Rohan</b> · the usual four</span><span class="toast__msg">somewhere new, not the usual café</span></li>
+          <li class="toast" data-who="m" data-at="7.7"><i>M</i><span class="toast__top"><b>Meera</b> · the usual four</span><span class="toast__msg">₹600 max. coming from Noida</span></li>
+          <li class="toast" data-who="k" data-at="10.0"><i>K</i><span class="toast__top"><b>Kabir</b> · the usual four</span><span class="toast__msg">anything works, free after 7</span></li>
+          <li class="toast" data-who="a" data-at="12.2"><i>A</i><span class="toast__top"><b>Aanya</b> · the usual four</span><span class="toast__msg">brunch saturday instead?</span></li>
+          <li class="toast" data-who="k" data-at="14.7"><i>K</i><span class="toast__top"><b>Kabir</b> · the usual four</span><span class="toast__msg">so… where?</span></li>
+        </ol>
+        <p class="film__one" aria-hidden="true"><span class="film__one-who"><i data-who="r">R</i>Rohan · the usual four</span><span class="film__one-msg" data-who="r">ok so what are we doing friday?</span></p>
+        <div class="film__copy">
+          <p class="film__line">It always starts with <span>one message.</span></p>
+          <a class="film__cue" href="#top">Then everyone has an opinion <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. The hook: the group chat goes off -->
+    <section class="ch ch--chat" id="top" data-sky="#FBFBFA" data-ink="dark" data-day="Wed" data-time="4:12 PM" aria-labelledby="open-title">
+      <div class="chat-stage">
+        <div class="open">
+          <p class="invite" hidden></p>
+          <p class="kicker">Early access · In development · New Delhi</p>
+          <h1 id="open-title" class="open__title"><span class="w">Every</span> <span class="w">group</span> <span class="w">chat</span> <span class="w">has</span> <span class="w">these</span> <span class="w w--four">four.</span></h1>
+          <p class="lede">Planic is being built to turn all of it into one plan, with reasons.</p>
+          <div class="open__cta">
+            <a class="btn btn--coral" href="#early-access">Join early access</a>
+            <a class="btn btn--ghost" href="#four">Which one are you? <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+
+        <div class="thread" role="group" aria-label="Illustrative group chat: the usual four, planning Friday">
+          <div class="thread__head">
+            <span class="thread__faces" aria-hidden="true"><i data-who="r">R</i><i data-who="a">A</i><i data-who="m">M</i><i data-who="k">K</i></span>
+            <span class="thread__name">the usual four</span>
+            <span class="thread__unread" aria-hidden="true"><b class="unread">47</b> unread</span>
+          </div>
+          <div class="thread__win">
+            <ol class="thread__list">
+              <li class="day">Wednesday 4:12 PM</li>
+              <li class="b" data-who="r"><span class="b__who">Rohan</span><p>ok so what are we doing friday?</p></li>
+              <li class="b" data-who="a"><span class="b__who">Aanya</span><p>food! but <mark>veg options pls</mark></p></li>
+              <li class="b" data-who="r"><span class="b__who">Rohan</span><p><mark>somewhere new</mark>, not the usual café again</p></li>
+              <li class="b b--photo" data-who="r"><span class="b__who">Rohan</span><figure class="ph" data-ph="rooftop" data-label="rooftop at night"><img src="img/o-rooftop.webp" alt="A rooftop restaurant at night, warm lamps over low tables and the city lights behind" decoding="async" /></figure><p>this place??</p></li>
+              <li class="b b--voice" data-who="m"><span class="b__who">Meera</span><p><button type="button" class="vn" aria-label="Meera’s voice note, 7 seconds. The transcript is below."><i class="vn__play" aria-hidden="true"></i><span class="vn__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="vn__t" aria-hidden="true">0:07</span></button><span class="vn__text">“₹2,000 each?? <mark>₹600 max</mark> yaar. and I’m <mark>coming from Noida</mark>”</span></p></li>
+              <li class="b b--poll" data-who="a"><span class="b__who">Aanya</span><p><span class="poll" role="group" aria-label="Aanya’s poll: Friday night or Saturday brunch?"><span class="poll__q">Friday night or Saturday brunch?</span><button type="button" class="poll__opt" data-v="fri" aria-pressed="false"><span>Friday night</span><b>2</b></button><button type="button" class="poll__opt" data-v="sat" aria-pressed="false"><span>Saturday brunch</span><b>2</b></button><span class="poll__foot" aria-live="polite">4 votes · it’s a tie. Tap to break it.</span></span></p></li>
+              <li class="b" data-who="k"><span class="b__who">Kabir</span><p>friday pls. <mark>anything works, free after 7</mark></p></li>
+              <li class="day">Thursday 11:48 PM</li>
+              <li class="b" data-who="r"><span class="b__who">Rohan</span><p>guys</p></li>
+              <li class="b b--last" data-who="k"><span class="b__who">Kabir</span><p>so… where?</p><span class="b__seen">Seen by Rohan, Aanya, Meera · no reply</span></li>
+            </ol>
+          </div>
+          <p class="thread__typing" aria-hidden="true"><span class="typing__who">Meera</span> is typing<span class="dots"><i></i><i></i><i></i></span></p>
+        </div>
+
+        <div class="floaters" aria-hidden="true">
+          <div class="floater floater--1" data-who="m"><figure class="ph" data-ph="p-m" data-label="Meera, on her way"><img src="img/p-m.webp" alt="A woman with a bag walking down a long train platform" decoding="async" /></figure></div>
+          <div class="floater floater--2" data-who="a"><figure class="ph" data-ph="n-momos" data-label="momos?"><img src="img/n-momos.webp" alt="Several hands with chopsticks reaching into one steamer of dumplings" decoding="async" /></figure></div>
+        </div>
+
+        <p class="tally"><span><b class="count" data-to="47">47</b> messages</span><span><b class="count" data-to="4">4</b> different asks</span><span><b class="count count--zero">0</b> plans</span></p>
+      </div>
+    </section>
+
+
+    <div class="ticker" aria-hidden="true" data-dir="-1">
+      <p class="ticker__row"><span data-who="r">somewhere new!!</span><span data-who="m">₹600 max</span><span data-who="a">veg options pls</span><span data-who="k">anything works</span><span data-who="r">not the usual café again</span><span data-who="m">coming from Noida</span><span data-who="k">free after 7</span><span data-who="a">brunch instead?</span><span data-who="r">so… where?</span></p>
+    </div>
+
+    <!-- 2. Meet the four. Which one are you? -->
+    <section class="ch ch--four" id="four" data-sky="#F7F4EE" data-ink="dark" data-day="Fri" data-time="10:05 AM" aria-labelledby="four-title">
+      <header class="ch__head">
+        <p class="kicker">Friday, 10:05 AM. Still no plan.</p>
+        <h2 id="four-title">You know all four. <span class="soft">You’re probably one of them.</span></h2>
+      </header>
+      <ol class="deck">
+        <li class="card" data-who="a" style="--i:0">
+          <figure class="ph" data-ph="p-a" data-label="what’s veg here?"><img src="img/p-a.webp" alt="Hands reaching across a table of brass bowls of curry and rotis" decoding="async" /></figure>
+          <div class="card__body">
+            <p class="card__role">The one with the food rule</p>
+            <p class="card__name">Aanya</p>
+            <p class="card__said">“veg options pls”</p>
+            <button type="button" class="thing thing--menu" aria-pressed="false" aria-label="The menu. Show only what Aanya can eat.">
+              <span class="thing__head">Menu</span>
+              <span class="dish"><i class="dot dot--veg"></i>Paneer tikka<b>₹320</b></span>
+              <span class="dish dish--nv"><i class="dot dot--nv"></i>Butter chicken<b>₹420</b></span>
+              <span class="dish"><i class="dot dot--veg"></i>Dal makhani<b>₹280</b></span>
+              <span class="dish dish--nv"><i class="dot dot--nv"></i>Mutton seekh<b>₹460</b></span>
+              <span class="thing__hint"><span class="off">tap: what can she eat?</span><span class="on">two things. she’ll take it.</span></span>
+            </button>
+            <button type="button" class="me" data-who="a" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Aanya</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+        <li class="card" data-who="r" style="--i:1">
+          <figure class="ph" data-ph="p-r" data-label="somewhere new tonight"><img src="img/p-r.webp" alt="Two friends walking down a lit-up street at night, one arm around the other, seen from behind" decoding="async" /></figure>
+          <div class="card__body">
+            <p class="card__role">The one who wants somewhere new</p>
+            <p class="card__name">Rohan</p>
+            <p class="card__said">“not the usual café again”</p>
+            <button type="button" class="thing thing--been" aria-pressed="false" aria-label="Places Rohan has been. Find somewhere new.">
+              <span class="thing__head">Been there</span>
+              <span class="been">The usual café<b>×23</b></span>
+              <span class="been">Corner momos<b>×11</b></span>
+              <span class="been">That rooftop<b>×4</b></span>
+              <span class="been been--new">Somewhere new<b>?</b></span>
+              <span class="thing__hint"><span class="off">tap: the usual again?</span><span class="on">veto. obviously.</span></span>
+            </button>
+            <button type="button" class="me" data-who="r" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Rohan</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+        <li class="card" data-who="m" style="--i:2">
+          <figure class="ph" data-ph="p-m" data-label="the long way in"><img src="img/p-m.webp" alt="A woman with a bag walking down a long train platform, seen from behind" decoding="async" /></figure>
+          <div class="card__body">
+            <p class="card__role">The one on a budget, coming from far</p>
+            <p class="card__name">Meera</p>
+            <p class="card__said">“₹600 max, coming from Noida”</p>
+            <button type="button" class="thing thing--metro" aria-pressed="false" aria-label="Meera’s metro ride from Noida Sector 18 to Hauz Khas, one change, about 45 minutes.">
+              <span class="thing__head">Sector 18 → Hauz Khas</span>
+              <span class="line" aria-hidden="true"><i class="seg seg--blue"></i><i class="seg seg--magenta"></i><i class="stop"></i><i class="stop stop--x"></i><i class="stop"></i><i class="train"></i></span>
+              <span class="stops" aria-hidden="true"><span>Noida 18</span><span>Botanical Garden</span><span>Hauz Khas</span></span>
+              <span class="thing__hint"><span class="off">tap: ride with her</span><span class="on">1 change · about 45 min. each way.</span></span>
+            </button>
+            <button type="button" class="me" data-who="m" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Meera</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+        <li class="card" data-who="k" style="--i:3">
+          <figure class="ph" data-ph="p-k" data-label="“anything works”"><img src="img/p-k.webp" alt="Someone at work typing a reply on their phone" decoding="async" /></figure>
+          <div class="card__body">
+            <p class="card__role">The “anything works” one</p>
+            <p class="card__name">Kabir</p>
+            <p class="card__said">“anything works, free after 7”</p>
+            <button type="button" class="thing thing--ping" aria-pressed="false" aria-label="Kabir’s phone. His meeting ends at 6:45. Log him off.">
+              <span class="ping"><i aria-hidden="true">📅</i><b>Calendar</b><em>now</em><span>Weekly sync extended till 6:45 PM</span></span>
+              <span class="ping"><i aria-hidden="true">💬</i><b>the usual four</b><em>2m</em><span>Rohan: guys</span></span>
+              <span class="ping ping--off"><i aria-hidden="true">💻</i><b>Laptop</b><em>7:02</em><span>Shut. He’s free. Anything works.</span></span>
+              <span class="thing__hint"><span class="off">tap: is he out yet?</span><span class="on">out at 7:02.</span></span>
+            </button>
+            <button type="button" class="me" data-who="k" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Kabir</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 3. Planic weighs every option against all four -->
+    <section class="ch ch--weigh" id="weigh" data-sky="#F6E7CF" data-ink="dark" data-day="Fri" data-time="2:30 PM" aria-labelledby="weigh-title">
+      <div class="weigh-stage">
+        <header class="ch__head">
+          <p class="kicker">Friday, 2:30 PM. Planic reads the chat.</p>
+          <h2 id="weigh-title">Every option, checked against all four.</h2>
+        </header>
+        <ul class="opts">
+          <li class="opt" data-id="rooftop" style="--n:0"><figure class="ph" data-ph="o-rooftop" data-label="rooftop at night"><img src="img/o-rooftop.webp" alt="A rooftop restaurant at night, warm lamps over low tables and the city lights behind" decoding="async" /></figure><p class="opt__name">Rooftop lounge</p><p class="opt__price">₹2,000+ each</p><p class="opt__no" data-who="m"><i aria-hidden="true">M</i>₹2,000+ each, over Meera’s ₹600</p></li>
+          <li class="opt" data-id="cafe" style="--n:1"><figure class="ph" data-ph="o-cafe" data-label="the usual chai spot"><img src="img/o-cafe.webp" alt="Three glasses of cutting chai and a samosa on a small table" decoding="async" /></figure><p class="opt__name">Our usual café</p><p class="opt__price">₹450 each</p><p class="opt__no" data-who="r"><i aria-hidden="true">R</i>Not new for Rohan</p></li>
+          <li class="opt is-pick" data-id="board" style="--n:2"><figure class="ph" data-ph="o-board" data-label="board-game café"><img src="img/board.webp" alt="A board game seen from above on a wooden table, cards, dice and a bowl of chips" decoding="async" /></figure><p class="opt__name">Board-game café</p><p class="opt__price">₹550 each</p><p class="opt__yes">Works for all four</p></li>
+          <li class="opt" data-id="brunch" style="--n:3"><figure class="ph" data-ph="o-brunch" data-label="brunch in daylight"><img src="img/o-brunch.webp" alt="Brunch bowls with pancakes and berries on a pink table" decoding="async" /></figure><p class="opt__name">Brunch spot</p><p class="opt__price">₹500 each</p><p class="opt__no" data-who="k"><i aria-hidden="true">K</i>Closes at 6 PM, before Kabir is free</p></li>
+          <li class="opt" data-id="crawl" style="--n:4"><figure class="ph" data-ph="o-crawl" data-label="aloo chaat on the street"><img src="img/o-crawl.webp" alt="A hand holding a foil bowl of aloo chaat with a toothpick" decoding="async" /></figure><p class="opt__name">Street-food crawl</p><p class="opt__price">₹350 each</p><p class="opt__no" data-who="k"><i aria-hidden="true">K</i>Closes at 9 PM, too early for a 7:30 start</p></li>
+          <li class="opt" data-id="kebab" style="--n:5"><figure class="ph" data-ph="o-kebab" data-label="kebabs on the grill"><img src="img/o-kebab.webp" alt="Chicken skewers on a charcoal grill, people standing around it" decoding="async" /></figure><p class="opt__name">Kebab place with live music</p><p class="opt__price">₹400 each</p><p class="opt__no" data-who="a"><i aria-hidden="true">A</i>Few veg options for Aanya</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. The plan lands -->
+    <section class="ch ch--plan" id="plan" data-sky="#3A2FC0" data-ink="light" data-day="Fri" data-time="3:00 PM" aria-labelledby="plan-title">
+      <div class="plan-stage">
+        <div class="reveal"><figure class="ph" data-ph="board" data-label="board games"><img src="img/board.webp" alt="A board game seen from above on a wooden table, cards, dice and a bowl of chips" decoding="async" /></figure></div>
+        <article class="plan" aria-labelledby="plan-title">
+          <p class="plan__label"><span>Planic’s plan, sent to the group</span><span class="badge">Illustrative</span></p>
+          <h2 id="plan-title" class="plan__title">Board games, then momos</h2>
+          <p class="plan__meta">Friday at 7:30 PM in Hauz Khas, about ₹550 each.</p>
+          <p class="plan__then">Meet near the metro at 7:20 PM. Momos nearby from 9:30 PM.</p>
+          <ul class="plan__why"><li class="why" data-who="a"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Aanya</span><span class="why__text">Veg menu</span></li><li class="why" data-who="r"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Rohan</span><span class="why__text">New to all four</span></li><li class="why" data-who="m"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Meera</span><span class="why__text">About ₹550, under her ₹600</span></li><li class="why" data-who="k"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Kabir</span><span class="why__text">Starts 7:30, after he’s free at 7</span></li></ul>
+          <div class="plan__trade"><p class="trade"><b>Trade-off</b> Meera has the longest trip, so it starts at 7:30 rather than 7.</p></div>
+          <div class="plan__acts"><button type="button" class="act act--accept" aria-pressed="false">Accept</button><a class="act" href="#try">Tweak</a><a class="act act--send" href="#share">Send to the group</a></div>
+          <p class="plan__note" aria-live="polite"></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 5. Your turn: talk back -->
+    <section class="ch ch--try" id="try" data-sky="#2A2290" data-ink="light" data-day="Fri" data-time="5:40 PM" aria-labelledby="try-title">
+      <header class="ch__head">
+        <p class="kicker">Friday, 5:40 PM. Someone always changes their mind.</p>
+        <h2 id="try-title">Now you be the group.</h2>
+        <p class="ch__lede">Change what one of them said. The plan answers back.</p>
+      </header>
+      <div class="try">
+        <div class="asks" role="group" aria-label="What each friend said">
+          <fieldset class="ask" data-who="a"><legend><i></i>Aanya says</legend>
+            <label><input type="radio" name="food" value="veg" checked /><span>veg options pls</span></label>
+            <label><input type="radio" name="food" value="any" /><span>I’ll eat anything</span></label>
+          </fieldset>
+          <fieldset class="ask" data-who="r"><legend><i></i>Rohan says</legend>
+            <label><input type="radio" name="novelty" value="new" checked /><span>somewhere new!!</span></label>
+            <label><input type="radio" name="novelty" value="usual" /><span>the usual’s fine</span></label>
+          </fieldset>
+          <fieldset class="ask" data-who="m"><legend><i></i>Meera says</legend>
+            <label><input type="radio" name="budget" value="400" /><span>₹400 max</span></label>
+            <label><input type="radio" name="budget" value="600" checked /><span>₹600 max</span></label>
+            <label><input type="radio" name="budget" value="2000" /><span>₹2,000 is fine</span></label>
+          </fieldset>
+          <fieldset class="ask" data-who="k"><legend><i></i>Kabir says</legend>
+            <label><input type="radio" name="free" value="1020" /><span>free after 5</span></label>
+            <label><input type="radio" name="free" value="1140" checked /><span>free after 7</span></label>
+            <label><input type="radio" name="free" value="1260" /><span>free after 9</span></label>
+          </fieldset>
+        </div>
+        <div class="answer">
+          <p class="answer__said" role="status" aria-live="polite">This is what they actually said. Change anything.</p>
+          <div class="answer__card">
+            <p class="answer__title">Board games, then momos</p>
+            <p class="answer__meta">Friday at 7:30 PM in Hauz Khas, about ₹550 each.</p>
+            <ul class="answer__why"><li class="why" data-who="a"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Aanya</span><span class="why__text">Veg menu</span></li><li class="why" data-who="r"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Rohan</span><span class="why__text">New to all four</span></li><li class="why" data-who="m"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Meera</span><span class="why__text">About ₹550, under her ₹600</span></li><li class="why" data-who="k"><i class="why__dot" aria-hidden="true"></i><span class="why__who">Kabir</span><span class="why__text">Starts 7:30, after he’s free at 7</span></li></ul>
+            <div class="answer__trade"><p class="trade"><b>Trade-off</b> Meera has the longest trip, so it starts at 7:30 rather than 7.</p></div>
+          </div>
+          <button type="button" class="reset" hidden>Put it back</button>
+        </div>
+        <button type="button" class="peek" hidden><span class="peek__said"></span><b class="peek__title"></b><span class="peek__go" aria-hidden="true">See the plan ↑</span></button>
+      </div>
+    </section>
+
+    <!-- 6. Friday night -->
+    <section class="ch ch--night" id="night" data-sky="#15131F" data-ink="light" data-day="Fri" data-time="9:30 PM" aria-labelledby="night-title">
+      <div class="night-stage">
+        <ul class="snaps" aria-hidden="true">
+          <li class="snap" style="--r:-6deg" data-depth="1.4"><figure class="ph" data-ph="n-momos" data-label="momos, 9:40 PM"><img src="img/n-momos.webp" alt="Several hands with chopsticks reaching into one steamer of dumplings" decoding="async" /></figure><span>momos, 9:40</span></li>
+          <li class="snap" style="--r:4deg" data-depth="0.6"><figure class="ph" data-ph="n-game" data-label="someone’s winning"><img src="img/n-game.webp" alt="Hands mid-game over playing cards on a checked tablecloth, a phone face-down" decoding="async" /></figure><span>someone’s winning</span></li>
+          <li class="snap" style="--r:-3deg" data-depth="1.1"><figure class="ph" data-ph="n-lane" data-label="the walk to the metro"><img src="img/n-lane.webp" alt="Four friends walking down a misty street at night under orange streetlights" decoding="async" /></figure><span>the walk back</span></li>
+          <li class="snap" style="--r:7deg" data-depth="0.8"><figure class="ph" data-ph="n-metro" data-label="last metro home"><img src="img/n-metro.webp" alt="A metro train pulling into a dim platform at night" decoding="async" /></figure><span>Noida, 11:20</span></li>
+        </ul>
+        <div class="night__words">
+          <div class="allin" aria-hidden="true">
+            <svg class="allin__mark" viewBox="0 0 32 32"><g fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+              <path class="allin__s" data-who="a" pathLength="1" d="M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12" stroke="#FF6B61"/>
+              <path class="allin__s" data-who="r" pathLength="1" d="M14.5 2 H 10 A 7 7 0 0 0 3 9" stroke="#B8AEFF"/>
+              <path class="allin__s" data-who="m" pathLength="1" d="M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12" stroke="#F5C76B"/>
+              <path class="allin__s" data-who="k" pathLength="1" d="M16 29.5 L 19.4 23.5 H 22 A 7 7 0 0 0 29 16.5 V 15" stroke="#9ED9B8"/></g>
+              <circle class="allin__pin" cx="16" cy="12.8" r="3.6" fill="#FBFBFA"/></svg>
+            <span class="allin__chip" data-who="r">Rohan’s in</span>
+            <span class="allin__chip" data-who="m">Meera’s in</span>
+            <span class="allin__chip" data-who="a">Aanya’s in</span>
+            <span class="allin__chip" data-who="k">Kabir’s in</span>
+          </div>
+          <p class="sr-only">All four said yes.</p>
+          <p class="kicker">Friday, 9:30 PM. 4 of 4 in.</p>
+          <h2 id="night-title" class="night__title"><span class="l">Less deciding.</span> <span class="l">More going.</span></h2>
+          <p class="night__lede">Nobody had to be the planner this time. That’s the whole idea.</p>
+          <p class="night__you"></p>
+        </div>
+      </div>
+    </section>
+
+
+    <div class="ticker ticker--night" aria-hidden="true" data-dir="1">
+      <p class="ticker__row"><span data-who="a">which one are you?</span><span data-who="r">the Rohan</span><span data-who="m">the Meera</span><span data-who="k">the Kabir</span><span data-who="a">the Aanya</span><span data-who="m">send it to the group</span><span data-who="k">same time next week?</span></p>
+    </div>
+
+    <!-- 7. Send it to your four -->
+    <section class="ch ch--share" id="share" data-sky="#FF6B61" data-ink="dark" data-day="Sat" data-time="11:02 AM" aria-labelledby="share-title">
+      <header class="ch__head">
+        <p class="kicker">Saturday, 11:02 AM. “same time next week?”</p>
+        <h2 id="share-title">Send this to your four.</h2>
+        <p class="ch__lede">Say who’s who and send it. They’ll open it with their own names.</p>
+      </header>
+      <div class="share">
+        <form class="decode" aria-labelledby="decode-title" novalidate>
+          <p id="decode-title" class="decode__title">Our group chat, decoded</p>
+          <ul class="decode__rows">
+            <li data-who="a"><i></i><span class="decode__role">The one with the food rule</span><label class="sr-only" for="n-a">Who’s your Aanya?</label><input id="n-a" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+            <li data-who="r"><i></i><span class="decode__role">The one who wants somewhere new</span><label class="sr-only" for="n-r">Who’s your Rohan?</label><input id="n-r" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+            <li data-who="m"><i></i><span class="decode__role">The one on a budget, coming from far</span><label class="sr-only" for="n-m">Who’s your Meera?</label><input id="n-m" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+            <li data-who="k"><i></i><span class="decode__role">The “anything works” one</span><label class="sr-only" for="n-k">Who’s your Kabir?</label><input id="n-k" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+          </ul>
+          <p class="decode__foot">planic · the usual four, sorted</p>
+        </form>
+        <div class="send">
+          <p class="send__preview" aria-live="polite"></p>
+          <div class="send__btns">
+            <a class="btn btn--ink" id="send-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+            <button type="button" class="btn btn--ghost-ink" id="send-share" hidden>Share…</button>
+            <button type="button" class="btn btn--ghost-ink" id="send-copy">Copy link</button>
+            <button type="button" class="btn btn--ghost-ink" id="send-card" hidden>Save as image</button>
+          </div>
+          <p class="send__note">The names travel only inside the link you send. Nothing is saved anywhere.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Join -->
+    <section class="ch ch--join" id="early-access" data-sky="#111216" data-ink="light" data-day="Sat" data-time="11:05 AM" aria-labelledby="join-title">
+      <h2 id="join-title">Be there for the first plan.</h2>
+      <p>Planic is being built. Join the list and try it first.</p>
+      <form class="join__form" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company" novalidate>
+        <input type="hidden" name="form-name" value="early-access" />
+        <p class="sr-only" aria-hidden="true"><label>Leave this empty <input name="company" tabindex="-1" autocomplete="off" /></label></p>
+        <label for="email">Email address</label>
+        <div class="join__row">
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          <button type="submit">Get early access</button>
+        </div>
+        <div class="join__hello" aria-hidden="true"></div>
+        <fieldset class="argue" hidden>
+          <legend>One more tap, if you like: what does your group always argue about?</legend>
+          <div class="argue__opts"><button type="button" value="where">Where</button><button type="button" value="when">When</button><button type="button" value="budget">Budget</button><button type="button" value="who">Who’s actually coming</button><button type="button" value="nobody">Nobody plans</button></div>
+          <p class="argue__msg" role="status" aria-live="polite"></p>
+        </fieldset>
+        <p class="join__msg" role="status" aria-live="polite">No account needed. We’ll only email you about Planic.</p>
+      </form>
+      <form name="group-argues" data-netlify="true" hidden><input type="hidden" name="form-name" value="group-argues" /><input name="argue" /><input name="me" /></form>
+      <figure class="glimpse" aria-labelledby="glimpse-cap">
+        <div class="glimpse__phone">
+          <p class="glimpse__top"><span class="thread__faces" aria-hidden="true"><i data-who="r">R</i><i data-who="a">A</i><i data-who="m">M</i><i data-who="k">K</i></span> the usual four</p>
+          <ol class="glimpse__chat">
+            <li class="gb" data-who="k"><b>Kabir</b>so… where?</li>
+            <li class="gb gb--voice" data-who="m"><b>Meera</b><span class="gb__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> 0:07 <span class="sr-only">voice note</span></li>
+            <li class="gb gb--planic"><b>Rohan sent a Planic link</b>
+              <span class="gp__title">Board games, then momos</span>
+              <span class="gp__meta">Fri 7:30 PM · Hauz Khas · about ₹550</span>
+              <span class="gp__why">Veg menu for Aanya. New for Rohan. Under Meera’s ₹600. After Kabir’s 7.</span>
+              <span class="gp__in"><span class="gp__count">3</span> of 4 in · <u>I’m in</u></span>
+              <span class="gp__link"><span class="gb__mark"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12" stroke="#FF6B61"/><path d="M3 9 A 7 7 0 0 1 10 2 H 14.5" stroke="#B8AEFF"/><path d="M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12" stroke="#F5C76B"/><path d="M29 15 V 16.5 A 7 7 0 0 1 22 23.5 H 19.4 L 16 29.5" stroke="#9ED9B8"/></g><circle cx="16" cy="12.8" r="3.6" fill="#FBFBFA"/></svg></span>planic link · tap to answer</span>
+            </li>
+          </ol>
+        </div>
+        <figcaption id="glimpse-cap">An early design: one person sends a Planic link, and the group answers from it. Nothing to install. Not a screenshot; the app is still being built.</figcaption>
+      </figure>
+    </section>
+  </main>
+
+
+  <footer class="foot">
+    <p class="foot__small"><span>The four friends, the chat, the places, prices and plan are an illustrative example, not real people, venues or live results. Photos from <a href="https://unsplash.com/?utm_source=planic&amp;utm_medium=referral">Unsplash</a> by <a href="https://unsplash.com/@2hmedia?utm_source=planic&amp;utm_medium=referral">2H Media</a>, <a href="https://unsplash.com/@brandsandpeople?utm_source=planic&amp;utm_medium=referral">Brands&amp;People</a>, <a href="https://unsplash.com/@imharsh081?utm_source=planic&amp;utm_medium=referral">Harsh Gupta</a>, <a href="https://unsplash.com/@colincyruz?utm_source=planic&amp;utm_medium=referral">Colin Michel</a>, <a href="https://unsplash.com/@zoshuacolah?utm_source=planic&amp;utm_medium=referral">Zoshua Colah</a>, <a href="https://unsplash.com/@roshaan?utm_source=planic&amp;utm_medium=referral">Hamid Roshaan</a>, <a href="https://unsplash.com/@siyiwind?utm_source=planic&amp;utm_medium=referral">Siyi</a>, <a href="https://unsplash.com/@ravinepz?utm_source=planic&amp;utm_medium=referral">Ravi Sharma</a>, <a href="https://unsplash.com/@atharvad_jpeg?utm_source=planic&amp;utm_medium=referral">Atharva Dixit</a>, <a href="https://unsplash.com/@jonasleupe?utm_source=planic&amp;utm_medium=referral">Jonas Leupe</a>, <a href="https://unsplash.com/@jhc?utm_source=planic&amp;utm_medium=referral">James Coleman</a>, <a href="https://unsplash.com/@zegarr?utm_source=planic&amp;utm_medium=referral">Ezequiel Garrido</a>, <a href="https://unsplash.com/@artosuraj?utm_source=planic&amp;utm_medium=referral">ARTO SURAJ</a>, <a href="https://unsplash.com/@mayank_k01?utm_source=planic&amp;utm_medium=referral">Mayank Kapoor</a>. They show real places, but not the venues in the example. The opening film is cut from free <a href="https://www.pexels.com/">Pexels</a> clips of other people and places.</span></p>
+    <p class="foot__small"><span>© 2026 Planic</span><span>Made in New Delhi</span><span>Prototype on a review branch, not the live site</span></p>
+  </footer>

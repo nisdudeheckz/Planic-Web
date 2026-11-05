@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Planic: every group chat has these four</title>
+  <meta name="description" content="Prototype: a scroll story about four friends, one group chat and one Friday plan. Find out which one you are, then send it to your group." />
+  <meta name="robots" content="noindex" />
+  <meta property="og:title" content="Every group chat has these four. Which one are you?" />
+  <meta property="og:description" content="A one-minute scroll about four friends, one group chat and one Friday plan. Planic, early access." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Every group chat has these four: four chat bubbles, veg options pls, somewhere new, ₹600 max, anything works, then so… where?" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..600&display=swap" />
+  {{STYLE}}
+  <script>document.documentElement.classList.add('js')</script>
+  {{VENDOR}}
+  {{SCRIPT}}
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__ring"><span class="cursor__label"></span></span><span class="cursor__dot"></span></div>
+
+  <header class="nav">
+    <span class="nav__bg" aria-hidden="true"></span>
+    <a class="wordmark" href="#film" aria-label="Planic, back to top">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path class="mark__seg" d="M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12" stroke="#FF6B61" style="--off:-2px 1px"/><path class="mark__seg" d="M3 9 A 7 7 0 0 1 10 2 H 14.5" stroke="#B8AEFF" style="--off:-2px -2px"/><path class="mark__seg" d="M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12" stroke="#F5C76B" style="--off:2px -2px"/><path class="mark__seg" d="M29 15 V 16.5 A 7 7 0 0 1 22 23.5 H 19.4 L 16 29.5" stroke="#9ED9B8" style="--off:2px 1px"/><circle class="mark__dot" cx="16" cy="12.8" r="3.6" fill="currentColor"/></svg>
+      <span class="wordmark__name">planic<b>!!</b></span>
+    </a>
+    <div class="nav__mid">
+      <p class="clock" aria-hidden="true"><span class="clock__day">Wed</span> <span class="clock__time">4:11 PM</span></p>
+      <button type="button" class="pause" aria-pressed="false" aria-label="Pause motion" title="Pause motion" hidden><span class="pause__icon" aria-hidden="true"></span></button>
+    </div>
+    <a class="nav__cta" href="#early-access"><span class="nav__cta-long">Join early access</span><span class="nav__cta-short">Join</span></a>
+  </header>
+
+  <main id="main">
+
+    <!-- 0. The film: phones lighting up, until the chat takes over -->
+    <section class="ch ch--film" id="film" data-sky="#111216" data-ink="light" data-day="Wed" data-time="4:11 PM" aria-label="Opening">
+      <div class="film">
+        <video class="film__video" muted playsinline loop preload="none" poster="film/poster-wide.webp" aria-hidden="true" tabindex="-1" data-wide="film/open-wide.mp4" data-tall="film/open-tall.mp4" data-poster-wide="film/poster-wide.webp" data-poster-tall="film/poster-tall.webp"></video>
+        <div class="film__shade" aria-hidden="true"></div>
+        <ol class="toasts" aria-hidden="true">
+          <li class="toast" data-who="r" data-at="0.5"><i>R</i><span class="toast__top"><b>Rohan</b> · the usual four</span><span class="toast__msg">ok so what are we doing friday?</span></li>
+          <li class="toast" data-who="a" data-at="3.0"><i>A</i><span class="toast__top"><b>Aanya</b> · the usual four</span><span class="toast__msg">food! but veg options pls</span></li>
+          <li class="toast" data-who="r" data-at="5.3"><i>R</i><span class="toast__top"><b>Rohan</b> · the usual four</span><span class="toast__msg">somewhere new, not the usual café</span></li>
+          <li class="toast" data-who="m" data-at="7.7"><i>M</i><span class="toast__top"><b>Meera</b> · the usual four</span><span class="toast__msg">₹600 max. coming from Noida</span></li>
+          <li class="toast" data-who="k" data-at="10.0"><i>K</i><span class="toast__top"><b>Kabir</b> · the usual four</span><span class="toast__msg">anything works, free after 7</span></li>
+          <li class="toast" data-who="a" data-at="12.2"><i>A</i><span class="toast__top"><b>Aanya</b> · the usual four</span><span class="toast__msg">brunch saturday instead?</span></li>
+          <li class="toast" data-who="k" data-at="14.7"><i>K</i><span class="toast__top"><b>Kabir</b> · the usual four</span><span class="toast__msg">so… where?</span></li>
+        </ol>
+        <p class="film__one" aria-hidden="true"><span class="film__one-who"><i data-who="r">R</i>Rohan · the usual four</span><span class="film__one-msg" data-who="r">ok so what are we doing friday?</span></p>
+        <div class="film__copy">
+          <p class="film__line">It always starts with <span>one message.</span></p>
+          <a class="film__cue" href="#top">Then everyone has an opinion <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. The hook: the group chat goes off -->
+    <section class="ch ch--chat" id="top" data-sky="#FBFBFA" data-ink="dark" data-day="Wed" data-time="4:12 PM" aria-labelledby="open-title">
+      <div class="chat-stage">
+        <div class="open">
+          <p class="invite" hidden></p>
+          <p class="kicker">Early access · In development · New Delhi</p>
+          <h1 id="open-title" class="open__title"><span class="w">Every</span> <span class="w">group</span> <span class="w">chat</span> <span class="w">has</span> <span class="w">these</span> <span class="w w--four">four.</span></h1>
+          <p class="lede">Planic is being built to turn all of it into one plan, with reasons.</p>
+          <div class="open__cta">
+            <a class="btn btn--coral" href="#early-access">Join early access</a>
+            <a class="btn btn--ghost" href="#four">Which one are you? <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+
+        <div class="thread" role="group" aria-label="Illustrative group chat: the usual four, planning Friday">
+          <div class="thread__head">
+            <span class="thread__faces" aria-hidden="true"><i data-who="r">R</i><i data-who="a">A</i><i data-who="m">M</i><i data-who="k">K</i></span>
+            <span class="thread__name">the usual four</span>
+            <span class="thread__unread" aria-hidden="true"><b class="unread">47</b> unread</span>
+          </div>
+          <div class="thread__win">
+            <ol class="thread__list">
+              <li class="day">Wednesday 4:12 PM</li>
+              <li class="b" data-who="r"><span class="b__who">Rohan</span><p>ok so what are we doing friday?</p></li>
+              <li class="b" data-who="a"><span class="b__who">Aanya</span><p>food! but <mark>veg options pls</mark></p></li>
+              <li class="b" data-who="r"><span class="b__who">Rohan</span><p><mark>somewhere new</mark>, not the usual café again</p></li>
+              <li class="b b--photo" data-who="r"><span class="b__who">Rohan</span>{{PH:rooftop|A rooftop restaurant at night, warm lamps over low tables and the city lights behind|rooftop at night}}<p>this place??</p></li>
+              <li class="b b--voice" data-who="m"><span class="b__who">Meera</span><p><button type="button" class="vn" aria-label="Meera’s voice note, 7 seconds. The transcript is below."><i class="vn__play" aria-hidden="true"></i><span class="vn__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="vn__t" aria-hidden="true">0:07</span></button><span class="vn__text">“₹2,000 each?? <mark>₹600 max</mark> yaar. and I’m <mark>coming from Noida</mark>”</span></p></li>
+              <li class="b b--poll" data-who="a"><span class="b__who">Aanya</span><p><span class="poll" role="group" aria-label="Aanya’s poll: Friday night or Saturday brunch?"><span class="poll__q">Friday night or Saturday brunch?</span><button type="button" class="poll__opt" data-v="fri" aria-pressed="false"><span>Friday night</span><b>2</b></button><button type="button" class="poll__opt" data-v="sat" aria-pressed="false"><span>Saturday brunch</span><b>2</b></button><span class="poll__foot" aria-live="polite">4 votes · it’s a tie. Tap to break it.</span></span></p></li>
+              <li class="b" data-who="k"><span class="b__who">Kabir</span><p>friday pls. <mark>anything works, free after 7</mark></p></li>
+              <li class="day">Thursday 11:48 PM</li>
+              <li class="b" data-who="r"><span class="b__who">Rohan</span><p>guys</p></li>
+              <li class="b b--last" data-who="k"><span class="b__who">Kabir</span><p>so… where?</p><span class="b__seen">Seen by Rohan, Aanya, Meera · no reply</span></li>
+            </ol>
+          </div>
+          <p class="thread__typing" aria-hidden="true"><span class="typing__who">Meera</span> is typing<span class="dots"><i></i><i></i><i></i></span></p>
+        </div>
+
+        <div class="floaters" aria-hidden="true">
+          <div class="floater floater--1" data-who="m">{{PH:p-m|A woman with a bag walking down a long train platform|Meera, on her way}}</div>
+          <div class="floater floater--2" data-who="a">{{PH:n-momos|Several hands with chopsticks reaching into one steamer of dumplings|momos?}}</div>
+        </div>
+
+        <p class="tally"><span><b class="count" data-to="47">47</b> messages</span><span><b class="count" data-to="4">4</b> different asks</span><span><b class="count count--zero">0</b> plans</span></p>
+      </div>
+    </section>
+
+
+    <div class="ticker" aria-hidden="true" data-dir="-1">
+      <p class="ticker__row"><span data-who="r">somewhere new!!</span><span data-who="m">₹600 max</span><span data-who="a">veg options pls</span><span data-who="k">anything works</span><span data-who="r">not the usual café again</span><span data-who="m">coming from Noida</span><span data-who="k">free after 7</span><span data-who="a">brunch instead?</span><span data-who="r">so… where?</span></p>
+    </div>
+
+    <!-- 2. Meet the four. Which one are you? -->
+    <section class="ch ch--four" id="four" data-sky="#F7F4EE" data-ink="dark" data-day="Fri" data-time="10:05 AM" aria-labelledby="four-title">
+      <header class="ch__head">
+        <p class="kicker">Friday, 10:05 AM. Still no plan.</p>
+        <h2 id="four-title">You know all four. <span class="soft">You’re probably one of them.</span></h2>
+      </header>
+      <ol class="deck">
+        <li class="card" data-who="a" style="--i:0">
+          {{PH:p-a|Hands reaching across a table of brass bowls of curry and rotis|what’s veg here?}}
+          <div class="card__body">
+            <p class="card__role">The one with the food rule</p>
+            <p class="card__name">Aanya</p>
+            <p class="card__said">“veg options pls”</p>
+            <button type="button" class="thing thing--menu" aria-pressed="false" aria-label="The menu. Show only what Aanya can eat.">
+              <span class="thing__head">Menu</span>
+              <span class="dish"><i class="dot dot--veg"></i>Paneer tikka<b>₹320</b></span>
+              <span class="dish dish--nv"><i class="dot dot--nv"></i>Butter chicken<b>₹420</b></span>
+              <span class="dish"><i class="dot dot--veg"></i>Dal makhani<b>₹280</b></span>
+              <span class="dish dish--nv"><i class="dot dot--nv"></i>Mutton seekh<b>₹460</b></span>
+              <span class="thing__hint"><span class="off">tap: what can she eat?</span><span class="on">two things. she’ll take it.</span></span>
+            </button>
+            <button type="button" class="me" data-who="a" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Aanya</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+        <li class="card" data-who="r" style="--i:1">
+          {{PH:p-r|Two friends walking down a lit-up street at night, one arm around the other, seen from behind|somewhere new tonight}}
+          <div class="card__body">
+            <p class="card__role">The one who wants somewhere new</p>
+            <p class="card__name">Rohan</p>
+            <p class="card__said">“not the usual café again”</p>
+            <button type="button" class="thing thing--been" aria-pressed="false" aria-label="Places Rohan has been. Find somewhere new.">
+              <span class="thing__head">Been there</span>
+              <span class="been">The usual café<b>×23</b></span>
+              <span class="been">Corner momos<b>×11</b></span>
+              <span class="been">That rooftop<b>×4</b></span>
+              <span class="been been--new">Somewhere new<b>?</b></span>
+              <span class="thing__hint"><span class="off">tap: the usual again?</span><span class="on">veto. obviously.</span></span>
+            </button>
+            <button type="button" class="me" data-who="r" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Rohan</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+        <li class="card" data-who="m" style="--i:2">
+          {{PH:p-m|A woman with a bag walking down a long train platform, seen from behind|the long way in}}
+          <div class="card__body">
+            <p class="card__role">The one on a budget, coming from far</p>
+            <p class="card__name">Meera</p>
+            <p class="card__said">“₹600 max, coming from Noida”</p>
+            <button type="button" class="thing thing--metro" aria-pressed="false" aria-label="Meera’s metro ride from Noida Sector 18 to Hauz Khas, one change, about 45 minutes.">
+              <span class="thing__head">Sector 18 → Hauz Khas</span>
+              <span class="line" aria-hidden="true"><i class="seg seg--blue"></i><i class="seg seg--magenta"></i><i class="stop"></i><i class="stop stop--x"></i><i class="stop"></i><i class="train"></i></span>
+              <span class="stops" aria-hidden="true"><span>Noida 18</span><span>Botanical Garden</span><span>Hauz Khas</span></span>
+              <span class="thing__hint"><span class="off">tap: ride with her</span><span class="on">1 change · about 45 min. each way.</span></span>
+            </button>
+            <button type="button" class="me" data-who="m" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Meera</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+        <li class="card" data-who="k" style="--i:3">
+          {{PH:p-k|Someone at work typing a reply on their phone|“anything works”}}
+          <div class="card__body">
+            <p class="card__role">The “anything works” one</p>
+            <p class="card__name">Kabir</p>
+            <p class="card__said">“anything works, free after 7”</p>
+            <button type="button" class="thing thing--ping" aria-pressed="false" aria-label="Kabir’s phone. His meeting ends at 6:45. Log him off.">
+              <span class="ping"><i aria-hidden="true">📅</i><b>Calendar</b><em>now</em><span>Weekly sync extended till 6:45 PM</span></span>
+              <span class="ping"><i aria-hidden="true">💬</i><b>the usual four</b><em>2m</em><span>Rohan: guys</span></span>
+              <span class="ping ping--off"><i aria-hidden="true">💻</i><b>Laptop</b><em>7:02</em><span>Shut. He’s free. Anything works.</span></span>
+              <span class="thing__hint"><span class="off">tap: is he out yet?</span><span class="on">out at 7:02.</span></span>
+            </button>
+            <button type="button" class="me" data-who="k" aria-pressed="false"><span class="me__off">That’s me</span><span class="me__on">You’re the Kabir</span></button>
+            <p class="card__tag" hidden></p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- 3. Planic weighs every option against all four -->
+    <section class="ch ch--weigh" id="weigh" data-sky="#F6E7CF" data-ink="dark" data-day="Fri" data-time="2:30 PM" aria-labelledby="weigh-title">
+      <div class="weigh-stage">
+        <header class="ch__head">
+          <p class="kicker">Friday, 2:30 PM. Planic reads the chat.</p>
+          <h2 id="weigh-title">Every option, checked against all four.</h2>
+        </header>
+        <ul class="opts">
+{{OPTS}}
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. The plan lands -->
+    <section class="ch ch--plan" id="plan" data-sky="#3A2FC0" data-ink="light" data-day="Fri" data-time="3:00 PM" aria-labelledby="plan-title">
+      <div class="plan-stage">
+        <div class="reveal">{{PH:board|A board game seen from above on a wooden table, cards, dice and a bowl of chips|board games}}</div>
+        <article class="plan" aria-labelledby="plan-title">
+          <p class="plan__label"><span>Planic’s plan, sent to the group</span><span class="badge">Illustrative</span></p>
+          <h2 id="plan-title" class="plan__title">{{TITLE}}</h2>
+          <p class="plan__meta">{{META}}</p>
+          <p class="plan__then">{{THEN}}</p>
+          <ul class="plan__why">{{WHY}}</ul>
+          <div class="plan__trade">{{TRADE}}</div>
+          <div class="plan__acts"><button type="button" class="act act--accept" aria-pressed="false">Accept</button><a class="act" href="#try">Tweak</a><a class="act act--send" href="#share">Send to the group</a></div>
+          <p class="plan__note" aria-live="polite"></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 5. Your turn: talk back -->
+    <section class="ch ch--try" id="try" data-sky="#2A2290" data-ink="light" data-day="Fri" data-time="5:40 PM" aria-labelledby="try-title">
+      <header class="ch__head">
+        <p class="kicker">Friday, 5:40 PM. Someone always changes their mind.</p>
+        <h2 id="try-title">Now you be the group.</h2>
+        <p class="ch__lede">Change what one of them said. The plan answers back.</p>
+      </header>
+      <div class="try">
+        <div class="asks" role="group" aria-label="What each friend said">
+          <fieldset class="ask" data-who="a"><legend><i></i>Aanya says</legend>
+            <label><input type="radio" name="food" value="veg" checked /><span>veg options pls</span></label>
+            <label><input type="radio" name="food" value="any" /><span>I’ll eat anything</span></label>
+          </fieldset>
+          <fieldset class="ask" data-who="r"><legend><i></i>Rohan says</legend>
+            <label><input type="radio" name="novelty" value="new" checked /><span>somewhere new!!</span></label>
+            <label><input type="radio" name="novelty" value="usual" /><span>the usual’s fine</span></label>
+          </fieldset>
+          <fieldset class="ask" data-who="m"><legend><i></i>Meera says</legend>
+            <label><input type="radio" name="budget" value="400" /><span>₹400 max</span></label>
+            <label><input type="radio" name="budget" value="600" checked /><span>₹600 max</span></label>
+            <label><input type="radio" name="budget" value="2000" /><span>₹2,000 is fine</span></label>
+          </fieldset>
+          <fieldset class="ask" data-who="k"><legend><i></i>Kabir says</legend>
+            <label><input type="radio" name="free" value="1020" /><span>free after 5</span></label>
+            <label><input type="radio" name="free" value="1140" checked /><span>free after 7</span></label>
+            <label><input type="radio" name="free" value="1260" /><span>free after 9</span></label>
+          </fieldset>
+        </div>
+        <div class="answer">
+          <p class="answer__said" role="status" aria-live="polite">This is what they actually said. Change anything.</p>
+          <div class="answer__card">
+            <p class="answer__title">{{TITLE}}</p>
+            <p class="answer__meta">{{META}}</p>
+            <ul class="answer__why">{{WHY}}</ul>
+            <div class="answer__trade">{{TRADE}}</div>
+          </div>
+          <button type="button" class="reset" hidden>Put it back</button>
+        </div>
+        <button type="button" class="peek" hidden><span class="peek__said"></span><b class="peek__title"></b><span class="peek__go" aria-hidden="true">See the plan ↑</span></button>
+      </div>
+    </section>
+
+    <!-- 6. Friday night -->
+    <section class="ch ch--night" id="night" data-sky="#15131F" data-ink="light" data-day="Fri" data-time="9:30 PM" aria-labelledby="night-title">
+      <div class="night-stage">
+        <ul class="snaps" aria-hidden="true">
+          <li class="snap" style="--r:-6deg" data-depth="1.4">{{PH:n-momos|Several hands with chopsticks reaching into one steamer of dumplings|momos, 9:40 PM}}<span>momos, 9:40</span></li>
+          <li class="snap" style="--r:4deg" data-depth="0.6">{{PH:n-game|Hands mid-game over playing cards on a checked tablecloth, a phone face-down|someone’s winning}}<span>someone’s winning</span></li>
+          <li class="snap" style="--r:-3deg" data-depth="1.1">{{PH:n-lane|Four friends walking down a misty street at night under orange streetlights|the walk to the metro}}<span>the walk back</span></li>
+          <li class="snap" style="--r:7deg" data-depth="0.8">{{PH:n-metro|A metro train pulling into a dim platform at night|last metro home}}<span>Noida, 11:20</span></li>
+        </ul>
+        <div class="night__words">
+          <div class="allin" aria-hidden="true">
+            <svg class="allin__mark" viewBox="0 0 32 32"><g fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+              <path class="allin__s" data-who="a" pathLength="1" d="M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12" stroke="#FF6B61"/>
+              <path class="allin__s" data-who="r" pathLength="1" d="M14.5 2 H 10 A 7 7 0 0 0 3 9" stroke="#B8AEFF"/>
+              <path class="allin__s" data-who="m" pathLength="1" d="M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12" stroke="#F5C76B"/>
+              <path class="allin__s" data-who="k" pathLength="1" d="M16 29.5 L 19.4 23.5 H 22 A 7 7 0 0 0 29 16.5 V 15" stroke="#9ED9B8"/></g>
+              <circle class="allin__pin" cx="16" cy="12.8" r="3.6" fill="#FBFBFA"/></svg>
+            <span class="allin__chip" data-who="r">Rohan’s in</span>
+            <span class="allin__chip" data-who="m">Meera’s in</span>
+            <span class="allin__chip" data-who="a">Aanya’s in</span>
+            <span class="allin__chip" data-who="k">Kabir’s in</span>
+          </div>
+          <p class="sr-only">All four said yes.</p>
+          <p class="kicker">Friday, 9:30 PM. 4 of 4 in.</p>
+          <h2 id="night-title" class="night__title"><span class="l">Less deciding.</span> <span class="l">More going.</span></h2>
+          <p class="night__lede">Nobody had to be the planner this time. That’s the whole idea.</p>
+          <p class="night__you"></p>
+        </div>
+      </div>
+    </section>
+
+
+    <div class="ticker ticker--night" aria-hidden="true" data-dir="1">
+      <p class="ticker__row"><span data-who="a">which one are you?</span><span data-who="r">the Rohan</span><span data-who="m">the Meera</span><span data-who="k">the Kabir</span><span data-who="a">the Aanya</span><span data-who="m">send it to the group</span><span data-who="k">same time next week?</span></p>
+    </div>
+
+    <!-- 7. Send it to your four -->
+    <section class="ch ch--share" id="share" data-sky="#FF6B61" data-ink="dark" data-day="Sat" data-time="11:02 AM" aria-labelledby="share-title">
+      <header class="ch__head">
+        <p class="kicker">Saturday, 11:02 AM. “same time next week?”</p>
+        <h2 id="share-title">Send this to your four.</h2>
+        <p class="ch__lede">Say who’s who and send it. They’ll open it with their own names.</p>
+      </header>
+      <div class="share">
+        <form class="decode" aria-labelledby="decode-title" novalidate>
+          <p id="decode-title" class="decode__title">Our group chat, decoded</p>
+          <ul class="decode__rows">
+            <li data-who="a"><i></i><span class="decode__role">The one with the food rule</span><label class="sr-only" for="n-a">Who’s your Aanya?</label><input id="n-a" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+            <li data-who="r"><i></i><span class="decode__role">The one who wants somewhere new</span><label class="sr-only" for="n-r">Who’s your Rohan?</label><input id="n-r" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+            <li data-who="m"><i></i><span class="decode__role">The one on a budget, coming from far</span><label class="sr-only" for="n-m">Who’s your Meera?</label><input id="n-m" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+            <li data-who="k"><i></i><span class="decode__role">The “anything works” one</span><label class="sr-only" for="n-k">Who’s your Kabir?</label><input id="n-k" maxlength="18" autocomplete="off" placeholder="Their name" /></li>
+          </ul>
+          <p class="decode__foot">planic · the usual four, sorted</p>
+        </form>
+        <div class="send">
+          <p class="send__preview" aria-live="polite"></p>
+          <div class="send__btns">
+            <a class="btn btn--ink" id="send-wa" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+            <button type="button" class="btn btn--ghost-ink" id="send-share" hidden>Share…</button>
+            <button type="button" class="btn btn--ghost-ink" id="send-copy">Copy link</button>
+            <button type="button" class="btn btn--ghost-ink" id="send-card" hidden>Save as image</button>
+          </div>
+          <p class="send__note">The names travel only inside the link you send. Nothing is saved anywhere.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Join -->
+    <section class="ch ch--join" id="early-access" data-sky="#111216" data-ink="light" data-day="Sat" data-time="11:05 AM" aria-labelledby="join-title">
+      <h2 id="join-title">Be there for the first plan.</h2>
+      <p>Planic is being built. Join the list and try it first.</p>
+      <form class="join__form" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company" novalidate>
+        <input type="hidden" name="form-name" value="early-access" />
+        <p class="sr-only" aria-hidden="true"><label>Leave this empty <input name="company" tabindex="-1" autocomplete="off" /></label></p>
+        <label for="email">Email address</label>
+        <div class="join__row">
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          <button type="submit">Get early access</button>
+        </div>
+        <div class="join__hello" aria-hidden="true"></div>
+        <fieldset class="argue" hidden>
+          <legend>One more tap, if you like: what does your group always argue about?</legend>
+          <div class="argue__opts"><button type="button" value="where">Where</button><button type="button" value="when">When</button><button type="button" value="budget">Budget</button><button type="button" value="who">Who’s actually coming</button><button type="button" value="nobody">Nobody plans</button></div>
+          <p class="argue__msg" role="status" aria-live="polite"></p>
+        </fieldset>
+        <p class="join__msg" role="status" aria-live="polite">No account needed. We’ll only email you about Planic.</p>
+      </form>
+      <form name="group-argues" data-netlify="true" hidden><input type="hidden" name="form-name" value="group-argues" /><input name="argue" /><input name="me" /></form>
+      <figure class="glimpse" aria-labelledby="glimpse-cap">
+        <div class="glimpse__phone">
+          <p class="glimpse__top"><span class="thread__faces" aria-hidden="true"><i data-who="r">R</i><i data-who="a">A</i><i data-who="m">M</i><i data-who="k">K</i></span> the usual four</p>
+          <ol class="glimpse__chat">
+            <li class="gb" data-who="k"><b>Kabir</b>so… where?</li>
+            <li class="gb gb--voice" data-who="m"><b>Meera</b><span class="gb__wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span> 0:07 <span class="sr-only">voice note</span></li>
+            <li class="gb gb--planic"><b>Rohan sent a Planic link</b>
+              <span class="gp__title">Board games, then momos</span>
+              <span class="gp__meta">Fri 7:30 PM · Hauz Khas · about ₹550</span>
+              <span class="gp__why">Veg menu for Aanya. New for Rohan. Under Meera’s ₹600. After Kabir’s 7.</span>
+              <span class="gp__in"><span class="gp__count">3</span> of 4 in · <u>I’m in</u></span>
+              <span class="gp__link"><span class="gb__mark"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 29.5 L 12.6 23.5 H 10 A 7 7 0 0 1 3 16.5 V 12" stroke="#FF6B61"/><path d="M3 9 A 7 7 0 0 1 10 2 H 14.5" stroke="#B8AEFF"/><path d="M17.5 2 H 22 A 7 7 0 0 1 29 9 V 12" stroke="#F5C76B"/><path d="M29 15 V 16.5 A 7 7 0 0 1 22 23.5 H 19.4 L 16 29.5" stroke="#9ED9B8"/></g><circle cx="16" cy="12.8" r="3.6" fill="#FBFBFA"/></svg></span>planic link · tap to answer</span>
+            </li>
+          </ol>
+        </div>
+        <figcaption id="glimpse-cap">An early design: one person sends a Planic link, and the group answers from it. Nothing to install. Not a screenshot; the app is still being built.</figcaption>
+      </figure>
+    </section>
+  </main>
+
+
+  <footer class="foot">
+    <p class="foot__small"><span>The four friends, the chat, the places, prices and plan are an illustrative example, not real people, venues or live results. {{PHOTO_NOTE}} The opening film is cut from free <a href="https://www.pexels.com/">Pexels</a> clips of other people and places.</span></p>
+    <p class="foot__small"><span>© 2026 Planic</span><span>Made in New Delhi</span><span>Prototype on a review branch, not the live site</span></p>
+  </footer>
+</body>
+</html>
