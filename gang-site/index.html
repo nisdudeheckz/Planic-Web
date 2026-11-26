@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>planic!! Save your gang’s spot</title>
+<meta name="planic:site" content="https://planic-gangs.netlify.app">
+<link rel="canonical" href="https://planic-gangs.netlify.app/">
+<meta name="description" content="planic!! turns the group chat into one plan everyone says yes to, and says why. Early access, New Delhi first.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1E3FA0">
+<meta property="og:title" content="Save your gang’s spot on planic!!">
+<meta property="og:description" content="planic!! turns the group chat into one plan everyone says yes to. Early access, New Delhi first.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://planic-gangs.netlify.app/og.jpg">
+<meta property="og:url" content="https://planic-gangs.netlify.app/">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Save your gang’s spot on planic!! The first 10 gangs get their first plan made by hand.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>html{-webkit-text-size-adjust:100%}</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@300..900&family=Sedgwick+Ave+Display&family=Kalam:wght@700&family=Geist:wght@400;500;600&display=swap">
+<style>
+/* Planic, painted. The Delhi signboard world: cobalt, sunflower, bottle green, signal red, on cream.
+   Every scene is driven by the scroll itself: scroll back and it plays backwards. Nothing slides in from the side. */
+:root{
+  color-scheme: light;
+  --cobalt:#1E3FA0; --cobalt-d:#142C74; --sun:#F7C318; --green:#0F5A3B; --red:#C3291B; --red-d:#8A1A10; --cream:#F5EBD3; --ink:#16130E;
+  --marigold:#F7C318; --you:#F7C318; --dim:#B9B1A0;
+  --n0:#5BE3A4; --n1:#FF8A6B; --n2:#A99BFF; --n3:#62C8FF;          /* the four friends' inks, kept for the name you type */
+  --sign:"Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --display:"Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body:"Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gx: clamp(20px, 5.5vw, 96px);
+  --small: 15px;
+}
+*{box-sizing:border-box}
+html,body{background:var(--cobalt);color:var(--cream)}
+body{margin:0;font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;overflow-x:clip}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+a{color:inherit}
+.sign{font-family:var(--sign);font-weight:900;text-transform:uppercase;letter-spacing:-.01em;line-height:.88}
+.pin{position:relative}
+.stick{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+
+/* top bar */
+.top{position:fixed;left:0;right:0;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:14px var(--gx);pointer-events:none}
+.top .logo{mix-blend-mode:difference;color:#fff}
+.top a{pointer-events:auto;text-decoration:none}
+.logo{font-family:var(--sign);font-weight:900;font-size:26px;letter-spacing:.01em}
+.cmi{font-family:var(--sign) !important;font-weight:900 !important;text-transform:uppercase;letter-spacing:.01em !important;word-spacing:.08em;line-height:1;
+  background:var(--sun) !important;color:var(--ink) !important;padding:.2em .5em .12em !important;border-radius:.06em;transform:rotate(-2deg);
+  box-shadow:inset 0 0 0 .07em var(--sun),inset 0 0 0 .11em var(--ink),.12em .14em 0 var(--ink);transition:transform .14s cubic-bezier(.3,1.6,.5,1),box-shadow .14s,background-color .25s}
+.cmi .me{color:var(--red) !important;font-size:1.18em !important}
+.cmi .me{animation-name:hop2}
+.cmi{font-weight:800 !important;letter-spacing:.045em !important;word-spacing:.14em;font-size-adjust:none}
+.cmi .arr{display:inline-block;width:.92em;height:.62em;margin-left:.12em;vertical-align:.04em;overflow:hidden;color:transparent !important;background:var(--red);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 18'%3E%3Cpath d='M2 9.4c6-.6 12-.3 19.5-.2M14.5 2.2l8.6 7-8.2 7' fill='none' stroke='%23000' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 18'%3E%3Cpath d='M2 9.4c6-.6 12-.3 19.5-.2M14.5 2.2l8.6 7-8.2 7' fill='none' stroke='%23000' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.acts .cmi .arr{background:var(--sun)}
+/* a signwriter at work: each letter is outlined first, then filled */
+.swl{display:inline-block}
+/* between scenes: the shop shutter comes down on the board; a roller of cobalt paint comes down on the cream; the night's ink tears in */
+.s2 .shutter{transform:translateY(-101%)}
+.roll{position:absolute;left:0;right:0;top:0;height:0;visibility:hidden;background:var(--cobalt);z-index:4;will-change:height}
+.roll::after{content:"";position:absolute;left:0;right:0;top:100%;height:30px;background:radial-gradient(13px 26px at 50% 0,var(--cobalt) 97%,transparent) 0 0/44px 30px repeat-x}
+.below{position:relative}
+.below::before{content:"";position:absolute;left:0;right:0;top:-22px;height:23px;background:var(--ink);
+  -webkit-mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/34px 100%;mask:conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) 50%/34px 100%}
+/* GANG'S, sprayed on like a tag */
+.gangs{display:inline-block;font-family:"Sedgwick Ave Display",cursive;font-weight:400;text-transform:none;font-size:1.12em;line-height:.8;color:var(--red);
+  -webkit-text-stroke:.025em var(--cream);paint-order:stroke fill;text-shadow:.05em .06em 0 #000;transform:rotate(-7deg);margin:0 .06em;letter-spacing:0}
+/* the promise: a big painted 10, the words beside it given room */
+.below .promise{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:0 clamp(14px,2vw,26px);max-width:620px;margin-top:clamp(24px,4vh,40px);
+  font-family:var(--body);font-weight:500;font-size:clamp(17px,1.6vw,22px);line-height:1.45;letter-spacing:0;color:#E9E1CC;text-transform:none}
+.below .promise .ten{font-family:var(--sign);font-weight:900;font-size:clamp(84px,9vw,130px);line-height:.8;color:var(--sun);transform:rotate(-3deg)}
+.below .promise b{font-weight:700;color:var(--sun)}
+.loud span{text-align:center}
+.join.conf > :not(#note){display:none !important}
+/* a friend's link: their name is on a nameboard that swings in, hung by two strings */
+.fplate{display:inline-block;position:relative;background:var(--sun);color:var(--ink);padding:.06em .2em 0;margin:.12em .05em 0;line-height:.92;transform:rotate(-3deg);transform-origin:50% -.5em;
+  box-shadow:inset 0 0 0 .03em var(--sun),inset 0 0 0 .05em var(--ink),.05em .06em 0 #000}
+.fplate::before,.fplate::after{content:"";position:absolute;top:-.5em;width:.03em;height:.5em;background:#B9B1A0}
+.fplate::before{left:16%} .fplate::after{right:16%}
+.sentby{font-family:var(--body);font-weight:600;font-size:clamp(15px,1.3vw,18px);letter-spacing:.02em;color:var(--sun);text-transform:none;margin:0 0 .9em}
+/* your name: plain sign letters in the friend inks */
+.join .inkw{line-height:1}
+.join .ink i{display:inline-block}
+/* made by hand: actually handwritten, and written as you arrive */
+.hand{position:relative;display:inline-block;font-family:"Kalam",cursive;font-weight:700;color:var(--sun);font-size:1.18em;line-height:1;transform:rotate(-2deg)}
+.hand svg{position:absolute;left:-2%;bottom:-.32em;width:104%;height:.4em;overflow:visible}
+.hand path{fill:none;stroke:var(--red);stroke-width:3.2;stroke-linecap:round}
+/* the college sign: hangs off the blank you picked, with a line only that campus gets */
+.join .hang{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:flex-start;gap:.3em .6em;margin:.1em 0 .25em;min-height:0}
+.join .hang[hidden]{display:none}
+.plate{position:relative;display:inline-block;margin-top:.7em;padding:.22em .55em .16em;background:var(--cream);color:var(--ink);font-family:var(--sign);font-weight:800;font-size:.62em;letter-spacing:.01em;line-height:1.05;text-transform:none;
+  transform-origin:50% -.7em;box-shadow:inset 0 0 0 .08em var(--cream),inset 0 0 0 .12em var(--ink),.1em .12em 0 #000}
+.plate::before,.plate::after{content:"";position:absolute;top:-.7em;width:.06em;height:.72em;background:#B9B1A0}
+.plate::before{left:22%} .plate::after{right:22%}
+.plate.p2{background:var(--sun)}
+.hang button.plate{border:0;cursor:pointer;font-family:var(--sign);font-weight:900;font-size:.78em !important;letter-spacing:.04em;text-transform:uppercase;color:var(--ink) !important;background:var(--sun);min-width:4.6em;min-height:44px;padding:.3em .9em .22em;margin-right:.25em}
+.hang .brow{flex-basis:100%;display:flex;gap:.7em}
+.hang button.plate:focus-visible{outline:2px solid #F3F5F9;outline-offset:4px}
+/* email: once it looks right, its line is painted green and ticked */
+.join input#email.ok{border-bottom-color:var(--n0)}
+.tick{display:inline-block;width:.7em;height:.58em;margin-left:-.4em;background:var(--n0);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'%3E%3Cpath d='M3 11.5l6 5.5L21 3' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 20'%3E%3Cpath d='M3 11.5l6 5.5L21 3' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;opacity:0;transform:scale(.3) rotate(-12deg);transition:opacity .2s,transform .35s cubic-bezier(.3,1.7,.5,1)}
+.tick.on{opacity:1;transform:none}
+/* ready: the plate drops a notch, like a sign being hung, and ME hurries */
+.join.ready button.cmi{animation:hung .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hung{0%{transform:rotate(-2deg) translateY(-.25em)}60%{transform:rotate(1deg) translateY(.08em)}100%{transform:rotate(-2deg)}}
+@keyframes hop2{0%,58%,100%{transform:none}64%{transform:scale(1.08,.86)}76%{transform:translateY(-.16em) scale(.96,1.06) rotate(-5deg)}88%{transform:scale(1.06,.9)}94%{transform:none}}
+.cmi .arr{color:var(--red)}
+.cmi:hover{transform:rotate(0deg) translate(-.03em,-.04em);box-shadow:inset 0 0 0 .07em var(--sun),inset 0 0 0 .11em var(--ink),.16em .19em 0 var(--ink)}
+.cmi:active{transform:rotate(0deg) translate(.12em,.14em) !important;box-shadow:inset 0 0 0 .07em var(--sun),inset 0 0 0 .11em var(--ink),0 0 0 var(--ink)}
+.top .cmi{font-size:21px}
+.join button.cmi{font-size:1.15em !important;margin-top:.25em}
+.join:not(.ready) button.cmi{background:#D9CBA8 !important}
+.join:not(.ready) button.cmi .me{color:var(--ink-2,#3A332A) !important;animation:none}
+.join button.cmi.in{background:var(--green) !important;color:var(--cream) !important;box-shadow:inset 0 0 0 .07em var(--green),inset 0 0 0 .11em var(--cream),.12em .14em 0 #000}
+.acts .cmi{background:var(--green) !important;color:var(--cream) !important;box-shadow:inset 0 0 0 .07em var(--green),inset 0 0 0 .11em var(--cream),.12em .14em 0 #000}
+.acts .cmi .arr{color:var(--sun)}
+
+/* ---- 1. the pile: 47 painted scraps. Fling them, or scroll and they're sucked into one point ---- */
+.s1 .stick{background:var(--cobalt)}
+.cap{position:absolute;left:0;right:0;top:13%;margin:0;text-align:center;font-size:clamp(40px,8.4vw,120px);color:var(--cream);z-index:3;pointer-events:none;padding:0 var(--gx)}
+.cap b{color:var(--sun);font-weight:900}
+.scrap{position:absolute;left:0;top:0;margin:0;white-space:nowrap;font-family:var(--sign);font-weight:800;text-transform:uppercase;line-height:1;padding:.14em .32em .1em;
+  will-change:transform;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;z-index:2;opacity:0}
+.scrap.on{opacity:1}
+.scrap.held{cursor:grabbing;z-index:4}
+.scrap small{display:block;font-family:var(--body);font-weight:600;font-size:.42em;text-transform:none;letter-spacing:0;opacity:.8;margin-bottom:.15em}
+.k0{background:var(--sun);color:var(--ink)} .k1{background:var(--cream);color:var(--cobalt-d)} .k2{background:var(--green);color:var(--cream)} .k3{background:var(--red);color:var(--cream)}
+.hint{position:absolute;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-weight:500;font-size:15px;color:var(--cream);opacity:.85;z-index:3}
+.slam{position:absolute;left:50%;top:52%;margin:0;transform:translate(-50%,-50%);text-align:center;color:var(--sun);font-size:min(25vw,31vh);z-index:5;white-space:nowrap;pointer-events:none}
+.slam .lt{display:inline-block;opacity:0;transform-origin:50% 85%;will-change:transform}
+.slam .o{position:relative}
+.slam .eye{position:absolute;left:50%;top:50%;width:.34em;height:.62em;transform:translate(-50%,-50%);background:var(--sun);border-radius:.17em;opacity:0}
+.zoom{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform}
+.fill{position:absolute;inset:0;background:var(--sun);opacity:0;z-index:6;pointer-events:none}
+
+/* ---- 2. the board: Saturday's plan clatters into place, letter by letter, like a station board ---- */
+.s2 .stick{background:var(--sun);color:var(--ink);display:grid;place-items:center;padding:0 var(--gx)}
+.bwrap{width:min(1100px,100%)}
+.kick{margin:0 0 14px;font-family:var(--body);font-weight:600;font-size:clamp(14px,1.3vw,18px);letter-spacing:.02em}
+.board{position:relative;background:var(--cobalt);color:var(--cream);padding:clamp(18px,3vw,40px);outline:3px solid var(--sun);outline-offset:-12px;box-shadow:0 0 0 6px var(--cobalt) inset}
+.row{display:block;margin:0}
+.fw{white-space:nowrap}
+.r1{font-size:clamp(40px,9.6vw,150px)}
+.r2{font-size:clamp(34px,7vw,110px);color:var(--sun);margin-top:.12em}
+.r3{font-size:clamp(20px,3.4vw,52px);margin-top:.35em;font-weight:800}
+.fc{display:inline-block;text-align:center;transform-origin:50% 50%}
+.fc.wait{visibility:hidden}
+.ins{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:22px}
+.in{font-family:var(--sign);font-weight:900;font-size:clamp(24px,3.4vw,48px);text-transform:uppercase;padding:.08em .3em;opacity:0;transform-origin:50% 60%}
+.pakka{position:absolute;right:4%;bottom:-6%;margin:0;font-family:var(--sign);font-weight:900;font-size:clamp(46px,9vw,130px);color:var(--red);text-transform:uppercase;
+  border:.07em solid var(--red);padding:0 .18em;line-height:1.05;transform:rotate(-11deg);opacity:0}
+@media (max-width:640px){ .r1{font-size:12.4vw} .r2{font-size:10vw} .r3{font-size:5.1vw} .pakka{bottom:-10%} }
+
+/* ---- 3. the shutter: the arguing is painted on a shop shutter. Scroll rolls it up on what's fair ---- */
+.s3 .stick{background:var(--cream);color:var(--ink)}
+.behind{position:absolute;inset:0;display:grid;align-content:center;padding:0 var(--gx);gap:clamp(18px,3vh,32px)}
+.fair{margin:0;font-size:clamp(54px,11vw,170px);color:var(--green)}
+.fair s{position:relative;color:var(--red);text-decoration:none}
+.fair s::after{content:"";position:absolute;left:-.04em;right:-.04em;top:47%;height:.11em;background:var(--red);transform-origin:0 50%;transform:scaleX(var(--k,1)) rotate(-2deg)}
+.says .u{position:relative;white-space:nowrap}
+.says .u::after{content:"";position:absolute;left:0;right:0;bottom:-.06em;height:.12em;background:var(--sun);transform-origin:0 50%;transform:scaleX(var(--k,1));z-index:-1}
+.says li{position:relative;z-index:0}
+.says{margin:0;padding:0;list-style:none;font-family:var(--sign);font-weight:800;font-size:clamp(24px,3.6vw,52px);line-height:1.05;text-transform:uppercase;display:grid;gap:.3em}
+.says b{color:var(--cobalt)}
+.says em{font-style:normal;color:var(--red)}
+.shutter{position:absolute;left:0;right:0;top:0;height:100%;z-index:2;will-change:transform;
+  background:repeating-linear-gradient(180deg,var(--red) 0 26px,var(--red-d) 26px 29px,#d63a2a 29px 31px);display:grid;align-content:center;padding:0 var(--gx)}
+.shutter::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;background:linear-gradient(#5e110a,#2b0703)}
+.shutter p{margin:0;color:var(--cream);font-size:clamp(52px,12vw,180px);text-shadow:.04em .04em 0 rgba(0,0,0,.25)}
+.shutter p span{display:inline-block}
+.drum{position:absolute;left:0;right:0;top:0;height:0;z-index:3;background:linear-gradient(#2b0703,#8A1A10 60%,#5e110a);will-change:height}
+
+/* ---- 4. how it starts: each step is painted on as you reach it ---- */
+.s4{background:var(--cobalt);padding:clamp(90px,16vh,170px) var(--gx)}
+.s4 h2{margin:0 0 clamp(30px,6vh,60px);font-family:var(--body);font-weight:600;font-size:clamp(15px,1.3vw,18px);color:var(--sun);letter-spacing:.02em}
+.step{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:0 clamp(16px,3vw,40px);margin:0 0 clamp(26px,5vh,50px)}
+.step .num{font-size:clamp(90px,17vw,250px);color:var(--sun)}
+.step{transition:opacity .35s}
+.step.dim{opacity:.3}
+.step .say{font-size:clamp(34px,6.4vw,96px);color:var(--cream)}
+.loud span{display:inline-block}
+.yes{display:inline-block;color:var(--sun);transform-origin:50% 70%}
+.step .say small{display:block;font-family:var(--body);font-weight:500;font-size:clamp(15px,1.4vw,19px);text-transform:none;letter-spacing:0;line-height:1.3;color:var(--cream);opacity:.8;margin-top:.5em}
+.paintx{--q:1;-webkit-mask-image:linear-gradient(100deg,#000 calc(var(--q) * 130% - 30%),transparent calc(var(--q) * 130% - 4%));mask-image:linear-gradient(100deg,#000 calc(var(--q) * 130% - 30%),transparent calc(var(--q) * 130% - 4%))}
+
+/* ---- 5. the sign-up ---- */
+.below{background:var(--ink);color:#F3F5F9}
+.sec{position:relative;padding-left:max(var(--gx), env(safe-area-inset-left,0px));padding-right:max(var(--gx), env(safe-area-inset-right,0px))}
+.big{margin:0;font-family:var(--sign);font-weight:900;text-transform:uppercase;font-size:clamp(56px,11vw,170px);line-height:.88;letter-spacing:-.01em;color:var(--sun)}
+.end{padding-top:clamp(70px,12vh,140px)}
+.end .big .gold,.gold{color:var(--red)}
+.mid{margin:0;font-family:var(--sign);font-weight:900;text-transform:uppercase;font-size:clamp(34px,5vw,70px);line-height:.95}
+.fine{font-size:var(--small);color:var(--dim);margin:14px 0 0}
+.end .fine + .fine{margin-top:clamp(56px,11vh,120px)}
+.stamp{position:absolute;left:var(--gx);top:clamp(40px,8vh,110px);margin:0;font-family:var(--sign);font-weight:900;font-size:clamp(60px,12vw,190px);color:var(--red);text-transform:uppercase;
+  border:.07em solid var(--red);padding:0 .2em;line-height:1.05;transform:rotate(-9deg);pointer-events:none;opacity:0}
+.join{text-transform:none}
+/* your gang's link: printed out like a ticket from a machine, with its own copy plate */
+.tk{display:inline-flex;align-items:stretch;max-width:100%;margin-top:clamp(14px,2.4vh,22px);overflow:hidden;padding:0 .3em .35em 0}
+.below .glink{margin:0;display:block;background:var(--cream);color:var(--ink);font-family:var(--sign);font-weight:800;font-size:clamp(18px,2.4vw,32px);letter-spacing:.01em;line-height:1.1;
+  padding:.38em .6em .3em;overflow-wrap:anywhere;min-width:0;
+  -webkit-mask:radial-gradient(circle at 0 50%,#0000 .28em,#000 .3em) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,#0000 .28em,#000 .3em) right/51% 100% no-repeat;
+          mask:radial-gradient(circle at 0 50%,#0000 .28em,#000 .3em) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,#0000 .28em,#000 .3em) right/51% 100% no-repeat}
+.tk .cp{flex:none;align-self:center;margin-left:.5em;font-size:clamp(18px,2.2vw,30px)}
+.cp.ok{background:var(--green) !important;color:var(--cream) !important}
+#copy{display:none}
+.top .cmi .me{font-size:1em !important}
+::selection{background:var(--sun);color:var(--ink)}
+
+@media (prefers-reduced-motion: reduce){
+  .pin{height:auto !important}
+  .stick{position:relative;height:auto;min-height:100svh}
+  .s1 .scrap,.s1 .hint{display:none}
+  .slam .lt{opacity:1}
+  .s2 .in,.s2 .pakka{opacity:1}
+  .shutter{display:none}
+  .cmi .me,.cmi .arr{animation:none !important}
+}
+</style>
+<style>
+/* "Count me in": the one action. No box: the "me" is in the visitor's own ink, a size up, and it keeps stepping forward. */
+.cmi{display:inline-block;font-family:var(--display);font-weight:800;letter-spacing:-.03em;word-spacing:.06em;text-decoration:none;white-space:nowrap}
+.cmi .me{display:inline-block;font-weight:800;font-size:1.24em;line-height:1;color:var(--you);transform-origin:50% 92%;transition:color .25s ease;animation:hop 2.8s cubic-bezier(.3,0,.3,1) infinite}
+.cmi .arr{display:inline-block;animation:stride 2.8s ease-in-out infinite}
+.cmi .arr.dn{animation-name:sink}
+.cmi:hover .me,.cmi:focus-visible .me{animation-duration:.9s}
+.cmi:hover .arr,.cmi:focus-visible .arr{animation-duration:.9s}
+.cmi:active{transform:scale(.97)}
+@keyframes hop{0%,58%,100%{transform:none}64%{transform:scale(1.1,.82)}76%{transform:translateY(-.5em) scale(.95,1.1) rotate(-6deg)}88%{transform:translateY(0) scale(1.09,.86)}94%{transform:scale(.98,1.04)}}
+@keyframes stride{0%,88%,100%{transform:none}94%{transform:translateX(.4em)}}
+@keyframes sink{0%,88%,100%{transform:none}94%{transform:translateY(.3em)}}
+@keyframes land{0%{transform:translateY(-60vh);opacity:0}8%{opacity:1}50%{transform:translateY(0) scale(1,1)}64%{transform:translateY(0) scale(1.14,.82)}82%{transform:translateY(0) scale(.97,1.05)}100%{transform:none;opacity:1}}
+.cmi:focus-visible,.logo:focus-visible{outline:2px solid currentColor;outline-offset:6px}
+
+.end{padding-top:clamp(36px,7vh,84px);padding-bottom:clamp(40px,8vh,80px)}
+.ew{display:inline-block;transform-origin:50% 100%}
+.bangs{display:inline-block;transform-origin:50% 100%}
+.join{margin:clamp(28px,6vh,64px) 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:.25em .7em;max-width:100%;
+  font-family:var(--display);font-weight:800;font-size:clamp(24px,3.5vw,54px);letter-spacing:-.035em;line-height:1.3}
+.join input{width:11.5em;max-width:100%;min-width:0;border:0;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;padding:0 0 .08em;color:#F3F5F9;outline:none;caret-color:#F3F5F9;
+  border-bottom:.07em solid rgba(243,245,249,.4);transition:border-color .2s}
+.join input::placeholder{color:#7D8396}
+.join input:focus{border-bottom-color:#F3F5F9}
+.join button{border:0;background:none;padding:0;font:inherit;font-size:1.3em;line-height:1.1;letter-spacing:inherit;color:#F3F5F9;cursor:pointer;transition:color .25s}
+.join.ready button,.join button.in{color:var(--marigold)}
+.join.ready .cmi .me{animation-duration:1s}
+.join button:focus-visible{outline:2px solid #F3F5F9;outline-offset:6px}
+.fl{display:inline-block;text-align:center;transform-origin:50% 55%}
+/* gang sign-up: still one line of type. Each blank is underlined; the college is picked in place. */
+.promise{margin:clamp(18px,3vh,30px) 0 0;max-width:30ch;font-family:var(--display);font-weight:500;font-size:clamp(20px,2.3vw,34px);line-height:1.3;letter-spacing:-.025em;color:var(--dim);text-wrap:balance}
+.promise b{font-weight:800;color:#F3F5F9}
+.join .w{color:var(--dim);font-weight:500}
+.join input.nm{width:4.2em}
+@supports (field-sizing:content){.join input.nm,.join input.oc,.join select{field-sizing:content;min-width:3.4em}.join input.nm{width:auto}}
+.join input.oc{width:7em}
+.join input[hidden]{display:none}
+.join select{appearance:none;-webkit-appearance:none;border:0;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;color:#F3F5F9;padding:0 .9em .08em 0;cursor:pointer;outline:none;max-width:100%;
+  border-bottom:.07em solid rgba(243,245,249,.4);transition:border-color .2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23A6ABBA' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .1em center;background-size:.5em auto}
+.join select:invalid{color:#7D8396}
+.join select:focus{border-bottom-color:#F3F5F9}
+.join select:focus-visible{outline:2px solid #F3F5F9;outline-offset:6px}
+.join select option{color:#101219;background:#F6F7F9}
+.join .go{flex-basis:100%;height:0}
+.share{margin-top:clamp(28px,5vh,52px)}
+.share[hidden]{display:none}
+.glink{margin:clamp(14px,2.4vh,22px) 0 0;font-family:var(--body);font-size:clamp(15px,1.4vw,19px);color:var(--dim);overflow-wrap:anywhere}
+.acts{margin:clamp(18px,3vh,30px) 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:.4em 1.2em;font-size:clamp(24px,3.2vw,44px)}
+.acts .cmi{color:var(--marigold)}
+.acts .cmi:focus-visible,.txt:focus-visible{outline:2px solid #F3F5F9;outline-offset:6px}
+.txt{border:0;background:none;padding:0;font-family:var(--display);font-weight:800;font-size:.72em;letter-spacing:-.03em;color:#F3F5F9;cursor:pointer;text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.18em;text-decoration-color:rgba(243,245,249,.45)}
+.txt:hover{text-decoration-color:#F3F5F9}
+::selection{background:var(--marigold);color:#101219}
+/* the college picker: no white system list. Tapping the blank drops the colleges in below it, in the page's own type and inks. */
+.join .pick{border:0;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;color:#F3F5F9;padding:0 .2em .08em 0;cursor:pointer;
+  border-bottom:.07em solid rgba(243,245,249,.4);transition:border-color .2s;display:inline-flex;align-items:baseline;gap:.25em}
+.join .pick.empty{color:#7D8396}
+.join .pick[hidden]{display:none}
+/* your name, as you type it: every letter lands in one of the four inks */
+.inkw{position:relative;display:inline-block;max-width:100%}
+.join .inkw input.nm.inky{color:transparent;caret-color:#F3F5F9}
+.join .inkw input.nm.inky::selection{color:#101219}
+.ink{position:absolute;left:0;top:0;pointer-events:none;white-space:pre;padding:0 0 .08em;font:inherit;letter-spacing:inherit;line-height:inherit}
+.ink i{font-style:normal}
+.ink i.pop{display:inline-block}
+.join .pick:hover,.join .pick[aria-expanded="true"]{border-bottom-color:#F3F5F9}
+.join .pick:focus-visible{outline:2px solid #F3F5F9;outline-offset:6px}
+.join .pick svg{width:.42em;height:.42em;flex:none;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.join .pick[aria-expanded="true"] svg{transform:rotate(180deg)}
+.join .picks{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:.05em .55em;margin:.15em 0 .35em;padding:0;list-style:none;font-size:1.12em;line-height:1.05}
+.join .picks[hidden]{display:none}
+.join .picks li{cursor:pointer;outline:none;white-space:nowrap;text-decoration:underline;text-decoration-thickness:.06em;text-underline-offset:.14em;text-decoration-color:transparent;transition:text-decoration-color .15s}
+.join .picks li:nth-child(4n+1){color:var(--n0)} .picks li:nth-child(4n+2){color:var(--n1)} .picks li:nth-child(4n+3){color:var(--n2)} .picks li:nth-child(4n){color:var(--n3)}
+.join .picks li.soft{color:var(--dim);font-weight:500;font-size:.62em}
+.join .picks li:hover,.picks li.on{text-decoration-color:currentColor}
+.join .picks li[aria-selected="true"]::after{content:"!!";color:var(--marigold)}
+.join .picks li:focus-visible{outline:2px solid #F3F5F9;outline-offset:4px}
+
+</style>
+<header class="top"><a class="logo" href="#s1" aria-label="planic!!">planic!!</a><a class="cmi" href="#join">Count <b class="me">me</b> in <span class="arr">→</span></a></header>
+
+<section class="pin s1" id="s1" style="height:340vh">
+  <p class="sr">The group chat has 47 messages and no plan. planic!! turns it into one: Saturday's on.</p>
+  <div class="stick" id="st1">
+    <div class="zoom" id="zoom">
+      <h1 class="cap sign" id="cap" aria-hidden="true"><b id="cnt">47</b> messages.<br>Zero plans.</h1>
+      <div id="pile" aria-hidden="true"></div>
+      <p class="slam sign" id="slam" aria-hidden="true"><span class="w1">Saturday’s</span><br><span class="w2">on.</span></p>
+    </div>
+    <div class="fill" id="fill"></div>
+    <p class="hint" id="hint">Scroll. Or fling a few out of the way first.</p>
+  </div>
+</section>
+
+<section class="pin s2" id="s2" style="height:300vh">
+  <p class="sr">The plan: Hauz Khas rooftop, Saturday 7:30 pm, ₹650 each, 18 min from Saket. Aarav, Meera, Kabir and Zoya are in. Pakka.</p>
+  <div class="stick" aria-hidden="true">
+    <div class="bwrap">
+      <p class="kick" id="kick">planic!! heard what each of them meant.</p>
+      <div class="board" id="board">
+        <p class="row r1 sign" data-flap>Hauz Khas rooftop</p>
+        <p class="row r2 sign" data-flap>Sat · 7:30 pm</p>
+        <p class="row r3 sign" data-flap>₹650 each · 18 min from Saket</p>
+        <p class="pakka" id="pakka">Pakka</p>
+      </div>
+      <div class="ins"><span class="in k1">Aarav in</span><span class="in k3">Meera in</span><span class="in k2">Kabir in</span><span class="in k1">Zoya in</span></div>
+    </div>
+    <div class="shutter" id="shutIn"></div>
+  </div>
+</section>
+
+<section class="pin s3" id="s3" style="height:280vh">
+  <h2 class="sr">No confusion. No arguments. No fights. Not perfect: fair for everyone.</h2>
+  <div class="stick">
+    <div class="behind">
+      <p class="fair sign" aria-hidden="true"><s>Perfect</s><br>Fair for everyone.</p>
+      <ul class="says">
+        <li><b>Kabir</b> leaves by <span class="u">7:10</span> to make it.</li>
+        <li><b>Zoya</b> gets the <span class="u">longest ride</span>.</li>
+        <li>planic!! <em>says so</em>. Then <span class="u">you decide</span>.</li>
+      </ul>
+    </div>
+    <div class="shutter" id="shutter" aria-hidden="true">
+      <p class="sign"><span class="pl">No confusion.</span><br><span class="pl">No arguments.</span><br><span class="pl">No fights.</span></p>
+    </div>
+    <div class="drum" id="drum"></div>
+    <div class="roll" id="roll"></div>
+  </div>
+</section>
+
+<section class="s4" id="s4">
+  <h2>How it starts</h2>
+  <div class="step"><span class="num sign">1</span><p class="say sign">Drop one link in the group.</p></div>
+  <div class="step"><span class="num sign">2</span><p class="say sign">Everyone says what they want.<small class="loud">Out loud works.</small></p></div>
+  <div class="step"><span class="num sign">3</span><p class="say sign">One <span class="yes">yes</span> comes back.</p></div>
+</section>
+
+<div class="below" id="below">
+  <form name="confirmed" data-netlify="true" hidden aria-hidden="true"><input name="first_name"><input name="college"><input name="college_other"><input name="email"><input name="gang"><input name="role"><input name="invited_by"></form>
+  <section class="sec end" id="join">
+    <h2 class="big" id="endH"><span class="ew">Save</span> <span class="ew">your</span> <span class="ew gangs">gang's</span> <span class="ew">spot.</span></h2>
+    <p class="promise" id="promise"><span class="ten" aria-hidden="true">10</span><span>The first <b>10 gangs</b> to sign up together get their first plan <span class="hand" id="hand">made by hand</span>.</span></p>
+    <form class="join" id="joinForm" name="early-access" method="POST" data-netlify="true" netlify-honeypot="company" novalidate><input type="hidden" name="form-name" value="early-access"><span class="sr" aria-hidden="true"><label>Leave this empty <input name="company" tabindex="-1" autocomplete="off"></label></span>
+      <input type="hidden" name="gang" id="gang" value=""><input type="hidden" name="role" id="role" value="started"><input type="hidden" name="invited_by" id="invitedBy" value="">
+      <span class="w" aria-hidden="true">I’m</span> <span class="inkw"><input class="nm" id="fname" name="first_name" type="text" placeholder="name" autocomplete="given-name" maxlength="30" aria-label="Your first name" required><span class="ink" id="fnameInk" aria-hidden="true"></span></span>
+      <span class="w" aria-hidden="true">from</span> <select id="college" name="college" aria-label="Your college" required>
+        <option value="" disabled selected>college</option>
+        <option>DTU</option><option>NSUT</option><option>IIIT Delhi</option><option>IGDTUW</option><option>Delhi University</option><option value="Other">somewhere else</option>
+      </select><button type="button" class="pick empty" id="collegeBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="collegeList" hidden><span id="collegeTxt">college</span><svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <ul class="picks" id="collegeList" role="listbox" aria-label="Your college" hidden></ul> <span class="hang" id="hang" aria-live="polite" hidden></span><input class="oc" id="collegeOther" name="college_other" type="text" placeholder="college or work" maxlength="60" aria-label="Your college or workplace" hidden>
+      <span class="w" aria-hidden="true">at</span> <input id="email" name="email" type="email" placeholder="you@gmail.com" autocomplete="email" aria-label="Your Gmail, or work or college email" required><span class="tick" id="tick" aria-hidden="true"></span>
+      <span class="go" aria-hidden="true"></span>
+      <button type="submit" id="joinBtn" class="cmi">Count <b class="me">me</b> in <span class="arr">→</span></button>
+    </form>
+    <p class="fine" id="note" role="status">Early access. New Delhi first. We’ll only email you about planic!!</p>
+    <div class="share" id="share" hidden>
+      <p class="mid" id="shareH">Now send it to your gang.</p>
+      <div class="tk"><p class="glink" id="glink"></p><button type="button" class="cmi cp" id="copy2">Copy</button></div>
+      <p class="acts"><a class="cmi" id="wa" href="#" target="_blank" rel="noopener">Send on WhatsApp <span class="arr">→</span></a> <button type="button" class="txt" id="copy">Copy link</button></p>
+      <p class="fine" id="shareNote" role="status">Each friend signs up with their own email. Your first name shows in the link.</p>
+    </div>
+    <p class="fine">The four friends and their plan are an illustrative example.</p>
+  </section>
+</div>
+<script>
+// Signup and counting. On the hosted page (the build adds a planic:site meta) sign-ups are saved with Netlify Forms
+// (Umami counting runs only if its script is added to the head; this site has none yet.) In a preview nothing is sent.
+// Gangs: a sign-up without a link starts a gang and gets a link to send. A friend who opens that link
+// (?g=<gang id>&from=<first name>) joins the same gang with their own details. Nobody enters anyone else's contact.
+(() => {
+  const SITE = document.querySelector('meta[name="planic:site"]')?.content || '';
+  const HOME = SITE ? location.origin : 'https://planic-gangs.netlify.app';
+  const $ = id => document.getElementById(id);
+  const counted = new Set();
+  const track = (ev, data) => { if (counted.has(ev)) return; counted.add(ev); try { window.umami?.track(ev, data); } catch {} };
+  const form = $('joinForm'), email = $('email'), fname = $('fname'), college = $('college'), other = $('collegeOther'),
+        btn = $('joinBtn'), note = $('note'), gang = $('gang'), role = $('role');
+  const esc = t => t.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const cleanName = t => (t || '').replace(/[^\p{L}\p{M} .'-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 24);
+  const words = (t, last) => t.split(' ').map((w, i, a) => `<span class="ew">${w}${i === a.length - 1 ? last : ''}</span>`).join(' ');
+
+  // Back from the confirm link in the email?
+  const cq = new URLSearchParams(location.search).get('confirmed');
+  if (cq) addEventListener('load', () => {
+    const n = $('note');
+    if (cq === '1') { $('joinForm').classList.add('conf'); n.textContent = 'Confirmed. Your spot is locked in. Send your gang the link if you haven’t.'; document.dispatchEvent(new CustomEvent('planic:in', { detail: { head: '<span class="ew">Spot</span> <span class="ew">confirmed<span class="gold bangs">!!</span></span>' } })); }
+    else n.textContent = 'That confirm link didn’t work or has expired. Sign up again and we’ll send a fresh one.';
+    $('join').scrollIntoView({ block: 'center' });
+  });
+
+  // Arriving through a friend's link?
+  const q = new URLSearchParams(location.search);
+  const gid = /^[a-z0-9]{6,12}$/.test(q.get('g') || '') ? q.get('g') : '';
+  const from = gid ? cleanName(q.get('from')) : '';
+  if (gid) {
+    gang.value = gid; role.value = 'joined'; $('invitedBy').value = from;
+    // their friend's name is the first thing they see: on its own nameboard, with a line saying who sent the link
+    $('endH').innerHTML = from
+      ? `<span class="ew">Join</span> <span class="fplate">${esc(from)}’s</span> <span class="ew">gang</span> <span class="ew">on</span> <span class="ew">planic<span class="gold">!!</span></span>`
+      : words('Join your friend’s gang on', '') + ' <span class="ew">planic<span class="gold">!!</span></span>';
+    if (from) $('endH').insertAdjacentHTML('beforebegin', `<p class="sentby">${esc(from)} sent you this link.</p>`);
+    $('promise').innerHTML = '<span class="ten" aria-hidden="true">10</span><span>Sign up with your own email. The first <b>10 gangs</b> to sign up together get their first plan <span class="hand" id="hand">made by hand</span>.</span>';
+    const ask = document.querySelector('#next .ask');
+    if (ask) ask.textContent = from ? `${from}’s gang next?` : 'Your gang next?';
+  }
+
+  const newId = () => { const a = 'abcdefghjkmnpqrstuvwxyz23456789', b = crypto.getRandomValues(new Uint8Array(8)); return [...b].map(x => a[x % a.length]).join(''); };
+  // Only Gmail. Gmail usernames are 6 to 30 letters, numbers and dots, no dot at either end or twice in a row.
+  // No +aliases (one person, one spot), and the usual keyboard-mash names are turned away.
+  const JUNK = /^(test|testing|asdf|qwerty|abcdef|abc123|fake|example|sample|demo|dummy|xyz|aaa|123)/;
+  const gmail = v => { const m = /^([a-z0-9.]+)@(gmail|googlemail)\.com$/.exec(v.toLowerCase()); if (!m) return false;
+    const u = m[1], bare = u.replace(/\./g, '');
+    return bare.length >= 6 && bare.length <= 30 && !/^\.|\.$|\.\./.test(u) && /[a-z]/.test(bare) && !JUNK.test(bare) && !/^(.)\1+$/.test(bare) && !/^(.)\1{4,}/.test(bare); };
+  // Work and college emails are welcome too. Other free inboxes and throwaway inboxes are not: Gmail is the one personal inbox we take.
+  const FREE = /^(yahoo|ymail|rocketmail|outlook|hotmail|live|msn|rediffmail|rediff|aol|icloud|me|mac|proton|protonmail|pm|zoho|zohomail|gmx|mail|yandex|tutanota|tuta|hey|inbox|fastmail)\./;
+  const THROW = /(mailinator|guerrillamail|sharklasers|10minutemail|tempmail|temp-mail|yopmail|trashmail|getnada|dispostable|maildrop|throwaway|fakeinbox|mohmal|emailondeck|mintemail|spamgourmet|tempinbox|burnermail|moakt|tmpmail|discard\.email)/;
+  const work = v => { const m = /^([a-z0-9._%+-]{2,64})@([a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,})$/.exec(v.toLowerCase()); if (!m) return false;
+    const u = m[1], d = m[2]; return !/^(gmail|googlemail)\.com$/.test(d) && !FREE.test(d) && !THROW.test(d) && !/^\.|\.$|\.\./.test(u) && !JUNK.test(u.replace(/\W/g, '')); };
+  const ok = v => gmail(v) || work(v);
+  // a work address also has to belong to a domain that really receives mail (one DNS look-up of the domain only, never the address)
+  const mx = async d => { try { const c = new AbortController(), t = setTimeout(() => c.abort(), 3500);
+      const r = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(d)}&type=MX`, { signal: c.signal }); clearTimeout(t);
+      const j = await r.json(); return j.Status === 0 && (j.Answer || []).some(x => x.type === 15) ? true : (j.Status === 3 || !(j.Answer || []).length ? false : true);
+    } catch { return true; } };   // if the look-up itself fails, don't punish the person
+  const TYPO = /@(gmial|gmai|gmal|gamil|gnail|gmaill|gmail\.co|gmail\.con|gmail\.cm|gmail\.in|gmal\.com)/i;
+  const ready = () => ok(email.value.trim()) && cleanName(fname.value) && college.value && (college.value !== 'Other' || other.value.trim());
+  const sync = () => form.classList.toggle('ready', !!ready());
+  [email, fname, other].forEach(n => n.addEventListener('input', sync));
+
+  // Your name in colour: the field's own text goes transparent and a copy laid over it draws each letter
+  // in one of the four inks, never the same ink twice in a row. New letters drop in; still under reduced motion.
+  const inkName = (() => {
+    const ink = $('fnameInk'), inks = ['var(--n0)','var(--n1)','var(--n2)','var(--n3)'];
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let prev = '', cols = [];
+    fname.classList.add('inky');
+    const pick = before => { let c; do { c = inks[Math.floor(Math.random() * 4)]; } while (c === before); return c; };
+    const draw = () => {
+      const v = fname.value;
+      let k = 0; while (k < v.length && k < prev.length && v[k] === prev[k]) k++;
+      cols = cols.slice(0, k);
+      for (let i = k; i < v.length; i++) cols.push(pick(cols[i - 1]));
+      ink.innerHTML = [...v].map((c, i) => `<i style="color:${cols[i]}">${esc(c)}</i>`).join('');
+      if (!still && v.length > prev.length && v.startsWith(prev)) [...ink.children].slice(prev.length).forEach(n => {
+        n.classList.add('pop');
+        n.animate([{ transform:'translateY(.18em)', opacity:0 }, { transform:'none', opacity:1 }],
+          { duration: 160, easing:'cubic-bezier(.2,.8,.2,1)' }).onfinish = () => n.classList.remove('pop'); });
+      prev = v;
+      ink.style.transform = `translateX(${-fname.scrollLeft}px)`;   // a long name scrolls inside the field; the colours follow
+    };
+    fname.addEventListener('input', draw);
+    fname.addEventListener('scroll', () => { ink.style.transform = `translateX(${-fname.scrollLeft}px)`; });
+    return draw;
+  })();
+  email.addEventListener('input', () => { const v = email.value.trim(), good = ok(v); email.classList.toggle('ok', good); $('tick').classList.toggle('on', good);
+    if (!good && TYPO.test(v)) note.textContent = 'Looks like a typo. It should end in @gmail.com.'; });
+  college.addEventListener('change', () => { other.hidden = college.value !== 'Other'; if (!other.hidden) other.focus(); sync(); });
+
+  // The college picker. The native select stays in the form (it is what Netlify receives, and what works without JS);
+  // with JS it hides and this takes its place: tap the blank, the colleges drop in below in the four inks, tap one.
+  (() => {
+    const cb = $('collegeBtn'), list = $('collegeList'), txt = $('collegeTxt');
+    const opts = [...college.options].filter(o => o.value);
+    const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    list.innerHTML = opts.map((o, i) => `<li role="option" id="co${i}" tabindex="-1" data-v="${esc(o.value)}" aria-selected="false"${o.value === 'Other' ? ' class="soft"' : ''}>${esc(o.text)}</li>`).join('');
+    const items = [...list.children];
+    college.hidden = true; cb.hidden = false;
+    let at = 0;
+    const mark = i => { items.forEach((li, k) => li.classList.toggle('on', k === i)); at = i; items[i].focus(); };
+    const open = () => {
+      if (!list.hidden) return;
+      list.hidden = false; cb.setAttribute('aria-expanded', 'true');
+      const sel = items.findIndex(li => li.dataset.v === college.value);
+      mark(sel < 0 ? 0 : sel);
+      if (!calm) items.forEach((li, i) => li.animate(
+        [{ transform:'translateY(-.7em) rotate(-4deg)', opacity:0 }, { offset:.6, transform:'translateY(.06em) rotate(1deg)', opacity:1 }, { transform:'none', opacity:1 }],
+        { duration: 420, delay: i * 40, easing:'cubic-bezier(.2,.8,.2,1)', fill:'backwards' }));
+    };
+    const close = back => { if (list.hidden) return; list.hidden = true; cb.setAttribute('aria-expanded', 'false'); if (back) cb.focus(); };
+    const choose = i => {
+      const v = items[i].dataset.v;
+      college.value = v;
+      items.forEach((li, k) => li.setAttribute('aria-selected', String(k === i)));
+      txt.textContent = v;
+      cb.classList.remove('empty');
+      cb.style.color = items[i].classList.contains('soft') ? '' : getComputedStyle(items[i]).color;   // the pick keeps its ink
+      close(v !== 'Other');
+      cb.hidden = v === 'Other';   // somewhere else: the typed blank takes this one's place
+      if (!calm) cb.animate([{ transform:'translateY(-.35em) scale(.96,1.06)' }, { offset:.55, transform:'translateY(0) scale(1.06,.9)' }, { transform:'none' }], { duration: 380, easing:'cubic-bezier(.3,0,.3,1)' });
+      college.dispatchEvent(new Event('change'));
+      hangFor(v);
+    };
+    // a sign hangs off the college you picked, with a line only that campus gets
+    const hang = $('hang');
+    const LINES = { 'DTU':['IIT Bawana on Top!', 'Ab Bawana se bahar chalein?'], 'NSUT':['Vegas Mall ke aage bhi Dilli hai'],
+                    'IIIT Delhi':['Nehru Place laptop ke liye. Outing kahan?'], 'IGDTUW':['Majnu ka Tilla phir se? Ya kuch naya?'],
+                    'Delhi University':['North campus ya South?'], 'Other':['Tu bhi aaja'] };
+    const swing = el => { if (!calm) el.animate([{ transform:'translateY(-1.2em) rotate(14deg)', opacity:0 }, { offset:.3, transform:'translateY(0) rotate(-9deg)', opacity:1 },
+      { offset:.55, transform:'rotate(5deg)' }, { offset:.75, transform:'rotate(-2.5deg)' }, { transform:'none' }], { duration: 1100, easing:'ease-out' }); };
+    const plate = (t, cls) => { const p = document.createElement('span'); p.className = 'plate' + (cls ? ' ' + cls : ''); p.textContent = t; hang.appendChild(p); swing(p); return p; };
+    function hangFor(v){
+      hang.innerHTML = ''; const line = LINES[v]; if (!line) { hang.hidden = true; return; }
+      hang.hidden = false; plate(line[0]); if (line[1]) setTimeout(() => plate(line[1], 'p2'), calm ? 0 : 650);
+      if (v === 'Delhi University') { const row = document.createElement('span'); row.className = 'brow'; hang.appendChild(row);
+        ['North', 'South'].forEach(side => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'plate'; b.textContent = side; row.appendChild(b); swing(b);
+        b.addEventListener('click', () => { row.remove(); plate(side === 'North' ? 'Kamla Nagar chalein?' : 'Satya Niketan chalein?', 'p2'); });
+      }); }
+    }
+    cb.addEventListener('click', () => list.hidden ? open() : close(true));
+    cb.addEventListener('keydown', e => { if (['ArrowDown','ArrowUp'].includes(e.key)) { e.preventDefault(); open(); } });
+    items.forEach((li, i) => { li.addEventListener('click', () => choose(i)); li.addEventListener('pointerenter', () => mark(i)); });
+    list.addEventListener('keydown', e => {
+      const n = items.length;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); mark((at + 1) % n); }
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); mark((at - 1 + n) % n); }
+      else if (e.key === 'Home') { e.preventDefault(); mark(0); }
+      else if (e.key === 'End') { e.preventDefault(); mark(n - 1); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(at); }
+      else if (e.key === 'Escape') { e.preventDefault(); close(true); }
+      else if (e.key === 'Tab') close(false);
+    });
+    document.addEventListener('pointerdown', e => { if (!list.hidden && !list.contains(e.target) && !cb.contains(e.target)) close(false); });
+    other.addEventListener('blur', () => { if (college.value === 'Other' && !other.value.trim()) {
+      college.value = ''; other.hidden = true; cb.hidden = false; cb.classList.add('empty'); cb.style.color = ''; txt.textContent = 'college';
+      items.forEach(li => li.setAttribute('aria-selected', 'false')); hang.hidden = true; hang.innerHTML = ''; sync(); } });
+    college.focus = () => open();   // the "pick your college" error message sends focus here
+  })();
+
+  function showShare(name){
+    const link = `${HOME}/?g=${gang.value}&from=${encodeURIComponent(name)}`;
+    $('glink').textContent = link.replace(/^https?:\/\//, '');
+    const msg = `Saving our gang's spot on planic!! The first 10 gangs to sign up together get their first plan made by hand. Join here: ${link}`;
+    $('wa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    $('wa').onclick = () => track('shared-whatsapp', { role: role.value });
+    const copy = async () => {
+      const c2 = $('copy2');
+      try { await navigator.clipboard.writeText(link); $('shareNote').textContent = 'Link copied. Paste it in your gang’s chat.'; track('copied-link', { role: role.value });
+        c2.textContent = 'Copied!!'; c2.classList.add('ok'); setTimeout(() => { c2.textContent = 'Copy'; c2.classList.remove('ok'); }, 2200); }
+      catch { $('shareNote').textContent = 'Couldn’t copy here. Press and hold the link above to copy it.'; }
+    };
+    $('copy').onclick = copy; $('copy2').onclick = copy;
+    if (role.value === 'joined') $('shareH').textContent = 'Bring the rest of the gang.';
+    $('share').hidden = false;
+    document.dispatchEvent(new CustomEvent('planic:share'));
+  }
+
+  const done = name => {
+    btn.textContent = "You're in!!"; btn.classList.add('in'); form.classList.remove('ready');
+    const head = role.value === 'joined'
+      ? words(from ? `You’re in ${esc(from)}’s` : 'You’re in the', '') + ` <span class="ew">gang<span class="gold bangs">!!</span></span>`
+      : '<span class="ew">Spot</span> <span class="ew">saved<span class="gold bangs">!!</span></span>';
+    document.dispatchEvent(new CustomEvent('planic:in', { detail: { head } }));
+    showShare(name);
+  };
+
+  form.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const name = cleanName(fname.value);
+    if (!name) { note.textContent = 'Add your first name. It goes in your gang’s link.'; fname.focus(); return; }
+    if (!college.value) { note.textContent = 'Pick your college, or tap “somewhere else” and type it.'; college.focus(); return; }
+    if (college.value === 'Other' && !other.value.trim()) { note.textContent = 'Type your college or where you work.'; other.focus(); return; }
+    const v = email.value.trim();
+    if (!ok(v)) { const d = (v.split('@')[1] || '').toLowerCase();
+      note.textContent = /^(gmail|googlemail)\.com$/.test(d) ? 'That doesn’t look like a real Gmail. Check it and try again.'
+        : THROW.test(d) ? 'Throwaway inboxes can’t save a spot. Use your Gmail, or your work or college email.'
+        : FREE.test(d) ? 'Use your Gmail, or your work or college email.' : 'Check your email. It doesn’t look right.';
+      email.focus(); return; }
+    if (!gmail(v)) { note.textContent = 'Checking your email…'; btn.disabled = true; const real = await mx(v.split('@')[1].toLowerCase()); btn.disabled = false;
+      if (!real) { note.textContent = 'That email’s domain doesn’t receive mail. Check the spelling, or use your Gmail.'; email.focus(); return; }
+      note.textContent = ''; }
+    email.value = v.toLowerCase();
+    if (!gang.value) gang.value = newId();
+    fname.value = name; inkName();
+    if (!SITE) { done(name); return; }   // a preview has nowhere to send to
+    btn.disabled = true; note.textContent = 'Saving…';
+    try {
+      const res = await fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:new URLSearchParams(new FormData(form)).toString() });
+      if (!res.ok) throw new Error(res.status);
+      const sentTo = email.value;
+      done(name); email.value = '';
+      track('signed-up', { where: 'end', role: role.value });
+      // the spot only counts once they tap the link we email them
+      note.textContent = 'Sending your confirm link…';
+      const fd = Object.fromEntries(new FormData(form)); delete fd['form-name']; delete fd.company;
+      const sent = await fetch('/.netlify/functions/send-confirm', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(fd) }).then(r => r.ok).catch(() => false);
+      note.textContent = sent ? `One last tap: open the email we just sent to ${sentTo} and confirm. Your spot counts once you do.`
+                              : 'Saved, but the confirm email didn’t go out. Try again in a minute.';
+    } catch { if (role.value === 'started') gang.value = ''; note.textContent = 'That didn’t save. Check your connection and try again.'; }
+    finally { btn.disabled = false; }
+  });
+  document.addEventListener('planic:stage', e => track(e.detail));
+})();
+</script>
+<script>
+// The scenes. Each pinned scene reads its own scroll progress (0 at its top, 1 when it lets go) and draws itself from it,
+// so scrolling back plays it backwards. Under reduced motion every scene shows its end state and nothing is pinned.
+(() => {
+  const $ = id => document.getElementById(id), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, can = !reduce && !!document.body.animate;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v)), seg = (p, a, b) => clamp((p - a) / (b - a)), lerp = (a, b, t) => a + (b - a) * t;
+  const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2, out = t => 1 - Math.pow(1 - t, 3);
+  const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const split = el => { el.innerHTML = el.innerHTML.replace(/<br>/g, '\n'); const t = el.textContent; el.innerHTML = '';
+    [...t].forEach(c => { if (c === '\n') { el.appendChild(document.createElement('br')); return; } const s = document.createElement('span'); s.textContent = c; el.appendChild(s); });
+    return [...el.querySelectorAll('span')]; };
+
+  // A signwriter at work: every letter is outlined first, then filled, left to right. write(el) returns a function of progress 0..1.
+  function write(el, skip){
+    const ls = [];
+    const walk = n => [...n.childNodes].forEach(c => {
+      if (c.nodeType === 3) { if (!c.textContent.trim()) return; const f = document.createDocumentFragment();
+        c.textContent.split(/(\s+)/).forEach(w => { if (!w) return; if (/^\s+$/.test(w)) { f.append(w); return; }
+          const wd = document.createElement('span'); wd.style.whiteSpace = 'nowrap';
+          [...w].forEach(ch => { const s = document.createElement('span'); s.className = 'swl'; s.textContent = ch; wd.appendChild(s); ls.push(s); }); f.append(wd); });
+        c.replaceWith(f); }
+      else if (c.nodeType === 1 && !(skip && c.matches(skip))) walk(c); });
+    walk(el);
+    let cols = null, last = -1;
+    return q => { if (q === last) return; last = q; if (!cols) cols = ls.map(l => getComputedStyle(l).color);
+      const N = ls.length;
+      ls.forEach((l, j) => { const t = seg(q, j / N * .62, j / N * .62 + .38);
+        if (t >= 1) { l.style.color = ''; l.style.webkitTextStroke = ''; l.style.opacity = ''; return; }
+        if (t <= 0) { l.style.opacity = '0'; return; }
+        const c = cols[j], a = seg(t, .45, 1);
+        l.style.opacity = ''; l.style.webkitTextStroke = `${(.012 + .02 * Math.min(1, t / .45)).toFixed(3)}em ${c}`;
+        l.style.color = a ? c.replace(/^rgb\(([^)]+)\)$/, `rgba($1,${a.toFixed(2)})`) : 'transparent'; }); };
+  }
+
+  // ---------- 1. the pile ----------
+  const st1 = $('st1'), pile = $('pile'), cap = $('cap'), slam = $('slam'), zoom = $('zoom'), fill = $('fill'), hint = $('hint');
+  const chat = [
+    ['idk, anywhere works?','Aarav',1],['nothing above 800 pls','Meera',3],["I'm free after 7",'Kabir',2],['not too far from Saket','Zoya',0],
+    ['what time??'],['too far yaar'],['month end hai'],['you guys pick'],['stuck at work'],['metro or cab?'],['too pricey'],['lol'],['not Gurgaon again'],
+    ["can't do 6"],["who's paying?"],['fine with whatever'],['send location'],['Saturday or Sunday?'],['not that place again'],['so… where?'],['running late'],
+    ['CP is a trek'],['broke till the 1st'],['anything works'],["who's driving?"],['boss just called'],['no cover charge pls'],['up to you'],['is 8 too late?'],
+    ['closer pls'],['cheap and good?'],["wait, what's the plan?"],['Ring Road is jammed'],['is there parking?'],['same as last time?'],['when though'],
+    ['how far is it?'],['split it four ways?'],['sure'],['leaving by 6:45'],['share the pin'],['happy hours?'],["whatever's easy"],['might be late'],['someone decide'],['kal pakka?'],['hello??'],
+  ];
+  const scraps = chat.map(([t, who, k], i) => { const el = document.createElement('p'); el.className = `scrap k${k ?? i % 4}`;
+    el.innerHTML = (who ? `<small>${who}</small>` : '') + t.replace(/</g, '&lt;'); pile.appendChild(el); return el; });
+  const lets = [...split(slam.querySelector('.w1')), ...split(slam.querySelector('.w2'))];
+  const oL = lets[lets.length - 3];   // the O of "on."
+  lets.forEach(l => l.classList.add('lt'));
+  let W = 0, H = 0, ox = 0, oy = 0;
+  function layPile(){
+    W = st1.clientWidth; H = st1.clientHeight; const r = rng(7), wide = W > 700, cr = cap.getBoundingClientRect(), top = cr.bottom + 14, bot = H - 70, placed = [];
+    scraps.forEach((el, i) => { if (el._free) return;
+      el.style.fontSize = (i < 4 ? (wide ? 40 : 24) : (wide ? 18 + r() * 16 : 13 + r() * 8)).toFixed(1) + 'px';
+      const w = el.offsetWidth, h = el.offsetHeight; let best = null;
+      for (let j = 0; j < 40; j++){ const x = lerp(w/2 + 10, W - w/2 - 10, r()), y = lerp(top + h/2, bot - h/2, r());
+        let sc = 0; placed.forEach(p => { const dx = Math.max(0, Math.min(x + w/2, p[2]) - Math.max(x - w/2, p[0])), dy = Math.max(0, Math.min(y + h/2, p[3]) - Math.max(y - h/2, p[1])); sc += dx * dy * (p[4] ? 6 : 1); });
+        if (!best || sc < best.sc) best = { sc, x, y }; }
+      placed.push([best.x - w/2, best.y - h/2, best.x + w/2, best.y + h/2, i < 4]);
+      el._x = el._hx = best.x; el._y = el._hy = best.y; el._w = w; el._h = h; el._r = (r() * 2 - 1) * (i < 4 ? 4 : 9); });
+    // where the O sits, so the camera can dive through it
+    slam.style.transform = 'translate(-50%,-50%)'; zoom.style.transform = '';
+    const b = oL.getBoundingClientRect(), z = st1.getBoundingClientRect(); ox = b.left + b.width/2 - z.left; oy = b.top + b.height * .52 - z.top;
+    zoom.style.transformOrigin = `${ox}px ${oy}px`;
+  }
+  const place = (el, x, y, r, s) => { el.style.transform = `translate(${(x - el._w/2).toFixed(1)}px,${(y - el._h/2).toFixed(1)}px) rotate(${r.toFixed(1)}deg) scale(${s.toFixed(3)})`; };
+  let p1 = 0;
+  function draw1(p){
+    p1 = p;
+    // 0.03-0.40: sucked into the middle, nearest first, spinning tighter as they go
+    const cx = W/2, cy = H * .52, far = Math.hypot(W, H) / 2;
+    scraps.forEach((el, i) => { if (el._held) return;
+      const d = Math.hypot(el._x - cx, el._y - cy) / far, t = ease(seg(p, .03 + d * .14, .22 + d * .18));
+      const s = lerp(1, .04, t), r = el._r + t * (i % 2 ? 260 : -260);
+      place(el, lerp(el._x, cx, t), lerp(el._y, cy, t), r, s); el.style.opacity = t > .92 ? (1 - t) / .08 : ''; });
+    cap.style.opacity = 1 - seg(p, .25, .38); hint.style.opacity = 1 - seg(p, .02, .08);
+    // 0.36-0.62: SATURDAY'S ON. slams down, letter by letter, out of that point, and squashes as it lands
+    lets.forEach((l, j) => { const s = seg(p, .36 + j * .016, .43 + j * .016);
+      if (!s) { l.style.opacity = 0; return; }
+      const fall = s < .75 ? out(s / .75) : 1, sq = s >= .75 ? Math.sin(Math.PI * (s - .75) / .25) * .16 : 0, k = lerp(4.2, 1, fall);
+      l.style.opacity = Math.min(1, s * 4); l.style.transform = `scale(${(k * (1 + sq)).toFixed(3)},${(k * (1 - sq)).toFixed(3)}) rotate(${((1 - fall) * (j % 2 ? 9 : -9)).toFixed(1)}deg)`; });
+    // 0.66-1: the camera dives through the O and comes out in the sun-yellow of the next scene
+    const z = ease(seg(p, .66, .98));
+    zoom.style.transform = z ? `scale(${(1 + Math.pow(z, 1.8) * 60).toFixed(3)})` : '';
+    fill.style.opacity = seg(p, .9, .98);
+  }
+
+  // fling: grab a scrap, throw it; it keeps its speed, spins, and bounces off the edges (while the pile is still on screen)
+  if (can) {
+    let held = null, px = 0, py = 0, pt = 0, loop = 0;
+    const run = () => { loop = 0; let moving = false;
+      scraps.forEach(el => { const v = el._v; if (!v || el._held) return;
+        el._x += v[0]; el._y += v[1]; el._r += v[2];
+        if (el._x < el._w/2 || el._x > W - el._w/2) { el._x = clamp(el._x, el._w/2, W - el._w/2); v[0] *= -.7; }
+        if (el._y < el._h/2 || el._y > H - el._h/2) { el._y = clamp(el._y, el._h/2, H - el._h/2); v[1] *= -.7; }
+        v[0] *= .955; v[1] *= .955; v[2] *= .94; if (Math.abs(v[0]) + Math.abs(v[1]) > .15) moving = true; else el._v = null; });
+      draw1(p1); if (moving) loop = requestAnimationFrame(run); };
+    pile.addEventListener('pointerdown', e => { const el = e.target.closest('.scrap'); if (!el || p1 > .05) return;
+      held = el; el._held = el._free = true; el._v = null; px = e.clientX; py = e.clientY; pt = performance.now(); el._vx = el._vy = 0; el.classList.add('held');
+      try { el.setPointerCapture(e.pointerId); } catch {} });
+    pile.addEventListener('pointermove', e => { if (!held) return; const now = performance.now(), dt = Math.max(8, now - pt), dx = e.clientX - px, dy = e.clientY - py;
+      held._x += dx; held._y += dy; held._vx = dx / dt * 16; held._vy = dy / dt * 16; px = e.clientX; py = e.clientY; pt = now; place(held, held._x, held._y, held._r, 1.06); });
+    const drop = () => { if (!held) return; const el = held; held = null; el._held = false; el.classList.remove('held');
+      el._v = [el._vx, el._vy, el._vx * .25]; if (!loop) loop = requestAnimationFrame(run); };
+    pile.addEventListener('pointerup', drop); pile.addEventListener('pointercancel', drop);
+  }
+  // on load the chat piles up by itself: each scrap is slapped down, faster and faster, and the count climbs
+  function arrive(){
+    const cnt = $('cnt'); if (!can) { scraps.forEach(s => s.classList.add('on')); return; }
+    let t = 200, gap = 170; cnt.textContent = '0';
+    scraps.forEach((el, i) => { setTimeout(() => { el.classList.add('on'); cnt.textContent = String(i + 1);
+      el.animate([{ opacity:0, scale:'1.7', filter:'blur(2px)' }, { offset:.55, opacity:1, scale:'.94', filter:'blur(0)' }, { scale:'1' }], { duration: 260, easing:'cubic-bezier(.3,.7,.3,1)' }); }, t); t += gap; gap = Math.max(28, gap * .9); });
+  }
+
+  // ---------- 2. the board ----------
+  const POOL = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+  const cells = [];
+  $$('[data-flap]').forEach(row => { const t = row.textContent; row.textContent = '';
+    t.split(' ').forEach((w, wi) => { if (wi) row.appendChild(document.createTextNode(' '));
+      const fw = document.createElement('span'); fw.className = 'fw'; row.appendChild(fw);
+      [...w].forEach(c => { const s = document.createElement('span'); s.className = 'fc'; s.textContent = c; s.dataset.c = c; fw.appendChild(s); cells.push(s); }); }); });
+  const fixW = () => cells.forEach(c => { c.style.width = ''; c.textContent = c.dataset.c; c.style.width = c.getBoundingClientRect().width.toFixed(2) + 'px'; });
+  const ins = $$('.s2 .in'), pakka = $('pakka');
+  const stampAt = (el, s, rot) => { if (!s) { el.style.opacity = 0; return; }
+    const fall = s < .7 ? out(s / .7) : 1, sq = s >= .7 ? Math.sin(Math.PI * (s - .7) / .3) * .14 : 0, k = lerp(3.2, 1, fall);
+    el.style.opacity = Math.min(1, s * 5); el.style.transform = `rotate(${rot}deg) scale(${(k * (1 + sq)).toFixed(3)},${(k * (1 - sq)).toFixed(3)})`; };
+  function draw2(p){
+    const N = cells.length, tick = Math.floor(p * 160);
+    cells.forEach((c, i) => { const lock = .06 + .5 * i / N, start = lock - .1;
+      if (p >= lock) { if (c.textContent !== c.dataset.c) c.textContent = c.dataset.c; c.classList.remove('wait'); c.style.transform = ''; }
+      else if (p >= start) { c.classList.remove('wait'); c.textContent = POOL[(i * 7 + tick) % POOL.length]; c.style.transform = `scaleY(${(.55 + .45 * ((p * 160) % 1)).toFixed(3)})`; }
+      else c.classList.add('wait'); });
+    ins.forEach((el, i) => stampAt(el, seg(p, .64 + i * .045, .72 + i * .045), [-4, 3, -2, 5][i]));
+    stampAt(pakka, seg(p, .8, .88), -11);
+    kickW(seg(p, 0, .08));
+    // the shop shutter is pulled down over the board, lands with a bounce, and the next scene opens on it
+    const d = seg(p, .9, 1), y = d < .8 ? ease(d / .8) : 1 + Math.sin(Math.PI * (d - .8) / .2) * -.015;
+    shutIn.style.transform = `translateY(${((y - 1) * 101).toFixed(2)}%)`;
+  }
+  const kickW = write($('kick')), shutIn = $('shutIn');
+
+  // ---------- 3. the shutter ----------
+  const shutter = $('shutter'), drum = $('drum'), pls = $$('.pl', shutter);
+  const plW = pls.map(l => write(l)), roll = $('roll');
+  const fairS = document.querySelector('.fair s'), uls = $$('.says .u');
+  function draw3(p){
+    plW.forEach((w, i) => w(seg(p, .02 + i * .09, .13 + i * .09)));
+    const u = ease(seg(p, .34, .66));
+    fairS.style.setProperty('--k', out(seg(p, .68, .78)).toFixed(3));                       // Perfect gets struck through
+    uls.forEach((l, i) => l.style.setProperty('--k', out(seg(p, .77 + i * .045, .83 + i * .045)).toFixed(3)));   // then what's fair is marked, one by one
+    const rh = ease(seg(p, .92, 1)); roll.style.height = (rh * 104).toFixed(2) + '%'; roll.style.visibility = rh ? 'visible' : 'hidden';        // a roller of cobalt paint comes down for the next part
+    shutter.style.transform = `translateY(${(-u * 100).toFixed(2)}%)`;
+    drum.style.height = (u > 0 && u < 1 ? 26 : 0) + 'px';   // the rolled-up shutter, in its drum at the top
+  }
+
+  // ---------- 4. steps are painted on as you reach them ----------
+  const steps = $$('.s4 .step'), loud = document.querySelector('.loud'), yesW = document.querySelector('.s4 .yes');
+  loud.innerHTML = [...loud.textContent].map(c => c === ' ' ? ' ' : `<span>${c}</span>`).join(''); const loudL = $$('span', loud);
+  const sayW = steps.map(s => [write(s.querySelector('.num')), write(s.querySelector('.say'), '.yes,.loud')]);
+  const fixLoud = () => loudL.forEach(l => { l.style.width = ''; l.style.fontVariationSettings = '"wght" 900'; l.style.width = l.getBoundingClientRect().width.toFixed(2) + 'px'; l.style.fontVariationSettings = ''; });
+  const endH = $('endH'), endW = write(endH, '.gangs,.fplate'), gangs = endH.querySelector('.gangs'), fplate = endH.querySelector('.fplate');
+  // "made by hand" is written left to right like a pen, then underlined by hand
+  const hand = $('hand'); hand.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M1 6c18-4 34-5 52-3s30 2 46-2"/></svg>');
+  const hp = hand.querySelector('path'), hl = 110; hp.style.strokeDasharray = hl;
+  const writeHand = t => { hand.style.clipPath = `inset(-30% ${((1 - seg(t, 0, .75)) * 100).toFixed(1)}% -60% 0)`; hp.style.strokeDashoffset = (hl * (1 - seg(t, .75, 1))).toFixed(1); };
+  function draw4(vh){
+    // the step in the middle of the screen is the one happening now; the others wait
+    let best = 0, bd = 1e9; const qs = steps.map((s, i) => { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height/2 - vh * .5); if (d < bd) { bd = d; best = i; } return seg(vh * .95 - r.top, 0, vh * .45); });
+    steps.forEach((s, i) => { sayW[i][0](seg(qs[i], 0, .35)); sayW[i][1](seg(qs[i], .15, 1)); s.classList.toggle('dim', i !== best); });
+    // "out loud works": a ripple of weight runs through it as you scroll past, like a voice getting louder
+    const ph = scrollY / 40; loudL.forEach((l, i) => { l.style.fontVariationSettings = `"wght" ${Math.round(500 + 400 * Math.max(0, Math.sin(ph - i * .45)) * (best === 1 ? 1 : 0))}`; });
+    // the one yes is stamped as its line finishes being painted
+    stampAt(yesW, seg(qs[2], .8, .99), -4);
+    // the last call is painted on as it arrives
+    if (!document.getElementById('stamp')) { const q = seg(vh * .95 - endH.getBoundingClientRect().top, 0, vh * .5); endW(q);
+      // GANG'S is sprayed on: a soft cloud that tightens into a tag
+      writeHand(seg(vh * .95 - hand.getBoundingClientRect().top, 0, vh * .4));
+      // a friend's nameboard drops in on its strings and swings to rest
+      if (fplate) { const f = seg(q, .12, .55), sw = Math.sin(f * Math.PI * 2.5) * (1 - f) * 16;
+        fplate.style.opacity = f > 0 ? 1 : 0; fplate.style.transform = `translateY(${(-(1 - out(seg(f, 0, .35))) * 1.4).toFixed(3)}em) rotate(${(-3 + sw).toFixed(2)}deg)`; }
+      const t = seg(q, .3, .62); if (gangs) gangs.style.opacity = t; if (gangs) { gangs.style.filter = t < 1 ? `blur(${((1 - t) * 9).toFixed(1)}px)` : ''; gangs.style.transform = `rotate(-7deg) scale(${lerp(1.35, 1, out(t)).toFixed(3)})`; } }
+  }
+
+  // ---------- the loop ----------
+  const pins = [[$('s1'), draw1], [$('s2'), draw2], [$('s3'), draw3]];
+  const stage = new Set();
+  function frame(){
+    const vh = innerHeight;
+    pins.forEach(([el, fn]) => { const r = el.getBoundingClientRect(); if (r.bottom < -vh || r.top > vh * 2) return; const p = clamp(-r.top / Math.max(1, r.height - vh)); if (el._p !== p) { el._p = p; fn(p); } });
+    draw4(vh);
+    [['s2', 'saw-the-plan'], ['s3', 'saw-fair']].forEach(([id, ev]) => { if (!stage.has(ev) && $(id)._p > .5) { stage.add(ev); document.dispatchEvent(new CustomEvent('planic:stage', { detail: ev })); } });
+  }
+  let raf = 0; const req = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(); }); };
+  const setup = () => { fixW(); fixLoud(); layPile(); pins.forEach(([el]) => el._p = -1); frame(); };
+  if (can) {
+    addEventListener('scroll', req, { passive: true });
+    let lw = innerWidth; addEventListener('resize', () => { if (innerWidth !== lw) { lw = innerWidth; setup(); } else req(); });
+    const go = () => { setup(); arrive(); };
+    if (document.fonts && document.fonts.ready) Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]).then(go); else go();
+  } else { scraps.forEach(s => s.style.display = 'none'); }
+
+  // "Count me in" goes to the sign-up and puts the cursor in it
+  $$('a[href="#join"]').forEach(a => a.addEventListener('click', e => { e.preventDefault();
+    $('join').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); setTimeout(() => $('fname').focus({ preventScroll: true }), reduce ? 0 : 700); }));
+
+  // the link: brought into view, then fed out of the machine in jerks like a printed ticket, its letters printing as it comes;
+  // the copy plate and WhatsApp plate knock once when it's done, so the next move is obvious
+  document.addEventListener('planic:share', () => {
+    const sh = $('share'), gl = $('glink'), c2 = $('copy2'), wa = $('wa');
+    setTimeout(() => sh.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }), reduce ? 0 : 650);
+    if (!can) return;
+    const full = gl.textContent; gl.style.minWidth = gl.getBoundingClientRect().width + 'px'; gl.textContent = '';
+    gl.animate([{ transform:'translateY(-105%)' }, { transform:'translateY(0)' }], { duration: 700, delay: 900, easing:'steps(6, end)', fill:'backwards' });
+    let i = 0; const T0 = 1600; setTimeout(function type(){ gl.textContent = full.slice(0, i += 2); if (i < full.length) setTimeout(type, 18); else {
+      gl.style.minWidth = '';
+      [c2, wa].forEach((b, k) => b.animate([{ transform:'rotate(-2deg)' }, { transform:'rotate(-2deg) translate(.12em,.14em)' }, { transform:'rotate(-2deg) translate(-.04em,-.05em)' }, { transform:'rotate(-2deg)' }], { duration: 320, delay: k * 180 })); } }, T0);
+  });
+
+  // the sign-up: the heading changes, and a PAKKA stamp comes down on it
+  document.addEventListener('planic:in', e => {
+    const endH = $('endH'); endH.innerHTML = (e.detail && e.detail.head) || 'Spot saved!!'; endH.style.setProperty('--q', 1);
+    if (!can) return;
+    let st = $('stamp'); if (!st) { st = document.createElement('p'); st.className = 'stamp'; st.id = 'stamp'; st.setAttribute('aria-hidden', 'true'); st.textContent = 'Pakka'; $('join').appendChild(st); }
+    const r = endH.getBoundingClientRect(), jr = $('join').getBoundingClientRect(); st.style.top = (r.top - jr.top + r.height * .1) + 'px'; st.style.left = (r.left - jr.left + r.width * .45) + 'px';
+    st.animate([{ opacity:0, transform:'rotate(-9deg) scale(3.4)' }, { offset:.55, opacity:1, transform:'rotate(-9deg) scale(1)' }, { offset:.72, transform:'rotate(-9deg) scale(1.12,.86)' }, { offset:.86, transform:'rotate(-9deg) scale(.97,1.04)' }, { opacity:1, transform:'rotate(-9deg) scale(1)' }],
+      { duration: 620, easing:'cubic-bezier(.5,0,.6,1)', fill:'forwards' });
+    $('join').animate([{ transform:'none' }, { transform:'translate(0,7px)' }, { transform:'translate(-5px,-3px)' }, { transform:'none' }], { duration: 260, delay: 340 });
+  });
+})();
+</script>
+</body>
+</html>
