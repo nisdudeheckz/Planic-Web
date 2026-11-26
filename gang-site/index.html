@@ -322,7 +322,7 @@ a{color:inherit}
 </style>
 <header class="top"><a class="logo" href="#s1" aria-label="planic!!">planic!!</a><a class="cmi" href="#join">Count <b class="me">me</b> in <span class="arr">→</span></a></header>
 
-<section class="pin s1" id="s1" style="height:360vh">
+<section class="pin s1" id="s1" style="height:300vh">
   <p class="sr">The group chat has 47 messages and no plan. planic!! turns it into one: Saturday's on.</p>
   <div class="stick" id="st1">
     <div class="zoom" id="zoom">
@@ -335,7 +335,7 @@ a{color:inherit}
   </div>
 </section>
 
-<section class="pin s2" id="s2" style="height:320vh">
+<section class="pin s2" id="s2" style="height:260vh">
   <p class="sr">The plan: Hauz Khas rooftop, Saturday 7:30 pm, ₹650 each, 18 min from Saket. Aarav, Meera, Kabir and Zoya are in. Pakka.</p>
   <div class="stick" aria-hidden="true">
     <div class="bwrap">
@@ -352,7 +352,7 @@ a{color:inherit}
   </div>
 </section>
 
-<section class="pin s3" id="s3" style="height:300vh">
+<section class="pin s3" id="s3" style="height:250vh">
   <h2 class="sr">No confusion. No arguments. No fights. Not perfect: fair for everyone.</h2>
   <div class="stick">
     <div class="behind">
@@ -711,16 +711,16 @@ a{color:inherit}
       const d = Math.hypot(el._x - cx, el._y - cy) / far, t = ease(seg(p, .03 + d * .14, .22 + d * .18));
       const s = lerp(1, .04, t), r = el._r + t * (i % 2 ? 260 : -260);
       place(el, lerp(el._x, cx, t), lerp(el._y, cy, t), r, s); el.style.opacity = t > .92 ? (1 - t) / .08 : ''; });
-    cap.style.opacity = 1 - seg(p, .25, .38); hint.style.opacity = 1 - seg(p, .02, .08);
+    cap.style.opacity = 1 - seg(p, .2, .3); hint.style.opacity = 1 - seg(p, .02, .08);
     // 0.36-0.62: SATURDAY'S ON. slams down, letter by letter, out of that point, and squashes as it lands
-    lets.forEach((l, j) => { const s = seg(p, .36 + j * .016, .43 + j * .016);
+    lets.forEach((l, j) => { const s = seg(p, .27 + j * .018, .35 + j * .018);
       if (!s) { l.style.opacity = 0; return; }
       const fall = s < .75 ? out(s / .75) : 1, sq = s >= .75 ? Math.sin(Math.PI * (s - .75) / .25) * .16 : 0, k = lerp(4.2, 1, fall);
       l.style.opacity = Math.min(1, s * 4); l.style.transform = `scale(${(k * (1 + sq)).toFixed(3)},${(k * (1 - sq)).toFixed(3)}) rotate(${((1 - fall) * (j % 2 ? 9 : -9)).toFixed(1)}deg)`; });
     // 0.66-1: the camera dives through the O and comes out in the sun-yellow of the next scene
-    const z = ease(seg(p, .66, .98));
+    const z = ease(seg(p, .68, .95));
     zoom.style.transform = z ? `scale(${(1 + Math.pow(z, 1.8) * 60).toFixed(3)})` : '';
-    fill.style.opacity = seg(p, .9, .98);
+    fill.style.opacity = seg(p, .82, .93);
   }
 
   // fling: grab a scrap, throw it; it keeps its speed, spins, and bounces off the edges (while the pile is still on screen)
@@ -764,7 +764,7 @@ a{color:inherit}
     el.style.opacity = Math.min(1, s * 5); el.style.transform = `rotate(${rot}deg) scale(${(k * (1 + sq)).toFixed(3)},${(k * (1 - sq)).toFixed(3)})`; };
   function draw2(p){
     const N = cells.length, tick = Math.floor(p * 160);
-    cells.forEach((c, i) => { const lock = .06 + .5 * i / N, start = lock - .1;
+    cells.forEach((c, i) => { const lock = .1 + .45 * i / N, start = 0;
       if (p >= lock) { if (c.textContent !== c.dataset.c) c.textContent = c.dataset.c; c.classList.remove('wait'); c.style.transform = ''; }
       else if (p >= start) { c.classList.remove('wait'); c.textContent = POOL[(i * 7 + tick) % POOL.length]; c.style.transform = `scaleY(${(.55 + .45 * ((p * 160) % 1)).toFixed(3)})`; }
       else c.classList.add('wait'); });
@@ -782,11 +782,11 @@ a{color:inherit}
   const plW = pls.map(l => write(l)), roll = $('roll');
   const fairS = document.querySelector('.fair s'), uls = $$('.says .u');
   function draw3(p){
-    plW.forEach((w, i) => w(seg(p, .02 + i * .09, .13 + i * .09)));
+    plW.forEach((w, i) => w(seg(p, i * .06, .1 + i * .06)));   // the shutter's words are painted as soon as it's down
     const u = ease(seg(p, .34, .66));
     fairS.style.setProperty('--k', out(seg(p, .68, .78)).toFixed(3));                       // Perfect gets struck through
     uls.forEach((l, i) => l.style.setProperty('--k', out(seg(p, .77 + i * .045, .83 + i * .045)).toFixed(3)));   // then what's fair is marked, one by one
-    const rh = ease(seg(p, .92, 1)); roll.style.height = (rh * 104).toFixed(2) + '%'; roll.style.visibility = rh ? 'visible' : 'hidden';        // a roller of cobalt paint comes down for the next part
+    const rh = ease(seg(p, .95, 1)); roll.style.height = (rh * 104).toFixed(2) + '%'; roll.style.visibility = rh ? 'visible' : 'hidden';        // a roller of cobalt paint comes down for the next part
     shutter.style.transform = `translateY(${(-u * 100).toFixed(2)}%)`;
     drum.style.height = (u > 0 && u < 1 ? 26 : 0) + 'px';   // the rolled-up shutter, in its drum at the top
   }
@@ -828,7 +828,7 @@ a{color:inherit}
     pins.forEach(([el, fn]) => { const r = el.getBoundingClientRect(); if (r.bottom < -vh || r.top > vh * 2) return;
       const t = clamp(-r.top / Math.max(1, r.height - vh));
       let s = el._p < 0 || el._p == null ? t : el._p; const d = t - s;
-      s = Math.abs(d) < .0006 ? t : s + clamp(d * .07, -.011, .011);   // eases toward the scroll, never faster than a calm, steady pace
+      s = Math.abs(d) < .0006 ? t : s + d * .3;   // follows the scroll, softened just enough to hide a jittery thumb
       if (s !== t) busy = true;
       if (el._p !== s) { el._p = s; fn(s); } });
     if (busy) req();
@@ -843,31 +843,6 @@ a{color:inherit}
     const go = () => { setup(); arrive(); };
     if (document.fonts && document.fonts.ready) Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]).then(go); else go();
   } else { scraps.forEach(s => s.style.display = 'none'); }
-
-  // Resting points. Inside the story, wherever a scroll stops, the page carries on to the next complete moment in the
-  // direction you were going, so you never stop on a half-built or empty frame.
-  //   the pile · SATURDAY'S ON. landed · the plan on the board · stamped PAKKA · the shutter's words · fair for everyone · how it starts
-  if (can) {
-    const BEATS = [['s1', [0, .64]], ['s2', [.6, .9]], ['s3', [.32, .88]]];
-    const rests = () => { const vh = innerHeight, out = [];
-      BEATS.forEach(([id, bs]) => { const el = $(id), top = el.getBoundingClientRect().top + scrollY, span = el.offsetHeight - vh; bs.forEach(b => out.push(Math.round(top + b * span))); });
-      out.push(Math.round($('s4').getBoundingClientRect().top + scrollY)); return out; };
-    let lastY = scrollY, dir = 1, idle = 0, auto = false, touching = false;
-    const settle = () => { if (touching || auto) return; const y = scrollY, rs = rests();
-      if (y <= rs[0] || y >= rs[rs.length - 1]) return;                     // outside the story: leave it alone
-      if (rs.some(r => Math.abs(r - y) < 6)) return;                         // already on a moment
-      const next = dir > 0 ? rs.find(r => r > y) : [...rs].reverse().find(r => r < y);
-      if (next == null) return; glide(next); };
-    let gl = 0;
-    const glide = to => { cancelAnimationFrame(gl); auto = true; const from = scrollY, dist = to - from, dur = clamp(Math.abs(dist) / innerHeight * 900, 900, 2200), t0 = performance.now();
-      const step = now => { const k = clamp((now - t0) / dur); scrollTo(0, Math.round(from + dist * ease(k))); if (k < 1 && auto) gl = requestAnimationFrame(step); else auto = false; };
-      gl = requestAnimationFrame(step); };
-    addEventListener('scroll', () => { const y = scrollY; if (y !== lastY) { if (!auto) dir = y > lastY ? 1 : -1; lastY = y; }
-      clearTimeout(idle); idle = setTimeout(settle, 180); }, { passive: true });
-    addEventListener('touchstart', () => { touching = true; auto = false; cancelAnimationFrame(gl); }, { passive: true });
-    addEventListener('touchend', () => { touching = false; clearTimeout(idle); idle = setTimeout(settle, 220); }, { passive: true });
-    addEventListener('wheel', () => { auto = false; cancelAnimationFrame(gl); }, { passive: true });
-  }
 
   // "Count me in" goes to the sign-up and puts the cursor in it
   $$('a[href="#join"]').forEach(a => a.addEventListener('click', e => { e.preventDefault();
