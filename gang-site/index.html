@@ -135,7 +135,7 @@ a{color:inherit}
 .scrap small{display:block;font-family:var(--body);font-weight:600;font-size:.42em;text-transform:none;letter-spacing:0;opacity:.8;margin-bottom:.15em}
 .k0{background:var(--sun);color:var(--ink)} .k1{background:var(--cream);color:var(--cobalt-d)} .k2{background:var(--green);color:var(--cream)} .k3{background:var(--red);color:var(--cream)}
 .hint{position:absolute;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom,0px));margin:0;text-align:center;font-weight:500;font-size:15px;color:var(--cream);opacity:.85;z-index:3}
-.slam{position:absolute;left:50%;top:52%;margin:0;transform:translate(-50%,-50%);text-align:center;color:var(--sun);font-size:min(25vw,31vh);z-index:5;white-space:nowrap;pointer-events:none}
+.slam{position:absolute;left:50%;top:52%;margin:0;transform:translate(-50%,-50%);text-align:center;color:var(--sun);font-size:min(17vw,31vh);z-index:5;white-space:nowrap;pointer-events:none}
 .slam .lt{display:inline-block;opacity:0;transform-origin:50% 85%;will-change:transform}
 .slam .o{position:relative}
 .slam .eye{position:absolute;left:50%;top:50%;width:.34em;height:.62em;transform:translate(-50%,-50%);background:var(--sun);border-radius:.17em;opacity:0}
@@ -158,7 +158,7 @@ a{color:inherit}
 .in{font-family:var(--sign);font-weight:900;font-size:clamp(24px,3.4vw,48px);text-transform:uppercase;padding:.08em .3em;opacity:0;transform-origin:50% 60%}
 .pakka{position:absolute;right:4%;bottom:-6%;margin:0;font-family:var(--sign);font-weight:900;font-size:clamp(46px,9vw,130px);color:var(--red);text-transform:uppercase;
   border:.07em solid var(--red);padding:0 .18em;line-height:1.05;transform:rotate(-11deg);opacity:0}
-@media (max-width:640px){ .r1{font-size:12.4vw} .r2{font-size:10vw} .r3{font-size:5.1vw} .pakka{bottom:-10%} }
+@media (max-width:640px){ .r1{font-size:15vw} .r2{font-size:12.4vw} .r3{font-size:6.3vw} .pakka{bottom:-10%} .kick{font-size:15px} .in{font-size:28px} }
 
 /* ---- 3. the shutter: the arguing is painted on a shop shutter. Scroll rolls it up on what's fair ---- */
 .s3 .stick{background:var(--cream);color:var(--ink)}
@@ -309,7 +309,7 @@ a{color:inherit}
 </style>
 <header class="top"><a class="logo" href="#s1" aria-label="planic!!">planic!!</a><a class="cmi" href="#join">Count <b class="me">me</b> in <span class="arr">→</span></a></header>
 
-<section class="pin s1" id="s1" style="height:340vh">
+<section class="pin s1" id="s1" style="height:300vh">
   <p class="sr">The group chat has 47 messages and no plan. planic!! turns it into one: Saturday's on.</p>
   <div class="stick" id="st1">
     <div class="zoom" id="zoom">
@@ -322,7 +322,7 @@ a{color:inherit}
   </div>
 </section>
 
-<section class="pin s2" id="s2" style="height:300vh">
+<section class="pin s2" id="s2" style="height:250vh">
   <p class="sr">The plan: Hauz Khas rooftop, Saturday 7:30 pm, ₹650 each, 18 min from Saket. Aarav, Meera, Kabir and Zoya are in. Pakka.</p>
   <div class="stick" aria-hidden="true">
     <div class="bwrap">
@@ -339,7 +339,7 @@ a{color:inherit}
   </div>
 </section>
 
-<section class="pin s3" id="s3" style="height:280vh">
+<section class="pin s3" id="s3" style="height:240vh">
   <h2 class="sr">No confusion. No arguments. No fights. Not perfect: fair for everyone.</h2>
   <div class="stick">
     <div class="behind">
@@ -811,7 +811,14 @@ a{color:inherit}
   const stage = new Set();
   function frame(){
     const vh = innerHeight;
-    pins.forEach(([el, fn]) => { const r = el.getBoundingClientRect(); if (r.bottom < -vh || r.top > vh * 2) return; const p = clamp(-r.top / Math.max(1, r.height - vh)); if (el._p !== p) { el._p = p; fn(p); } });
+    let busy = false;
+    pins.forEach(([el, fn]) => { const r = el.getBoundingClientRect(); if (r.bottom < -vh || r.top > vh * 2) return;
+      const t = clamp(-r.top / Math.max(1, r.height - vh));
+      let s = el._p < 0 || el._p == null ? t : el._p; const d = t - s;
+      s = Math.abs(d) < .0008 ? t : s + clamp(d * .16, -.035, .035);   // eases toward the scroll, never faster than a steady pace
+      if (s !== t) busy = true;
+      if (el._p !== s) { el._p = s; fn(s); } });
+    if (busy) req();
     draw4(vh);
     [['s2', 'saw-the-plan'], ['s3', 'saw-fair']].forEach(([id, ev]) => { if (!stage.has(ev) && $(id)._p > .5) { stage.add(ev); document.dispatchEvent(new CustomEvent('planic:stage', { detail: ev })); } });
   }
@@ -823,6 +830,28 @@ a{color:inherit}
     const go = () => { setup(); arrive(); };
     if (document.fonts && document.fonts.ready) Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]).then(go); else go();
   } else { scraps.forEach(s => s.style.display = 'none'); }
+
+  // Resting points. Inside the story, wherever a scroll stops, the page carries on to the next complete moment in the
+  // direction you were going, so you never stop on a half-built or empty frame.
+  //   the pile · SATURDAY'S ON. landed · the plan on the board · stamped PAKKA · the shutter's words · fair for everyone · how it starts
+  if (can) {
+    const BEATS = [['s1', [0, .64]], ['s2', [.6, .9]], ['s3', [.32, .88]]];
+    const rests = () => { const vh = innerHeight, out = [];
+      BEATS.forEach(([id, bs]) => { const el = $(id), top = el.getBoundingClientRect().top + scrollY, span = el.offsetHeight - vh; bs.forEach(b => out.push(Math.round(top + b * span))); });
+      out.push(Math.round($('s4').getBoundingClientRect().top + scrollY)); return out; };
+    let lastY = scrollY, dir = 1, idle = 0, auto = false, touching = false;
+    const settle = () => { if (touching) return; const y = scrollY, rs = rests();
+      if (auto) { auto = false; return; }
+      if (y <= rs[0] || y >= rs[rs.length - 1]) return;                     // outside the story: leave it alone
+      if (rs.some(r => Math.abs(r - y) < 6)) return;                         // already on a moment
+      const next = dir > 0 ? rs.find(r => r > y) : [...rs].reverse().find(r => r < y);
+      if (next == null) return; auto = true; scrollTo({ top: next, behavior: 'smooth' }); };
+    addEventListener('scroll', () => { const y = scrollY; if (y !== lastY) { if (!auto) dir = y > lastY ? 1 : -1; lastY = y; }
+      clearTimeout(idle); idle = setTimeout(settle, 180); }, { passive: true });
+    addEventListener('touchstart', () => { touching = true; auto = false; }, { passive: true });
+    addEventListener('touchend', () => { touching = false; clearTimeout(idle); idle = setTimeout(settle, 220); }, { passive: true });
+    addEventListener('wheel', () => { auto = false; }, { passive: true });
+  }
 
   // "Count me in" goes to the sign-up and puts the cursor in it
   $$('a[href="#join"]').forEach(a => a.addEventListener('click', e => { e.preventDefault();
