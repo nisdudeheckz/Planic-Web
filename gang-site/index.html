@@ -81,6 +81,7 @@ a{color:inherit}
 .below .promise b{font-weight:700;color:var(--sun)}
 .loud span{text-align:center}
 .join.conf > :not(#note){display:none !important}
+
 /* a friend's link: their name is on a nameboard that swings in, hung by two strings */
 .fplate{display:inline-block;position:relative;background:var(--sun);color:var(--ink);padding:.06em .2em 0;margin:.12em .05em 0;line-height:.92;transform:rotate(-3deg);transform-origin:50% -.5em;
   box-shadow:inset 0 0 0 .03em var(--sun),inset 0 0 0 .05em var(--ink),.05em .06em 0 #000}
@@ -225,6 +226,18 @@ a{color:inherit}
   .shutter{display:none}
   .cmi .me,.cmi .arr{animation:none !important}
 }
+@media (max-width:640px){
+  .logo{font-size:30px} .top .cmi{font-size:23px}
+  .cap{font-size:13vw} .hint{font-size:16px}
+  .slam{font-size:min(21vw,31vh)}
+  .kick{font-size:16px} .bwrap{width:100%}
+  .shutter p{font-size:13.6vw} .fair{font-size:16.5vw} .says{font-size:7.6vw}
+  .s4 h2{font-size:17px} .step .num{font-size:30vw} .step .say{font-size:10.4vw}
+  .big{font-size:17.5vw}
+  .below .promise{font-size:19px !important} .below .promise .ten{font-size:100px}
+  .join{font-size:30px !important}
+  .tk .glink,.below .glink{font-size:21px}
+}
 </style>
 <style>
 /* "Count me in": the one action. No box: the "me" is in the visitor's own ink, a size up, and it keeps stepping forward. */
@@ -309,7 +322,7 @@ a{color:inherit}
 </style>
 <header class="top"><a class="logo" href="#s1" aria-label="planic!!">planic!!</a><a class="cmi" href="#join">Count <b class="me">me</b> in <span class="arr">→</span></a></header>
 
-<section class="pin s1" id="s1" style="height:300vh">
+<section class="pin s1" id="s1" style="height:360vh">
   <p class="sr">The group chat has 47 messages and no plan. planic!! turns it into one: Saturday's on.</p>
   <div class="stick" id="st1">
     <div class="zoom" id="zoom">
@@ -322,7 +335,7 @@ a{color:inherit}
   </div>
 </section>
 
-<section class="pin s2" id="s2" style="height:250vh">
+<section class="pin s2" id="s2" style="height:320vh">
   <p class="sr">The plan: Hauz Khas rooftop, Saturday 7:30 pm, ₹650 each, 18 min from Saket. Aarav, Meera, Kabir and Zoya are in. Pakka.</p>
   <div class="stick" aria-hidden="true">
     <div class="bwrap">
@@ -339,7 +352,7 @@ a{color:inherit}
   </div>
 </section>
 
-<section class="pin s3" id="s3" style="height:240vh">
+<section class="pin s3" id="s3" style="height:300vh">
   <h2 class="sr">No confusion. No arguments. No fights. Not perfect: fair for everyone.</h2>
   <div class="stick">
     <div class="behind">
@@ -815,7 +828,7 @@ a{color:inherit}
     pins.forEach(([el, fn]) => { const r = el.getBoundingClientRect(); if (r.bottom < -vh || r.top > vh * 2) return;
       const t = clamp(-r.top / Math.max(1, r.height - vh));
       let s = el._p < 0 || el._p == null ? t : el._p; const d = t - s;
-      s = Math.abs(d) < .0008 ? t : s + clamp(d * .16, -.035, .035);   // eases toward the scroll, never faster than a steady pace
+      s = Math.abs(d) < .0006 ? t : s + clamp(d * .07, -.011, .011);   // eases toward the scroll, never faster than a calm, steady pace
       if (s !== t) busy = true;
       if (el._p !== s) { el._p = s; fn(s); } });
     if (busy) req();
@@ -840,17 +853,20 @@ a{color:inherit}
       BEATS.forEach(([id, bs]) => { const el = $(id), top = el.getBoundingClientRect().top + scrollY, span = el.offsetHeight - vh; bs.forEach(b => out.push(Math.round(top + b * span))); });
       out.push(Math.round($('s4').getBoundingClientRect().top + scrollY)); return out; };
     let lastY = scrollY, dir = 1, idle = 0, auto = false, touching = false;
-    const settle = () => { if (touching) return; const y = scrollY, rs = rests();
-      if (auto) { auto = false; return; }
+    const settle = () => { if (touching || auto) return; const y = scrollY, rs = rests();
       if (y <= rs[0] || y >= rs[rs.length - 1]) return;                     // outside the story: leave it alone
       if (rs.some(r => Math.abs(r - y) < 6)) return;                         // already on a moment
       const next = dir > 0 ? rs.find(r => r > y) : [...rs].reverse().find(r => r < y);
-      if (next == null) return; auto = true; scrollTo({ top: next, behavior: 'smooth' }); };
+      if (next == null) return; glide(next); };
+    let gl = 0;
+    const glide = to => { cancelAnimationFrame(gl); auto = true; const from = scrollY, dist = to - from, dur = clamp(Math.abs(dist) / innerHeight * 900, 900, 2200), t0 = performance.now();
+      const step = now => { const k = clamp((now - t0) / dur); scrollTo(0, Math.round(from + dist * ease(k))); if (k < 1 && auto) gl = requestAnimationFrame(step); else auto = false; };
+      gl = requestAnimationFrame(step); };
     addEventListener('scroll', () => { const y = scrollY; if (y !== lastY) { if (!auto) dir = y > lastY ? 1 : -1; lastY = y; }
       clearTimeout(idle); idle = setTimeout(settle, 180); }, { passive: true });
-    addEventListener('touchstart', () => { touching = true; auto = false; }, { passive: true });
+    addEventListener('touchstart', () => { touching = true; auto = false; cancelAnimationFrame(gl); }, { passive: true });
     addEventListener('touchend', () => { touching = false; clearTimeout(idle); idle = setTimeout(settle, 220); }, { passive: true });
-    addEventListener('wheel', () => { auto = false; }, { passive: true });
+    addEventListener('wheel', () => { auto = false; cancelAnimationFrame(gl); }, { passive: true });
   }
 
   // "Count me in" goes to the sign-up and puts the cursor in it
