@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>planic!! Save your gang’s spot</title>
-<meta name="planic:site" content="https://join-planic.netlify.app">
-<link rel="canonical" href="https://join-planic.netlify.app/">
+<meta name="planic:site" content="https://planicgang.netlify.app">
+<link rel="canonical" href="https://planicgang.netlify.app/">
 <meta name="description" content="planic!! turns the group chat into one plan everyone says yes to, and says why. Early access, New Delhi first.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#1E3FA0">
 <meta property="og:title" content="Save your gang’s spot on planic!!">
 <meta property="og:description" content="planic!! turns the group chat into one plan everyone says yes to. Early access, New Delhi first.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://join-planic.netlify.app/og.jpg">
-<meta property="og:url" content="https://join-planic.netlify.app/">
+<meta property="og:image" content="https://planicgang.netlify.app/og.jpg">
+<meta property="og:url" content="https://planicgang.netlify.app/">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Save your gang’s spot on planic!! The first 10 gangs get their first plan made by hand.">
@@ -399,7 +399,7 @@ a{color:inherit}
 // (?g=<gang id>&from=<first name>) joins the same gang with their own details. Nobody enters anyone else's contact.
 (() => {
   const SITE = document.querySelector('meta[name="planic:site"]')?.content || '';
-  const HOME = SITE ? location.origin : 'https://join-planic.netlify.app';
+  const HOME = SITE ? location.origin : 'https://planicgang.netlify.app';
   const $ = id => document.getElementById(id);
   const counted = new Set();
   const track = (ev, data) => { if (counted.has(ev)) return; counted.add(ev); try { window.umami?.track(ev, data); } catch {} };
