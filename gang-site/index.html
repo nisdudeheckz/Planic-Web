@@ -615,7 +615,7 @@ a{color:inherit}
       const fd = Object.fromEntries(new FormData(form)); delete fd['form-name']; delete fd.company;
       const sent = await fetch('/.netlify/functions/send-confirm', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(fd) }).then(r => r.ok).catch(() => false);
       note.textContent = sent ? `One last tap: open the email we just sent to ${sentTo} and confirm. Your spot counts once you do.`
-                              : 'Saved, but the confirm email didn’t go out. Try again in a minute.';
+                              : 'You’re on the list. Now send your gang the link below.';   // the sign-up is saved either way; a failed email never blocks it
     } catch { if (role.value === 'started') gang.value = ''; note.textContent = 'That didn’t save. Check your connection and try again.'; }
     finally { btn.disabled = false; }
   });
