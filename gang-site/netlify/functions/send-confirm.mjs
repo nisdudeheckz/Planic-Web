@@ -25,7 +25,7 @@ export default async (req) => {
 
   // Sent from Planic's own Gmail account through Gmail's own mail server, so it isn't marked as spam. Free up to about 500 a day.
   const mail = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true,
-    auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } });
+    auth: { user: String(process.env.GMAIL_USER).trim(), pass: String(process.env.GMAIL_APP_PASSWORD).replace(/\s+/g, '') } });
   const sent = await mail.sendMail({ from: `planic!! <${process.env.GMAIL_USER}>`, to: data.email, subject: 'Confirm your spot on planic!!', html, text })
     .then(() => true, () => false);
   return Response.json({ ok: sent }, { status: sent ? 200 : 502 });
