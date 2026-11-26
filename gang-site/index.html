@@ -66,7 +66,7 @@ a{color:inherit}
 .swl{display:inline-block}
 /* between scenes: the shop shutter comes down on the board; a roller of cobalt paint comes down on the cream; the night's ink tears in */
 .s2 .shutter{transform:translateY(-101%)}
-.roll{position:absolute;left:0;right:0;top:0;height:0;visibility:hidden;background:var(--cobalt);z-index:4;will-change:height}
+.roll{position:absolute;left:0;right:0;top:0;height:104%;visibility:hidden;background:var(--cobalt);z-index:4;transform:translateY(-100%);will-change:transform}
 .roll::after{content:"";position:absolute;left:0;right:0;top:100%;height:30px;background:radial-gradient(13px 26px at 50% 0,var(--cobalt) 97%,transparent) 0 0/44px 30px repeat-x}
 .below{position:relative}
 .below::before{content:"";position:absolute;left:0;right:0;top:-22px;height:23px;background:var(--ink);
@@ -115,7 +115,7 @@ a{color:inherit}
 @keyframes hung{0%{transform:rotate(-2deg) translateY(-.25em)}60%{transform:rotate(1deg) translateY(.08em)}100%{transform:rotate(-2deg)}}
 @keyframes hop2{0%,58%,100%{transform:none}64%{transform:scale(1.08,.86)}76%{transform:translateY(-.16em) scale(.96,1.06) rotate(-5deg)}88%{transform:scale(1.06,.9)}94%{transform:none}}
 .cmi .arr{color:var(--red)}
-.cmi:hover{transform:rotate(0deg) translate(-.03em,-.04em);box-shadow:inset 0 0 0 .07em var(--sun),inset 0 0 0 .11em var(--ink),.16em .19em 0 var(--ink)}
+@media (hover:hover) and (pointer:fine){.cmi:hover{transform:rotate(0deg) translate(-.03em,-.04em);box-shadow:inset 0 0 0 .07em var(--sun),inset 0 0 0 .11em var(--ink),.16em .19em 0 var(--ink)}}
 .cmi:active{transform:rotate(0deg) translate(.12em,.14em) !important;box-shadow:inset 0 0 0 .07em var(--sun),inset 0 0 0 .11em var(--ink),0 0 0 var(--ink)}
 .top .cmi{font-size:21px}
 .join button.cmi{font-size:1.15em !important;margin-top:.25em}
@@ -245,8 +245,9 @@ a{color:inherit}
 .cmi .me{display:inline-block;font-weight:800;font-size:1.24em;line-height:1;color:var(--you);transform-origin:50% 92%;transition:color .25s ease;animation:hop 2.8s cubic-bezier(.3,0,.3,1) infinite}
 .cmi .arr{display:inline-block;animation:stride 2.8s ease-in-out infinite}
 .cmi .arr.dn{animation-name:sink}
-.cmi:hover .me,.cmi:focus-visible .me{animation-duration:.9s}
-.cmi:hover .arr,.cmi:focus-visible .arr{animation-duration:.9s}
+.cmi:focus-visible .me{animation-duration:.9s}
+@media (hover:hover) and (pointer:fine){.cmi:hover .me,.cmi:hover .arr{animation-duration:.9s}}
+.cmi:focus-visible .arr{animation-duration:.9s}
 .cmi:active{transform:scale(.97)}
 @keyframes hop{0%,58%,100%{transform:none}64%{transform:scale(1.1,.82)}76%{transform:translateY(-.5em) scale(.95,1.1) rotate(-6deg)}88%{transform:translateY(0) scale(1.09,.86)}94%{transform:scale(.98,1.04)}}
 @keyframes stride{0%,88%,100%{transform:none}94%{transform:translateX(.4em)}}
@@ -786,7 +787,7 @@ a{color:inherit}
     const u = ease(seg(p, .34, .66));
     fairS.style.setProperty('--k', out(seg(p, .68, .78)).toFixed(3));                       // Perfect gets struck through
     uls.forEach((l, i) => l.style.setProperty('--k', out(seg(p, .77 + i * .045, .83 + i * .045)).toFixed(3)));   // then what's fair is marked, one by one
-    const rh = ease(seg(p, .95, 1)); roll.style.height = (rh * 104).toFixed(2) + '%'; roll.style.visibility = rh ? 'visible' : 'hidden';        // a roller of cobalt paint comes down for the next part
+    const rh = ease(seg(p, .95, 1)); roll.style.transform = `translateY(${((rh - 1) * 100).toFixed(2)}%)`; roll.style.visibility = rh ? 'visible' : 'hidden';        // a roller of cobalt paint comes down for the next part
     shutter.style.transform = `translateY(${(-u * 100).toFixed(2)}%)`;
     drum.style.height = (u > 0 && u < 1 ? 26 : 0) + 'px';   // the rolled-up shutter, in its drum at the top
   }
@@ -816,7 +817,7 @@ a{color:inherit}
       // a friend's nameboard drops in on its strings and swings to rest
       if (fplate) { const f = seg(q, .12, .55), sw = Math.sin(f * Math.PI * 2.5) * (1 - f) * 16;
         fplate.style.opacity = f > 0 ? 1 : 0; fplate.style.transform = `translateY(${(-(1 - out(seg(f, 0, .35))) * 1.4).toFixed(3)}em) rotate(${(-3 + sw).toFixed(2)}deg)`; }
-      const t = seg(q, .3, .62); if (gangs) gangs.style.opacity = t; if (gangs) { gangs.style.filter = t < 1 ? `blur(${((1 - t) * 9).toFixed(1)}px)` : ''; gangs.style.transform = `rotate(-7deg) scale(${lerp(1.35, 1, out(t)).toFixed(3)})`; } }
+      const t = seg(q, .3, .62); if (gangs) gangs.style.opacity = t; if (gangs) { gangs.style.filter = t < 1 ? `blur(${((1 - t) * 3).toFixed(1)}px)` : ''; gangs.style.transform = `rotate(-7deg) scale(${lerp(1.35, 1, out(t)).toFixed(3)})`; } }
   }
 
   // ---------- the loop ----------
